@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../../service/islamic_calendar_service.dart';
 
 class ReligiousDay extends Equatable {
   const ReligiousDay({
@@ -8,6 +10,7 @@ class ReligiousDay extends Equatable {
     required this.description,
     required this.icon,
     this.isUpcoming = false,
+    this.daysUntil = 0,
   });
 
   final String name;
@@ -15,9 +18,10 @@ class ReligiousDay extends Equatable {
   final String description;
   final String icon;
   final bool isUpcoming;
+  final int daysUntil;
 
   @override
-  List<Object?> get props => [name, date, description, icon, isUpcoming];
+  List<Object?> get props => [name, date, description, icon, isUpcoming, daysUntil];
 }
 
 class IslamicInfo extends Equatable {
@@ -67,59 +71,90 @@ class ContentState extends Equatable {
 }
 
 class ContentNotifier extends StateNotifier<ContentState> {
-  ContentNotifier() : super(const ContentState());
+  ContentNotifier(this._calendarService) : super(const ContentState());
 
-  static const List<ReligiousDay> _days = [
-    ReligiousDay(
-      name: 'Regaib Gecesi',
-      date: '30 Ocak 2025',
-      description: 'Recep ayının ilk Cuma gecesi. Üç ayların başlangıcı.',
-      icon: '🌙',
-      isUpcoming: false,
-    ),
-    ReligiousDay(
-      name: 'Miraç Kandili',
-      date: '27 Şubat 2025',
-      description: 'Hz. Peygamber\'in (s.a.v.) Allah\'ın huzuruna yükseldiği gece.',
-      icon: '✨',
-      isUpcoming: false,
-    ),
-    ReligiousDay(
-      name: 'Berat Gecesi',
-      date: '13 Mart 2025',
-      description: 'Şaban ayının 15. gecesi. Beraat gecesi olarak da bilinir.',
-      icon: '📿',
-      isUpcoming: true,
-    ),
-    ReligiousDay(
-      name: 'Ramazan Başlangıcı',
-      date: '1 Mart 2025',
-      description: 'Mübarek Ramazan ayının ilk günü. Oruç ibadeti başlar.',
-      icon: '🕌',
-      isUpcoming: true,
-    ),
-    ReligiousDay(
-      name: 'Kadir Gecesi',
-      date: '27 Mart 2025',
-      description: 'Bin aydan hayırlı olan gece. Kur\'ân bu gecede indirildi.',
-      icon: '⭐',
-      isUpcoming: true,
-    ),
-    ReligiousDay(
-      name: 'Ramazan Bayramı',
-      date: '30 Mart 2025',
-      description: 'Ramazan orucunun tamamlanmasının ardından kutlanan bayram.',
-      icon: '🎊',
-      isUpcoming: true,
-    ),
-    ReligiousDay(
-      name: 'Kurban Bayramı',
-      date: '6 Haziran 2025',
-      description: 'Hz. İbrahim\'in (a.s.) sünnetinin yaşatıldığı mübarek bayram.',
-      icon: '🌿',
-      isUpcoming: true,
-    ),
-  ];
+  final IslamicCalendarService _calendarService;
+
+  Future<void> init() async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final events = await _calendarService.getUpcomingEvents();
+      final days = _mapEventsToReligiousDays(events);
+
+      state = state.copyWith(
+        isLoading: false,
+        religiousDays: days,
+        islamicInfos: _infos,
+      );
+    } catch (_) {
+      final fallback = IslamicCalendarService.getFallback2026();
+      final days = _mapEventsToReligiousDays(fallback);
+
+      state = state.copyWith(
+        isLoading: false,
+        religiousDays: days,
+        islamicInfos: _infos,
+      );
+    }
+  }
+
+  List<ReligiousDay> _mapEventsToReligiousDays(List<IslamicEvent> events) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return events.map((event) {
+      final eventDay = DateTime(event.date.year, event.date.month, event.date.day);
+      final bool upcoming = !eventDay.isBefore(today);
+      final int daysLeft = eventDay.difference(today).inDays;
+      final String dateStr = DateFormat('d MMMM yyyy, EEEE', 'tr_TR').format(event.date);
+
+      return ReligiousDay(
+        name: event.name,
+        date: dateStr,
+        description: _getDescription(event.name),
+        icon: _getIcon(event.name),
+        isUpcoming: upcoming,
+        daysUntil: daysLeft,
+      );
+    }).toList();
+  }
+
+  String _getIcon(String name) {
+    const Map<String, String> icons = {
+      'Ramazan Bayramı': '🎊',
+      'Kurban Bayramı': '🌿',
+      'Kadir Gecesi': '⭐',
+      'Hicri Yılbaşı': '🕌',
+      'Aşure Günü': '📿',
+      'Mevlid Kandili': '🌙',
+      'Miraç Kandili': '✨',
+      'Berat Kandili': '📿',
+      'Regaib Kandili': '🌙',
+      'Ramazan Başlangıcı': '🕌',
+      'Üç Ayların Başlangıcı': '🌙',
+      'Arefe (Kurban)': '🌿',
+    };
+    return icons[name] ?? '🌙';
+  }
+
+  String _getDescription(String name) {
+    const Map<String, String> descriptions = {
+      'Ramazan Bayramı': 'Ramazan orucunun tamamlanmasının ardından kutlanan bayram.',
+      'Kurban Bayramı': 'Hz. İbrahim\'in (a.s.) sünnetinin yaşatıldığı mübarek bayram.',
+      'Kadir Gecesi': 'Bin aydan hayırlı olan gece. Kur\'ân bu gecede indirildi.',
+      'Hicri Yılbaşı': 'İslami takvimde yeni yılın başlangıcı.',
+      'Aşure Günü': 'Muharrem ayının 10. günü. Birçok önemli olayın yaşandığı gün.',
+      'Mevlid Kandili': 'Hz. Peygamber\'in (s.a.v.) doğum günü.',
+      'Miraç Kandili': 'Hz. Peygamber\'in (s.a.v.) Allah\'ın huzuruna yükseldiği gece.',
+      'Berat Kandili': 'Şaban ayının 15. gecesi. Beraat gecesi olarak da bilinir.',
+      'Regaib Kandili': 'Recep ayının ilk Cuma gecesi. Üç ayların başlangıcı.',
+      'Ramazan Başlangıcı': 'Mübarek Ramazan ayının ilk günü. Oruç ibadeti başlar.',
+      'Üç Ayların Başlangıcı': 'Recep, Şaban ve Ramazan aylarının başlangıcı.',
+      'Arefe (Kurban)': 'Kurban Bayramı\'ndan önceki gün. Hacıların Arafat\'a çıktığı gün.',
+    };
+    return descriptions[name] ?? '';
+  }
 
   static const List<IslamicInfo> _infos = [
     IslamicInfo(
@@ -153,14 +188,4 @@ class ContentNotifier extends StateNotifier<ContentState> {
       category: 'İbadet',
     ),
   ];
-
-  Future<void> init() async {
-    state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(milliseconds: 200));
-    state = state.copyWith(
-      isLoading: false,
-      religiousDays: _days,
-      islamicInfos: _infos,
-    );
-  }
 }

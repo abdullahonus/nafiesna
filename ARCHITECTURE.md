@@ -97,7 +97,7 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 | Tema Sistemi (Dark Mode) | ✅ Aktif | AppColors / AppTheme / AppTextStyles / AppSpacing |
 | Kod Üretimi (build_runner) | ✅ Aktif | auto_route_generator + injectable_generator |
 | AppInit Orkestrasyonu | ✅ Aktif | `lib/product/init/app_init.dart` |
-| Network (Dio) | ⬜ Planlandı | Henüz API çağrısı yok — eklenince Dio kurulacak |
+| Network (Dio + Chucker) | ✅ Aktif | `dio ^5.9.2` + `chucker_flutter ^1.9.1` (debug only), Aladhan tek kaynak |
 | Secure Storage | ⬜ Planlandı | Auth yokken gereksiz |
 | Shared Preferences | ⬜ Planlandı | Onboarding/ayar gelince eklenecek |
 | Firebase | ⬜ Planlandı | — |
@@ -119,8 +119,8 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 | Feature | Durum | Notlar |
 |---|---|---|
 | Tab Scaffold | ✅ Aktif | `lib/feature/tab/view/tab_view.dart` |
-| Ana Sayfa (home) | ✅ Aktif | YouTube kartı + günlük hadis (statik rotasyon) |
-| Namaz Vakitleri (prayer_times) | ✅ Aktif | Statik İstanbul vakitleri, Hicri tarih hesabı |
+| Ana Sayfa (home) | ✅ Aktif | YouTube kartı + namaz vakitleri barı + Hicri takvim kartı + günlük hadis |
+| Namaz Vakitleri (prayer_times) | ✅ Aktif | Aladhan API (method=13 Diyanet), GPS konum, Hicri tarih |
 | Kaside PDF (pdf) | ✅ Aktif | `syncfusion_flutter_pdfviewer`, continuous scroll |
 | Dini Bilgiler (content) | ✅ Aktif | TabBar: kandil takvimi + accordion bilgiler |
 
@@ -171,7 +171,7 @@ Presentation  →  Domain  ←  Data
 - Data katmanı Dio, storage vb. kullanabilir
 ```
 
-### Şu Anki Veri Akışı (MVP — Statik Veri)
+### Şu Anki Veri Akışı
 
 ```
 UI Widget
@@ -180,7 +180,7 @@ UI Widget
 Riverpod Provider
   │
   ▼
-Notifier (business logic + statik veri)
+Notifier → Service (Dio / API)
   │ State güncelleme
   ▼
 UI rebuild
@@ -207,7 +207,9 @@ lib/
 │   │   │   └── home_view.dart
 │   │   └── widgets/
 │   │       ├── hadith_card.dart
-│   │       └── live_stream_card.dart
+│   │       ├── hijri_calendar_card.dart (Hicri takvim + ay illüstrasyonu + etkinlik geri sayımı)
+│   │       ├── live_stream_card.dart
+│   │       └── prayer_times_bar.dart  (Namaz vakitleri + büyük geri sayım)
 │   │
 │   ├── prayer_times/
 │   │   ├── notifier/
@@ -232,6 +234,12 @@ lib/
 │   └── tab/
 │       └── view/
 │           └── tab_view.dart          (AutoTabsScaffold, bottom nav)
+│
+├── service/
+│   ├── hadith_service.dart              (HadeethEnc API + sayfa cache)
+│   ├── islamic_calendar_service.dart    (Aladhan gToHCalendar → dini günler, session cache)
+│   ├── location_service.dart            (GPS + Nominatim ters geocoding)
+│   └── prayer_times_service.dart        (Aladhan namaz vakitleri + Hicri tarih)
 │
 └── product/
     ├── constants/
@@ -415,15 +423,26 @@ AppRouter
 
 ## 8. Network Katmanı
 
-> **Durum:** ⬜ Planlandı — Şu an API çağrısı yok, statik veri kullanılıyor.
+> **Durum:** ✅ Aktif — Dio ile API çağrıları yapılıyor.
 
-### Eklendiğinde Kurulacak Yapı
+### Aktif Yapı
 
-- Araç: **Dio**
-- Interceptors: AuthInterceptor, ErrorInterceptor, LoggingInterceptor
+- Araç: **Dio** (`dio ^5.9.2`)
+- Yapılandırma: `lib/product/init/network/network_config.dart`
+- 3 ayrı Dio instance: aladhanDio, hadeethEncDio, nominatimDio
+- Debug HTTP Logger: **Chucker** (`chucker_flutter ^1.9.1`) — sadece `kDebugMode`'da aktif
+
+### Chucker (Debug Network Inspector)
+
+```
+Etkinleştirme : kDebugMode → otomatik (interceptor + navigator observer)
+Ekran açma    : Uygulama içi bildirime tıkla veya ChuckerFlutter.showChuckerScreen()
+Güvenlik      : Production'da tamamen devre dışı (kDebugMode guard)
+```
+
+### Planlanan İyileştirmeler
+
 - Environment: `--dart-define=ENV=prod` ile build-time URL yönetimi
-
-> Dio'yu `pubspec.yaml`'a ekleme; API entegrasyonu gelince ekle.
 
 ---
 
@@ -450,18 +469,30 @@ AppRouter
 
 | Servis | Açıklama | Dosya | Not |
 |---|---|---|---|
-| **prayertimes.api.abdus.dev** | Diyanet İşleri verisi — namaz vakitleri | `prayer_times_service.dart` | Ücretsiz, kayıtsız, location_id bazlı |
-| **api.aladhan.com/v1/gToH** | Gregoryen → Hicri tarih dönüşümü | `prayer_times_service.dart` | Sadece tarih için, hesaplama değil |
-| **hadeethenc.com/api/v1** | Türkçe hadisler (20+ dil, tam metin) | `hadith_service.dart` | Ücretsiz, kayıtsız, Kategori 5 = Faziletler |
+| **api.aladhan.com/v1** | Namaz vakitleri (method=13 Diyanet) + Hicri tarih | `prayer_times_service.dart` | Tek kaynak, şehir + koordinat bazlı, her zaman güncel |
+| **api.aladhan.com/v1** | Hicri takvim + dini günler (gToHCalendar) | `islamic_calendar_service.dart` | holidays dizisi + Hicri tarih bazlı Kandil tespiti, session cache |
+| **hadeethenc.com/api/v1** | Türkçe hadisler (20+ dil, tam metin) | `hadith_service.dart` | Ücretsiz, kayıtsız, Kategori 5 = Faziletler, sayfa cache |
 
 ### API Detayları
 
-#### Namaz Vakitleri — Diyanet
+#### Namaz Vakitleri — Aladhan (api.aladhan.com)
 ```
-Endpoint : GET /prayertimes?location_id={id}
-Örnek ID : 9541 = İSTANBUL merkez
-Alanlar  : fajr, sun, dhuhr, asr, maghrib, isha
-İmsak    : fajr - 10 dk (Türkiye standardı, API vermez)
+Şehir    : GET /v1/timingsByCity/{DD-MM-YYYY}?city=Istanbul&country=Turkey&method=13
+Koordinat: GET /v1/timings/{DD-MM-YYYY}?latitude={lat}&longitude={lng}&method=13
+Method 13: Diyanet İşleri Başkanlığı hesaplama yöntemi
+Mapping  : Fajr → İmsak, Sunrise → Güneş, Dhuhr → Öğle, Asr → İkindi, Maghrib → Akşam, Isha → Yatsı
+Hicri    : data.date.hijri objesi (Arapça ay adı → Türkçe dönüşüm kodda)
+Not      : Diyanet ile max 1 dk fark — kabul edilebilir
+```
+
+#### Hicri Takvim & Dini Günler — Aladhan (gToHCalendar)
+```
+Takvim   : GET /v1/gToHCalendar/{month}/{year}
+Veri     : Her gün → hijri.holidays dizisi (Eid-ul-Fitr, Lailat-ul-Qadr vb.)
+Kandiller: hijri.day + hijri.month.number ile hesaplanır (27 Receb = Miraç, 15 Şaban = Berat)
+Strateji : Mevcut ay + 5 sonraki ay paralel çekilir → session boyunca cache
+TR Map   : Eid-ul-Fitr → Ramazan Bayramı, Eid-ul-Adha → Kurban Bayramı vb.
+Fallback : API başarısızsa Diyanet 2026 verisine dayalı statik liste
 ```
 
 #### Hadis — HadeethEnc
@@ -470,6 +501,7 @@ Liste    : GET /hadeeths/list/?language=tr&category_id=5&page={p}&per_page=20
 Detay    : GET /hadeeths/one/?language=tr&id={id}
 Rotasyon : dayOfYear % 35 → sayfa, dayOfYear % 20 → sıra
 Alanlar  : hadeeth (TR), hadeeth_ar (AR), attribution, grade
+Cache    : Sayfa bazlı in-memory cache (aynı 20-gün periyodunda tek API çağrısı)
 ```
 
 ### Planlanan Entegrasyonlar
@@ -653,6 +685,23 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-17 | `PrayerTimesNotifier` konum durumu eklendi (`LocationStatus`) | İzin yönetimi |
 | 2026-03-17 | `PrayerTimesView` izin banneri + GPS ikonu eklendi | Kullanıcıya konum bilgisi |
 | 2026-03-17 | iOS Info.plist + Android Manifest konum izinleri eklendi | Native entegrasyon |
+| 2026-03-17 | Konum izni AppInit'e taşındı — uygulama açılışında isteniyor | Kullanıcı deneyimi: erken izin alma |
+| 2026-03-17 | **prayertimes.api.abdus.dev** → **ezanvakti.imsakiyem.com** | Diyanet orijinal verisi, imsak dahil, Hicri tarih Türkçe, aktif bakım |
+| 2026-03-17 | `fajr - 10 dk` imsak hack'i kaldırıldı | Yeni API imsak saatini doğrudan veriyor |
+| 2026-03-17 | Hicri tarih için ayrı Aladhan çağrısı kaldırıldı | Yeni API Hicri tarihi Türkçe dahil ediyor |
+| 2026-03-17 | Model Türkçe alanlara geçirildi: gunes, ogle, ikindi, aksam, yatsi | ezanvakti.imsakiyem.com Türkçe response |
+| 2026-03-17 | Ana sayfaya `PrayerTimesBar` eklendi (LiveStreamCard altı) | Kompakt vakitler + sonraki vakte geri sayım |
+| 2026-03-17 | `chucker_flutter` eklendi — debug HTTP inspector | API isteklerini/yanıtlarını uygulama içinden izleme |
+| 2026-03-17 | `intl` ^0.19.0 → ^0.20.2, `syncfusion_flutter_pdfviewer` ^27.1.48 → ^28.2.7 | chucker_flutter uyumluluğu |
+| 2026-03-17 | **ezanvakti.imsakiyem.com** kaldırıldı → **api.aladhan.com** tek kaynak | ezanvakti stale veri döndürüyordu (güncellenmemiş), Aladhan her zaman güncel |
+| 2026-03-17 | İmsak mapping düzeltildi: Aladhan Fajr → İmsak | Aladhan "Imsak" = Fajr-10dk (yanlış), Diyanet İmsak = Aladhan Fajr (doğru) |
+| 2026-03-17 | `diyanetDio` instance kaldırıldı, NetworkConfig 4→3 Dio | ezanvakti API artık kullanılmıyor |
+| 2026-03-17 | GPS akışı sadeleştirildi: Nominatim + Aladhan paralel çağrı | 4 ardışık API → GPS + 2 paralel = ~%50 hız artışı |
+| 2026-03-17 | `searchDiyanetLocationId` metodu kaldırıldı | Diyanet district_id arama artık gereksiz |
+| 2026-03-17 | HadithService sayfa bazlı in-memory cache eklendi | Aynı 20-gün periyodunda 2 API → 1 API çağrısı |
+| 2026-03-17 | `IslamicCalendarService` oluşturuldu | Aladhan gToHCalendar API ile canlı dini günler (statik veri kaldırıldı) |
+| 2026-03-17 | HijriCalendarCard canlı API'ye bağlandı | Hardcoded event listesi → FutureProvider + API, fallback korundu |
+| 2026-03-17 | ContentNotifier canlı API'ye geçirildi | Dini günler artık IslamicCalendarService üzerinden geliyor |
 
 ---
 

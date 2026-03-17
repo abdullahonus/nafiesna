@@ -10,6 +10,9 @@ import '../../../product/widget/common/app_loading_indicator.dart';
 import '../../../product/widget/common/app_error_state.dart';
 import '../widgets/hadith_card.dart';
 import '../widgets/live_stream_card.dart';
+import '../widgets/prayer_times_bar.dart';
+import '../widgets/hijri_calendar_card.dart';
+import '../../prayer_times/provider/prayer_times_provider.dart';
 
 @RoutePage()
 class HomeView extends ConsumerStatefulWidget {
@@ -23,7 +26,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(homeProvider.notifier).init());
+    Future.microtask(() {
+      ref.read(homeProvider.notifier).init();
+      ref.read(prayerTimesProvider.notifier).init();
+    });
   }
 
   @override
@@ -79,6 +85,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const LiveStreamCard(),
+                  const SizedBox(height: AppSpacing.md),
+                  const PrayerTimesBar(),
+                  const SizedBox(height: AppSpacing.md),
+                  const HijriCalendarCard(),
                   const SizedBox(height: AppSpacing.xl),
                   _buildHadithSection(state),
                 ],

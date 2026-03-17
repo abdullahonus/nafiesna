@@ -29,14 +29,15 @@ dependencies:
   # UI
 
   # Utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   json_annotation: ^4.9.0
 
   # PDF Viewer
-  syncfusion_flutter_pdfviewer: ^27.1.48
+  syncfusion_flutter_pdfviewer: ^28.2.7
   dio: ^5.9.2
   url_launcher: ^6.3.2
   geolocator: ^14.0.2
+  chucker_flutter: ^1.9.1
 
 dev_dependencies:
   flutter_test:

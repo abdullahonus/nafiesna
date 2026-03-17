@@ -34,6 +34,14 @@ class LiveStreamCard extends StatelessWidget {
           colors: [AppColors.surface, AppColors.surfaceVariant],
         ),
         border: Border.all(color: AppColors.border, width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accent.withValues(alpha: 0.08),
+            blurRadius: 16,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

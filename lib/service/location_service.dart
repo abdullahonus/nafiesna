@@ -78,27 +78,6 @@ class LocationService {
     }
   }
 
-  /// Diyanet API konum araması: şehir adından location_id bulur.
-  /// Türkiye dışındaki şehirler için null döner.
-  Future<int?> searchDiyanetLocationId(String cityName) async {
-    try {
-      final dio = NetworkConfig.diyanetDio;
-      final response = await dio.get<List<dynamic>>(
-        '/search',
-        queryParameters: {'q': cityName},
-      );
-
-      final results = response.data ?? [];
-      if (results.isEmpty) return null;
-
-      // İlk sonucun ID'sini al (Diyanet en yakın eşleşmeyi döner)
-      final first = results.first as Map<String, dynamic>;
-      return first['id'] as int?;
-    } catch (_) {
-      return null;
-    }
-  }
-
   // ── Ayarlar ───────────────────────────────────────────────────────────────
 
   Future<void> openAppSettings() => Geolocator.openAppSettings();

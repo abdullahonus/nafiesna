@@ -108,7 +108,7 @@ class PrayerTimesNotifier extends StateNotifier<PrayerTimesState> {
 
   // ── Başlangıç ─────────────────────────────────────────────────────────────
 
-  /// İlk yükleme: GPS konumunu dener, başarısız olursa İstanbul varsayılanı.
+  /// İlk yükleme: GPS konumunu dener, yoksa şehir bazlı API çağrısı yapar.
   Future<void> init() async {
     state = state.copyWith(isLoading: true, clearError: true);
 
@@ -116,7 +116,7 @@ class PrayerTimesNotifier extends StateNotifier<PrayerTimesState> {
     final serviceEnabled = await _locationService.isLocationServiceEnabled();
     if (!serviceEnabled) {
       state = state.copyWith(locationStatus: LocationStatus.serviceDisabled);
-      _loadFallback();
+      await _loadDefaultCity();
       return;
     }
 
@@ -124,12 +124,11 @@ class PrayerTimesNotifier extends StateNotifier<PrayerTimesState> {
     final permission = await _locationService.checkPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      // İzin yok → İstanbul varsayılanı yükle, UI'da izin isteği göster
       final status = permission == LocationPermission.deniedForever
           ? LocationStatus.deniedForever
           : LocationStatus.denied;
       state = state.copyWith(locationStatus: status);
-      _loadFallback();
+      await _loadDefaultCity();
       return;
     }
 
@@ -183,28 +182,20 @@ class PrayerTimesNotifier extends StateNotifier<PrayerTimesState> {
       final lat = position.latitude;
       final lng = position.longitude;
 
-      // Şehir adını Nominatim'den al
-      final cityName = await _locationService.getCityName(lat, lng);
+      // Paralel: şehir adı + namaz vakitleri aynı anda
+      final results = await Future.wait<Object?>([
+        _locationService.getCityName(lat, lng),
+        _repository.getTodayTimingsByCoordinates(
+          latitude: lat,
+          longitude: lng,
+        ),
+      ]);
 
-      // Diyanet'te şehri ara (Türkiye içi)
-      int? locationId;
-      String displayName = cityName ?? 'Bilinmiyor';
-
-      if (cityName != null && cityName.isNotEmpty) {
-        locationId = await _locationService.searchDiyanetLocationId(cityName);
-      }
-
-      final model = await _repository.getTodayTimingsByCoordinates(
-        latitude: lat,
-        longitude: lng,
-        locationId: locationId,
-      );
+      final cityName = results[0] as String?;
+      final model = results[1] as PrayerTimesModel;
 
       final prayers = _buildPrayerList(model.timings);
       final now = DateTime.now();
-
-      // Kaynak bilgisini etiketle
-      final sourceLabel = locationId != null ? ' — Diyanet' : '';
 
       state = state.copyWith(
         isLoading: false,
@@ -213,12 +204,33 @@ class PrayerTimesNotifier extends StateNotifier<PrayerTimesState> {
         currentPrayerIndex: _findCurrentPrayer(prayers, now),
         dateLabel: DateFormat('d MMMM yyyy, EEEE', 'tr_TR').format(now),
         hijriDate: model.hijriDate.formatted,
-        locationName: '$displayName$sourceLabel',
+        locationName: cityName ?? 'GPS Konum',
       );
-    } catch (e) {
-      // GPS / ağ hatası → fallback
+    } catch (_) {
       state = state.copyWith(locationStatus: LocationStatus.permitted);
-      _loadFallback();
+      await _loadDefaultCity();
+    }
+  }
+
+  // ── Varsayılan şehir ile API çağrısı (GPS yokken) ──────────────────────
+
+  Future<void> _loadDefaultCity() async {
+    try {
+      final model = await _repository.getTodayTimings();
+
+      final prayers = _buildPrayerList(model.timings);
+      final now = DateTime.now();
+
+      state = state.copyWith(
+        isLoading: false,
+        prayers: prayers,
+        currentPrayerIndex: _findCurrentPrayer(prayers, now),
+        dateLabel: DateFormat('d MMMM yyyy, EEEE', 'tr_TR').format(now),
+        hijriDate: model.hijriDate.formatted,
+        locationName: 'İstanbul (varsayılan)',
+      );
+    } catch (_) {
+      _loadHardcodedFallback();
     }
   }
 
@@ -239,11 +251,11 @@ class PrayerTimesNotifier extends StateNotifier<PrayerTimesState> {
   List<PrayerTime> _buildPrayerList(PrayerTimingsData timings) {
     return [
       PrayerTime(name: 'İmsak', time: timings.imsak, icon: '🌙'),
-      PrayerTime(name: 'Sabah', time: timings.fajr, icon: '🌅'),
-      PrayerTime(name: 'Öğle', time: timings.dhuhr, icon: '☀️'),
-      PrayerTime(name: 'İkindi', time: timings.asr, icon: '🌤'),
-      PrayerTime(name: 'Akşam', time: timings.maghrib, icon: '🌆'),
-      PrayerTime(name: 'Yatsı', time: timings.isha, icon: '🌃'),
+      PrayerTime(name: 'Güneş', time: timings.gunes, icon: '🌅'),
+      PrayerTime(name: 'Öğle', time: timings.ogle, icon: '☀️'),
+      PrayerTime(name: 'İkindi', time: timings.ikindi, icon: '🌤'),
+      PrayerTime(name: 'Akşam', time: timings.aksam, icon: '🌆'),
+      PrayerTime(name: 'Yatsı', time: timings.yatsi, icon: '🌃'),
     ];
   }
 
@@ -260,9 +272,9 @@ class PrayerTimesNotifier extends StateNotifier<PrayerTimesState> {
     return current;
   }
 
-  // ── Fallback (ağ/GPS yoksa İstanbul ortalaması) ───────────────────────────
+  // ── Son çare: ağ da yoksa hardcoded İstanbul ortalaması ─────────────────
 
-  void _loadFallback() {
+  void _loadHardcodedFallback() {
     final now = DateTime.now();
     final month = now.month;
 
@@ -286,11 +298,11 @@ class PrayerTimesNotifier extends StateNotifier<PrayerTimesState> {
 
     final timings = PrayerTimingsData(
       imsak: times[0],
-      fajr: times[1],
-      dhuhr: times[2],
-      asr: times[3],
-      maghrib: times[4],
-      isha: times[5],
+      gunes: times[1],
+      ogle: times[2],
+      ikindi: times[3],
+      aksam: times[4],
+      yatsi: times[5],
     );
 
     final prayers = _buildPrayerList(timings);

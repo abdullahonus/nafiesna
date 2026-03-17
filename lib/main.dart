@@ -1,3 +1,5 @@
+import 'package:chucker_flutter/chucker_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'product/init/app_init.dart';
@@ -25,7 +27,11 @@ class NafiesnaApp extends ConsumerWidget {
       title: 'NafieSna',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
-      routerConfig: router.config(),
+      routerConfig: router.config(
+        navigatorObservers: () => [
+          if (kDebugMode) ChuckerFlutter.navigatorObserver,
+        ],
+      ),
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: TextScaler.noScaling,

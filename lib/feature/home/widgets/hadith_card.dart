@@ -28,6 +28,14 @@ class HadithCard extends StatelessWidget {
           color: AppColors.primary.withValues(alpha: 0.3),
           width: 0.8,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accent.withValues(alpha: 0.06),
+            blurRadius: 12,
+            spreadRadius: 0,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
