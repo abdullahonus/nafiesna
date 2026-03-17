@@ -46,35 +46,19 @@ class _HomeViewState extends ConsumerState<HomeView> {
             snap: true,
             backgroundColor: AppColors.surface,
             elevation: 0,
+            centerTitle: true,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(
-                left: AppSpacing.lg,
-                bottom: AppSpacing.md,
-              ),
-              title: Row(
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                    ),
-                    child: const Icon(
-                      Icons.mosque_rounded,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'Nafiesna',
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: AppColors.accent,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
+              centerTitle: true,
+              titlePadding: const EdgeInsets.only(bottom: AppSpacing.md),
+              title: Text(
+                'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيمِ',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  color: AppColors.accent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  fontFamily: 'serif',
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
           ),

@@ -80,17 +80,23 @@ class LiveStreamCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 64,
-                      height: 64,
+                      width: 68,
+                      height: 48,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.primary, width: 2),
-                        color: AppColors.primary.withValues(alpha: 0.15),
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withValues(alpha: 0.4),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ],
                       ),
                       child: const Icon(
-                        Icons.play_circle_filled_rounded,
-                        color: AppColors.primary,
-                        size: 40,
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 36,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -137,15 +143,14 @@ class LiveStreamCard extends StatelessWidget {
         children: [
           Container(
             width: 36,
-            height: 36,
+            height: 26,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.2),
-              border: Border.all(color: AppColors.primary, width: 1.5),
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
-              Icons.mosque_rounded,
-              color: AppColors.primary,
+              Icons.play_arrow_rounded,
+              color: Colors.white,
               size: 18,
             ),
           ),

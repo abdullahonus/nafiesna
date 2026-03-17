@@ -98,6 +98,7 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 | Kod Üretimi (build_runner) | ✅ Aktif | auto_route_generator + injectable_generator |
 | AppInit Orkestrasyonu | ✅ Aktif | `lib/product/init/app_init.dart` |
 | Network (Dio + Chucker) | ✅ Aktif | `dio ^5.9.2` + `chucker_flutter ^1.9.1` (debug only), Aladhan tek kaynak |
+| Pusula (flutter_compass) | ✅ Aktif | `flutter_compass ^0.8.1` — manyetometre ile cihaz yönü, kıble bulucu |
 | Secure Storage | ⬜ Planlandı | Auth yokken gereksiz |
 | Shared Preferences | ⬜ Planlandı | Onboarding/ayar gelince eklenecek |
 | Firebase | ⬜ Planlandı | — |
@@ -120,7 +121,7 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 |---|---|---|
 | Tab Scaffold | ✅ Aktif | `lib/feature/tab/view/tab_view.dart` |
 | Ana Sayfa (home) | ✅ Aktif | YouTube kartı + namaz vakitleri barı + Hicri takvim kartı + günlük hadis |
-| Namaz Vakitleri (prayer_times) | ✅ Aktif | Aladhan API (method=13 Diyanet), GPS konum, Hicri tarih |
+| Namaz Vakitleri (prayer_times) | ✅ Aktif | Aladhan API (method=13 Diyanet), GPS konum, Hicri tarih, Kıble Bulucu (flutter_compass) |
 | Kaside PDF (pdf) | ✅ Aktif | `syncfusion_flutter_pdfviewer`, continuous scroll |
 | Dini Bilgiler (content) | ✅ Aktif | TabBar: kandil takvimi + accordion bilgiler |
 
@@ -213,11 +214,15 @@ lib/
 │   │
 │   ├── prayer_times/
 │   │   ├── notifier/
-│   │   │   └── prayer_times_notifier.dart  (PrayerTimesNotifier + State + PrayerTime)
+│   │   │   ├── prayer_times_notifier.dart  (PrayerTimesNotifier + State + PrayerTime)
+│   │   │   └── qibla_notifier.dart         (QiblaNotifier + QiblaState)
 │   │   ├── provider/
-│   │   │   └── prayer_times_provider.dart
-│   │   └── view/
-│   │       └── prayer_times_view.dart
+│   │   │   ├── prayer_times_provider.dart
+│   │   │   └── qibla_provider.dart
+│   │   ├── view/
+│   │   │   └── prayer_times_view.dart
+│   │   └── widgets/
+│   │       └── qibla_compass_view.dart     (Fullscreen kıble pusulası UI)
 │   │
 │   ├── pdf/
 │   │   └── view/
@@ -239,7 +244,8 @@ lib/
 │   ├── hadith_service.dart              (HadeethEnc API + sayfa cache)
 │   ├── islamic_calendar_service.dart    (Aladhan gToHCalendar → dini günler, session cache)
 │   ├── location_service.dart            (GPS + Nominatim ters geocoding)
-│   └── prayer_times_service.dart        (Aladhan namaz vakitleri + Hicri tarih)
+│   ├── prayer_times_service.dart        (Aladhan namaz vakitleri + Hicri tarih)
+│   └── qibla_service.dart               (Kıble yönü hesaplama + pusula stream)
 │
 └── product/
     ├── constants/
@@ -702,6 +708,9 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-17 | `IslamicCalendarService` oluşturuldu | Aladhan gToHCalendar API ile canlı dini günler (statik veri kaldırıldı) |
 | 2026-03-17 | HijriCalendarCard canlı API'ye bağlandı | Hardcoded event listesi → FutureProvider + API, fallback korundu |
 | 2026-03-17 | ContentNotifier canlı API'ye geçirildi | Dini günler artık IslamicCalendarService üzerinden geliyor |
+| 2026-03-17 | `flutter_compass` paketi eklendi | Cihaz manyetometre sensörü ile pusula heading |
+| 2026-03-17 | `QiblaService` oluşturuldu | Great Circle formülü ile kıble açısı hesaplama (API gerektirmez) |
+| 2026-03-17 | Kıble Bulucu (QiblaCompassView) eklendi | Namaz tab'ında pusula UI, canlı yön gösterme, mesafe bilgisi |
 
 ---
 
