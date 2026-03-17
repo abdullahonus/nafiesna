@@ -1,24 +1,37 @@
 ---
-description: NafieSna Flutter projesi için mimari rehber. Her geliştirme adımında ARCHITECTURE.md okunmalı, orada olmayan yapı oluşturulmamalı.
-globs: lib/**/*.dart
+description: "ZORUNLU: Her geliştirme görevinde ARCHITECTURE.md dosyasını Read tool ile oku, sonra kodla. Orada olmayan yapıyı oluşturma."
 alwaysApply: true
 ---
 
 # NafieSna — Mimari Rehber
 
-> **Referans Doküman:** `ARCHITECTURE.md` (proje kökünde)  
-> Her kod yazmadan önce bu dosyayı oku. Orada olmayan yapıyı oluşturma.
+> **MUTLAK KURAL — İSTİSNASIZ:**
+> Her geliştirme görevi başladığında, herhangi bir kod yazmadan veya düzenlemeden **ÖNCE**,
+> `ARCHITECTURE.md` dosyasını Read tool ile oku. Bu adım atlanamaz.
 
 ---
 
-## Temel Kural
+## Zorunlu İlk Adım (Her Görevde)
 
 ```
-1. ARCHITECTURE.md → Bölüm 2 "Faz Durumu"nu oku
-2. İstenen yapı ✅ Aktif mi? → Mevcut desene uyu
-3. ⬜ Planlandı mı? → Önce dokümana kaydet, sonra yaz
-4. ❌ Kullanılmıyor mu? → Oluşturma
-5. Emin değilsen kullanıcıya sor. Tahminle ekleme yapma.
+ADIM 0 — ARCHITECTURE.md OKUMA (ATLANAMAZ)
+─────────────────────────────────────────
+Her yeni kullanıcı isteğinde, kod değişikliği yapmadan ÖNCE:
+  → Read tool ile ARCHITECTURE.md dosyasını oku
+  → Bölüm 2 "Faz Durumu" tablosunu kontrol et
+  → Mevcut yapılara, aktif paketlere ve klasör düzenine uy
+  → Ancak bundan SONRA kodlamaya başla
+
+Bu kural debug, refactor, yeni feature, bug fix — HER durum için geçerlidir.
+```
+
+## Karar Akışı (ARCHITECTURE.md Okuduktan Sonra)
+
+```
+1. İstenen yapı ✅ Aktif mi? → Mevcut desene uyu
+2. ⬜ Planlandı mı? → Önce ARCHITECTURE.md'ye kaydet, sonra yaz
+3. ❌ Kullanılmıyor mu? → Oluşturma
+4. Emin değilsen kullanıcıya sor. Tahminle ekleme yapma.
 ```
 
 ---
