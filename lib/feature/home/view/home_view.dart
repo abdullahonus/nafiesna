@@ -31,7 +31,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final state = ref.watch(homeProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(

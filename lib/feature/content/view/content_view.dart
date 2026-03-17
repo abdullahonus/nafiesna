@@ -38,7 +38,7 @@ class _ContentViewState extends ConsumerState<ContentView>
     final state = ref.watch(contentProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Dini Bilgiler'),
         backgroundColor: AppColors.surface,

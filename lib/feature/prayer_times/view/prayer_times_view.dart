@@ -30,7 +30,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
     final state = ref.watch(prayerTimesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Namaz Vakitleri'),
         backgroundColor: AppColors.surface,
