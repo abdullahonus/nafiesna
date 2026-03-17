@@ -100,7 +100,8 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 | Network (Dio + Chucker) | ✅ Aktif | `dio ^5.9.2` + `chucker_flutter ^1.9.1` (debug only), Aladhan tek kaynak |
 | Pusula (flutter_compass) | ✅ Aktif | `flutter_compass ^0.8.1` — manyetometre ile cihaz yönü, kıble bulucu |
 | Secure Storage | ⬜ Planlandı | Auth yokken gereksiz |
-| Shared Preferences | ⬜ Planlandı | Onboarding/ayar gelince eklenecek |
+| Shared Preferences | ✅ Aktif | `shared_preferences` — Kazalar sayacı (key-value) |
+| Local DB (sqflite) | ✅ Aktif | `sqflite` — Rüya defteri CRUD |
 | Firebase | ⬜ Planlandı | — |
 | Push Notification | ⬜ Planlandı | — |
 | Deeplink | ⬜ Planlandı | — |
@@ -123,7 +124,7 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 | Ana Sayfa (home) | ✅ Aktif | YouTube kartı + namaz vakitleri barı + Hicri takvim kartı + günlük hadis |
 | Namaz Vakitleri (prayer_times) | ✅ Aktif | Aladhan API (method=13 Diyanet), GPS konum, Hicri tarih, Kıble Bulucu (flutter_compass) |
 | Kaside PDF (pdf) | ✅ Aktif | `syncfusion_flutter_pdfviewer`, continuous scroll |
-| Dini Bilgiler (content) | ✅ Aktif | TabBar: kandil takvimi + accordion bilgiler |
+| Menü (content) | ✅ Aktif | Grid menü: Dini Günler, Yakın Camiler, Kazalar, Rüya Defteri, İslami Bilgiler |
 
 > Yeni feature eklendiğinde bu tabloya satır ekle ve durumu güncelle.
 
@@ -233,8 +234,14 @@ lib/
 │   │   │   └── content_notifier.dart  (ContentNotifier + State + ReligiousDay + IslamicInfo)
 │   │   ├── provider/
 │   │   │   └── content_provider.dart
-│   │   └── view/
-│   │       └── content_view.dart
+│   │   ├── view/
+│   │   │   └── content_view.dart       (Grid menü — 3x2 kart)
+│   │   └── widgets/
+│   │       ├── religious_days_page.dart  (Dini günler listesi — API'den canlı)
+│   │       ├── missed_prayers_page.dart  (Kazalar sayacı — SharedPreferences)
+│   │       ├── dream_journal_page.dart   (Rüya defteri — sqflite CRUD)
+│   │       ├── nearby_mosques_page.dart  (Yakın camiler — Overpass API)
+│   │       └── islamic_info_page.dart    (İslami bilgiler — accordion)
 │   │
 │   └── tab/
 │       └── view/
@@ -244,6 +251,9 @@ lib/
 │   ├── hadith_service.dart              (HadeethEnc API + sayfa cache)
 │   ├── islamic_calendar_service.dart    (Aladhan gToHCalendar → dini günler, session cache)
 │   ├── location_service.dart            (GPS + Nominatim ters geocoding)
+│   ├── missed_prayer_service.dart       (Kazalar — SharedPreferences CRUD)
+│   ├── dream_journal_service.dart       (Rüya defteri — sqflite CRUD)
+│   ├── nearby_mosques_service.dart      (Overpass API — yakın cami arama)
 │   ├── prayer_times_service.dart        (Aladhan namaz vakitleri + Hicri tarih)
 │   └── qibla_service.dart               (Kıble yönü hesaplama + pusula stream)
 │
@@ -478,6 +488,9 @@ Güvenlik      : Production'da tamamen devre dışı (kDebugMode guard)
 | **api.aladhan.com/v1** | Namaz vakitleri (method=13 Diyanet) + Hicri tarih | `prayer_times_service.dart` | Tek kaynak, şehir + koordinat bazlı, her zaman güncel |
 | **api.aladhan.com/v1** | Hicri takvim + dini günler (gToHCalendar) | `islamic_calendar_service.dart` | holidays dizisi + Hicri tarih bazlı Kandil tespiti, session cache |
 | **hadeethenc.com/api/v1** | Türkçe hadisler (20+ dil, tam metin) | `hadith_service.dart` | Ücretsiz, kayıtsız, Kategori 5 = Faziletler, sayfa cache |
+| **overpass-api.de** | Yakın camiler (OpenStreetMap) | `nearby_mosques_service.dart` | amenity=place_of_worship + religion=muslim, 3km yarıçap |
+| **SharedPreferences** | Kazalar sayacı (local) | `missed_prayer_service.dart` | Sabah/Öğle/İkindi/Akşam/Yatsı/Vitr/Oruç sayaçları |
+| **sqflite** | Rüya defteri (local DB) | `dream_journal_service.dart` | CRUD, tarih/saat otomatik, düzenleme desteği |
 
 ### API Detayları
 
@@ -711,6 +724,13 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-17 | `flutter_compass` paketi eklendi | Cihaz manyetometre sensörü ile pusula heading |
 | 2026-03-17 | `QiblaService` oluşturuldu | Great Circle formülü ile kıble açısı hesaplama (API gerektirmez) |
 | 2026-03-17 | Kıble Bulucu (QiblaCompassView) eklendi | Namaz tab'ında pusula UI, canlı yön gösterme, mesafe bilgisi |
+| 2026-03-17 | Content tab grid menü yapısına dönüştürüldü | TabBar → 3 sütunlu kart grid (screenshot referanslı) |
+| 2026-03-17 | `shared_preferences`, `sqflite`, `path` eklendi | Kazalar + Rüya defteri local storage |
+| 2026-03-17 | Dini Günler sayfası eklendi | IslamicCalendarService API'den canlı dini günler listesi |
+| 2026-03-17 | Kazalar sayacı eklendi | SharedPreferences ile kalıcı, +/- butonlu, topluca düzenleme |
+| 2026-03-17 | Rüya Defteri eklendi | sqflite CRUD, başlık + içerik + tarih, düzenleme + silme |
+| 2026-03-17 | Yakın Camiler eklendi | Overpass API (OSM), 3km yarıçap, mesafe, harita yönlendirme |
+| 2026-03-17 | İslami Bilgiler ayrı sayfaya taşındı | Content grid menüden erişim |
 
 ---
 
