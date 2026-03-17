@@ -444,19 +444,38 @@ AppRouter
 
 ## 10. Servisler & Entegrasyonlar
 
-> **Durum:** ⬜ Planlandı
+> **Durum:** ✅ Aktif
 
 ### Aktif Servisler
 
-| Servis | Dosya | Durum |
-|---|---|---|
-| — | — | — |
+| Servis | Açıklama | Dosya | Not |
+|---|---|---|---|
+| **prayertimes.api.abdus.dev** | Diyanet İşleri verisi — namaz vakitleri | `prayer_times_service.dart` | Ücretsiz, kayıtsız, location_id bazlı |
+| **api.aladhan.com/v1/gToH** | Gregoryen → Hicri tarih dönüşümü | `prayer_times_service.dart` | Sadece tarih için, hesaplama değil |
+| **hadeethenc.com/api/v1** | Türkçe hadisler (20+ dil, tam metin) | `hadith_service.dart` | Ücretsiz, kayıtsız, Kategori 5 = Faziletler |
+
+### API Detayları
+
+#### Namaz Vakitleri — Diyanet
+```
+Endpoint : GET /prayertimes?location_id={id}
+Örnek ID : 9541 = İSTANBUL merkez
+Alanlar  : fajr, sun, dhuhr, asr, maghrib, isha
+İmsak    : fajr - 10 dk (Türkiye standardı, API vermez)
+```
+
+#### Hadis — HadeethEnc
+```
+Liste    : GET /hadeeths/list/?language=tr&category_id=5&page={p}&per_page=20
+Detay    : GET /hadeeths/one/?language=tr&id={id}
+Rotasyon : dayOfYear % 35 → sayfa, dayOfYear % 20 → sıra
+Alanlar  : hadeeth (TR), hadeeth_ar (AR), attribution, grade
+```
 
 ### Planlanan Entegrasyonlar
 
 | Servis | Neden | Koşul |
 |---|---|---|
-| Aladhan / Diyanet API | Dinamik namaz vakitleri | Statik veri yetersiz olunca |
 | YouTube Data API | Canlı yayın embed / thumbnail | UI geliştirme ihtiyacı |
 | Firebase Messaging | Push bildirim | Bildirim özelliği istenince |
 
@@ -623,6 +642,10 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-17 | Kullanılmayan paketler (dio, flutter_secure_storage, flutter_svg, flutter_screenutil) kaldırıldı | Minimal mimari kuralı |
 | 2026-03-17 | Boş klasörler (data/, domain/, service/, features/) silindi | Minimal mimari kuralı |
 | 2026-03-17 | AppEmptyState silindi | Hiç kullanılmıyordu |
+| 2026-03-17 | AlAdhan API (Diyanet metod) → **prayertimes.api.abdus.dev** (direkt Diyanet verisi) | Türkçe dil talebi, daha doğru veri |
+| 2026-03-17 | fawazahmed0 Nawawi 40 (İngilizce) → **hadeethenc.com** Türkçe Faziletler kategori | Tüm metin Türkçe, Arapça orijinal + kaynak + derece eklendi |
+| 2026-03-17 | HadithCard güncellendi: Arapça metin (RTL), derece rozeti, Türkçe kaynak | Yeni API alanlarını göstermek için |
+| 2026-03-17 | İmsak hesabı: fajr - 10 dk (Diyanet API imsak vermiyor) | Türkiye standardı |
 
 ---
 

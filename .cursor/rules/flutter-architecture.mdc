@@ -1,171 +1,109 @@
 ---
-description: Nafiesna Flutter projesi için Clean Architecture, Riverpod state management, DI ve kod kalitesi kuralları. Her Flutter dosyasında geçerli.
+description: NafieSna Flutter projesi için mimari rehber. Her geliştirme adımında ARCHITECTURE.md okunmalı, orada olmayan yapı oluşturulmamalı.
 globs: lib/**/*.dart
 alwaysApply: true
 ---
 
-# Flutter Mimari Kuralları — Nafiesna
+# NafieSna — Mimari Rehber
 
-> Referans döküman: `ARCHITECTURE.md` (proje kökünde)
-> Her kodlama kararında bu kurallara uy. Şüphe durumunda dökümanı oku.
+> **Referans Doküman:** `ARCHITECTURE.md` (proje kökünde)  
+> Her kod yazmadan önce bu dosyayı oku. Orada olmayan yapıyı oluşturma.
 
 ---
 
-## Katman Yapısı (Clean Architecture)
+## Temel Kural
 
 ```
-Presentation  →  Domain  ←  Data
-(UI/Notifier)    (Interface)   (Impl/Service)
-```
-
-- `lib/feature/` → Presentation (view, notifier, state, provider, widgets)
-- `lib/domain/` → Soyut repository interface'leri (saf Dart, Flutter import yok)
-- `lib/data/` → Repository implementasyonları + DTO modelleri
-- `lib/service/` → Dio tabanlı HTTP servisleri
-- `lib/product/` → Uygulama altyapısı (theme, navigation, manager, widget, init)
-
-## Feature Klasör Şablonu
-
-Her feature şu yapıyı TAKİP ETMEK ZORUNDA:
-
-```
-feature/<name>/
-├── notifier/   → XxxNotifier + XxxState
-├── provider/   → xxxProvider (Riverpod)
-├── view/       → XxxView (ConsumerWidget)
-└── widgets/    → Feature'a özgü widget'lar
+1. ARCHITECTURE.md → Bölüm 2 "Faz Durumu"nu oku
+2. İstenen yapı ✅ Aktif mi? → Mevcut desene uyu
+3. ⬜ Planlandı mı? → Önce dokümana kaydet, sonra yaz
+4. ❌ Kullanılmıyor mu? → Oluşturma
+5. Emin değilsen kullanıcıya sor. Tahminle ekleme yapma.
 ```
 
 ---
 
-## State Management (Riverpod + StateNotifier)
+## Şu An Aktif Olan Yapılar
+
+| Yapı | Paket / Dosya |
+|---|---|
+| State Management | `flutter_riverpod ^2.6.1` — StateNotifier |
+| Navigation | `auto_route ^9.3.0` — `app_router.dart` |
+| DI | `get_it ^8.0.3` — sadece AppRouter kaydı |
+| Tema | `AppTheme.dark`, `AppColors`, `AppTextStyles`, `AppSpacing` |
+| Kod Üretimi | `build_runner`, `auto_route_generator`, `injectable_generator` |
+| PDF Viewer | `syncfusion_flutter_pdfviewer` |
+| Eşitlik | `equatable ^2.0.7` |
+
+**Henüz aktif olmayan (ekleme):**  
+Dio, SharedPreferences, FlutterSecureStorage, Firebase, ScreenUtil, flutter_svg
+
+---
+
+## State Pattern (Değiştirme)
 
 ```dart
-// ✅ DOĞRU: State immutable + copyWith
-class LoginState extends Equatable {
-  const LoginState({this.isLoading = false, this.errorMessage});
+// State — immutable, copyWith zorunlu
+class XxxState {
+  const XxxState({this.isLoading = false, this.errorMessage});
   final bool isLoading;
   final String? errorMessage;
-  LoginState copyWith({bool? isLoading, String? errorMessage}) => LoginState(
+  XxxState copyWith({bool? isLoading, String? errorMessage}) => XxxState(
     isLoading: isLoading ?? this.isLoading,
     errorMessage: errorMessage ?? this.errorMessage,
   );
-  @override
-  List<Object?> get props => [isLoading, errorMessage];
 }
 
-// ✅ DOĞRU: Notifier sadece repository interface kullanır
-class LoginNotifier extends StateNotifier<LoginState> {
-  LoginNotifier(this._repository) : super(const LoginState());
-  final AuthRepository _repository; // interface, impl değil!
+// Notifier
+class XxxNotifier extends StateNotifier<XxxState> {
+  XxxNotifier() : super(const XxxState());
 }
 
-// ✅ DOĞRU: select() ile gereksiz rebuild önle
-final isLoading = ref.watch(loginProvider.select((s) => s.isLoading));
+// Provider
+final xxxProvider = StateNotifierProvider<XxxNotifier, XxxState>(
+  (ref) => XxxNotifier(),
+);
 
-// ❌ YANLIŞ: Tüm state'i izlemek
-final state = ref.watch(loginProvider);
+// View — select() ile rebuild minimize et
+final isLoading = ref.watch(xxxProvider.select((s) => s.isLoading));
 ```
 
 ---
 
-## Naming Conventions
+## Klasör Kuralları
 
-| Tür | Kural | Örnek |
-|-----|-------|-------|
-| Notifier | `XxxNotifier` | `LoginNotifier` |
-| State | `XxxState` | `LoginState` |
-| Provider | `xxxProvider` | `loginProvider` |
-| View | `XxxView` | `LoginView` |
-| Service | `XxxService` | `AuthService` |
-| Repository | `XxxRepository` / `XxxRepositoryImpl` | `AuthRepositoryImpl` |
-| Dosya | `snake_case` | `login_notifier.dart` |
-| Boolean | `is/has/can/should` prefix | `isLoading`, `hasError` |
+```
+feature/<isim>/
+├── notifier/   XxxNotifier + XxxState
+├── provider/   xxxProvider
+├── view/       XxxView
+└── widgets/    ← Sadece 2+ widget varsa oluştur
+```
+
+**Global widget (`product/widget/`):**  
+Sadece 2+ farklı feature'da kullanılıyorsa taşı.  
+Şu an aktif: `AppLoadingIndicator`, `AppErrorState`
 
 ---
 
-## Kod Kalitesi — Sert Kurallar
+## Kod Kuralları (İstisna Yok)
 
 ```
-❌ dynamic veya var KULLANMA — explicit type zorunlu
-❌ ! null assertion operatörü kullanma — ?. ve ?? kullan
-❌ Magic number kullanma — const tanımla (AppSpacing.lg)
-❌ Business logic widget içine yazma — notifier'a taşı
-❌ Repository impl'e doğrudan bağımlı olma — interface kullan
+❌ dynamic / var kullanma — explicit type zorunlu
+❌ ! null assertion kullanma — ?. ve ?? kullan
+❌ Magic number yazma — AppSpacing.lg gibi const kullan
+❌ Business logic view içine yazma — notifier'a taşı
+❌ 2'den az yerde kullanılan widget'ı global yapma
+✅ const constructor her yerde
+✅ Early return (derin nesting yerine)
 ✅ Fonksiyon ≤ 20 satır
-✅ Early return kullan (derin nesting yerine)
-✅ const constructor her yerde kullan
-✅ try/catch ile async operasyonları sar
-✅ State: loading + error + data üçlüsünü yönet
-```
-
-## Early Return
-
-```dart
-// ❌ Kötü
-if (order != null) { if (order.isValid) { await save(order); } }
-
-// ✅ İyi
-if (order == null) return;
-if (!order.isValid) return;
-await save(order);
 ```
 
 ---
 
-## Navigation (auto_route)
+## Yeni Bir Şey Eklemeden Önce
 
-- Route tanımları: `lib/product/navigation/app_router.dart`
-- Navigator erişimi: `getIt<AppRouter>().push(const XxxRoute())`
-- Context'ten navigasyon yapma — router'ı GetIt üzerinden kullan
-
----
-
-## DI (GetIt + injectable)
-
-```dart
-@singleton    // Uygulama boyunca tek instance
-@lazySingleton // İlk kullanımda oluşturulur
-@injectable   // Her çağrıda yeni instance
-
-@Injectable(as: FeatureRepository) // Interface'e bind
-class FeatureRepositoryImpl implements FeatureRepository { ... }
-```
-
-Kod üretimi: `flutter pub run build_runner build --delete-conflicting-outputs`
-
----
-
-## Güvenlik
-
-- Token/secret → `flutter_secure_storage` (kesinlikle SharedPreferences değil)
-- API key → `--dart-define` ile build-time config (koda gömme)
-- `!` null assertion ile token okuma — `await getToken() ?? ''` kullan
-
----
-
-## Yeni Feature Ekleme Sırası
-
-```
-1. domain/repository/xxx_repository.dart     → Interface
-2. data/model/xxx_model.dart                 → DTO + json_serializable
-3. data/repository/xxx_repository_impl.dart  → Implementasyon
-4. service/xxx_service.dart                  → Dio HTTP
-5. injectable anotasyon → build_runner çalıştır
-6. feature/<name>/notifier + provider + view + widgets
-7. app_router.dart → AutoRoute ekle → build_runner
-8. test/feature/<name>/xxx_notifier_test.dart
-```
-
----
-
-## Global Widget Kataloğu (lib/product/widget/)
-
-Yeni component yazmadan önce şunlar var mı kontrol et:
-- `AppLoadingIndicator`, `AppErrorState`, `AppEmptyState`
-- `AppPrimaryButton`, `AppSecondaryButton`
-- `AppTextField`, `AppSearchField`
-- `AppBottomSheet`, `AppDialog`, `AppSnackbar`
-- `AppCard`, `AppNetworkImage`
-
-Varsa yeniden kullan. Yoksa buraya ekle — feature'a özgü bırakma.
+1. `ARCHITECTURE.md` Bölüm 2'yi kontrol et
+2. Bölüm 2'yi güncelle (yeni satır ekle, durumu değiştir)
+3. Bölüm 15 Değişiklik Geçmişine kayıt ekle
+4. Kodu yaz
