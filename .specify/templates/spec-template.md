@@ -78,8 +78,8 @@
 ## Requirements *(mandatory)*
 
 <!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
+  PROJECT CONSTRAINT: No authentication or login flows permitted in MVP scope.
+  PROJECT CONSTRAINT: PDF experience MUST be continuous vertical scroll.
 -->
 
 ### Functional Requirements

@@ -11,27 +11,25 @@
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: [Flutter 3.x (Stable) / Dart 3.x]  
+**Primary Dependencies**: [Riverpod, Flutter SDK]  
+**Storage**: [N/A or specified in spec]  
+**Testing**: [flutter_test]  
+**Target Platform**: [iOS / Android]
+**Project Type**: [mobile-app]  
+**Performance Goals**: [60+ fps, fluid vertical PDF scroll]  
+**Constraints**: [Dark mode default, Primary Teal #008080, No Auth]  
+**Scale/Scope**: [MVP - scoped feature modules]
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] Does the design strictly avoid authentication/login flows? (Principle VIII)
+- [ ] Is the state management exclusively handled by Riverpod? (Principle II)
+- [ ] Does the UI adhere to the "Premium Minimal" teal/dark/gold aesthetic? (Principle V, VI)
+- [ ] Is the architecture following the Model-View-State (MVS) structure? (Principle III)
+- [ ] Is the PDF experience a continuous vertical scroll? (Principle VII)
 
 ## Project Structure
 

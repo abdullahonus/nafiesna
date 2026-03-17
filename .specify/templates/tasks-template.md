@@ -20,10 +20,8 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- **Mobile**: `lib/features/`, `test/`
+- Paths shown below assume Flutter structure - adjust based on plan.md
 
 <!-- 
   ============================================================================
@@ -32,8 +30,8 @@ description: "Task list template for feature implementation"
   The /speckit.tasks command MUST replace these with actual tasks based on:
   - User stories from spec.md (with their priorities P1, P2, P3...)
   - Feature requirements from plan.md
-  - Entities from data-model.md
-  - Endpoints from contracts/
+  - Model-View-State (MVS) architecture from constitution.md
+  - Riverpod state management implementation
   
   Tasks MUST be organized by user story so each story can be:
   - Implemented independently
@@ -48,9 +46,9 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T001 Verify Flutter project structure and core dependencies (Riverpod, etc.)
+- [ ] T002 Setup base theme (Dark Mode, #008080 Teal Primary)
+- [ ] T003 [P] Configure linting (analysis_options.yaml) and formatting
 
 ---
 
@@ -60,14 +58,11 @@ description: "Task list template for feature implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-Examples of foundational tasks (adjust based on your project):
-
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+- [ ] T004 Implement core navigation shell (Bottom Navigation)
+- [ ] T005 Setup reusable UI component library (Premium Minimal standard)
+- [ ] T006 [P] Implement base PDF vertical scroll provider/utility
+- [ ] T007 Create base Model-View-State (MVS) scaffolding for features
+- [ ] T008 Configure Riverpod providers for global application state
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
