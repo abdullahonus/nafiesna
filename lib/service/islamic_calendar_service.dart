@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 import '../product/init/network/network_config.dart';
 
-/// Aladhan gToHCalendar API üzerinden dini günleri çeker.
+/// Dini günler servisi.
 ///
-/// Akış:
-///   1. Mevcut ay + sonraki 5 ay paralel çekilir (6 istek)
-///   2. Her günün `holidays` dizisi + Hicri tarih bazlı eşleştirme yapılır
-///   3. Sonuçlar session boyunca cache'lenir
+/// Birincil kaynak: Diyanet İşleri Başkanlığı resmi takvimi.
+/// İkincil kaynak: Aladhan gToHCalendar API (supplement + gelecek yıllar).
+///
+/// Diyanet verileri: https://vakithesaplama.diyanet.gov.tr/dinigunler.php
 class IslamicCalendarService {
   IslamicCalendarService() : _dio = NetworkConfig.aladhanDio;
 
@@ -15,48 +15,175 @@ class IslamicCalendarService {
 
   static List<IslamicEvent>? _cache;
 
-  /// Önümüzdeki ~6 aylık dini günleri döndürür.
+  /// Önümüzdeki dini günleri döndürür.
   Future<List<IslamicEvent>> getUpcomingEvents() async {
     if (_cache != null) return _filterUpcoming(_cache!);
 
-    final now = DateTime.now();
-    final List<Future<List<IslamicEvent>>> futures = [];
+    final int currentYear = DateTime.now().year;
+    List<IslamicEvent> events = _getDiyanetEvents(currentYear);
 
-    for (int i = 0; i < 6; i++) {
-      final targetDate = DateTime(now.year, now.month + i);
-      futures.add(_fetchMonth(targetDate.month, targetDate.year));
+    // Eğer Diyanet verisi yoksa (gelecek yıl vs) API'ye düş
+    if (events.isEmpty) {
+      events = await _fetchFromApi(currentYear);
     }
 
-    final results = await Future.wait(futures);
-    final List<IslamicEvent> allEvents = [];
-    final Set<String> seen = {};
-
-    for (final monthEvents in results) {
-      for (final event in monthEvents) {
-        final key = '${event.name}_${event.date.toIso8601String()}';
-        if (seen.add(key)) allEvents.add(event);
-      }
+    // Sonraki yılın başı için de ekle (Aralık sonrası)
+    final List<IslamicEvent> nextYearEvents = _getDiyanetEvents(currentYear + 1);
+    if (nextYearEvents.isNotEmpty) {
+      events.addAll(nextYearEvents);
     }
 
-    allEvents.sort((a, b) => a.date.compareTo(b.date));
-    _cache = allEvents;
-    return _filterUpcoming(allEvents);
+    events.sort((IslamicEvent a, IslamicEvent b) => a.date.compareTo(b.date));
+    _cache = events;
+    return _filterUpcoming(events);
   }
 
   /// Sadece sonraki ilk olayı döndürür (HijriCalendarCard için).
   Future<IslamicEvent?> getNextEvent() async {
-    final events = await getUpcomingEvents();
+    final List<IslamicEvent> events = await getUpcomingEvents();
     return events.isNotEmpty ? events.first : null;
   }
 
-  /// Bir Miladi ayın tüm günlerini Hicri takvimle eşleştirir.
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Diyanet Resmi Takvimi
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Diyanet İşleri Başkanlığı resmi dini günler takvimi.
+  /// Kaynak: vakithesaplama.diyanet.gov.tr/dinigunler.php
+  List<IslamicEvent> _getDiyanetEvents(int year) {
+    final Map<int, List<IslamicEvent>>? yearData = _diyanetData[year];
+    if (yearData == null) return [];
+
+    final List<IslamicEvent> events = [];
+    for (final List<IslamicEvent> monthEvents in yearData.values) {
+      events.addAll(monthEvents);
+    }
+    return events;
+  }
+
+  static final Map<int, Map<int, List<IslamicEvent>>> _diyanetData = {
+    2026: {
+      1: [
+        IslamicEvent(
+          name: 'Miraç Kandili',
+          date: DateTime(2026, 1, 15),
+          hijriDate: '26 Receb 1447',
+        ),
+      ],
+      2: [
+        IslamicEvent(
+          name: 'Berat Kandili',
+          date: DateTime(2026, 2, 2),
+          hijriDate: '14 Şaban 1447',
+        ),
+        IslamicEvent(
+          name: 'Ramazan Başlangıcı',
+          date: DateTime(2026, 2, 19),
+          hijriDate: '1 Ramazan 1447',
+        ),
+      ],
+      3: [
+        IslamicEvent(
+          name: 'Kadir Gecesi',
+          date: DateTime(2026, 3, 16),
+          hijriDate: '26 Ramazan 1447',
+        ),
+        IslamicEvent(
+          name: 'Arefe (Ramazan)',
+          date: DateTime(2026, 3, 19),
+          hijriDate: '29 Ramazan 1447',
+        ),
+        IslamicEvent(
+          name: 'Ramazan Bayramı',
+          date: DateTime(2026, 3, 20),
+          hijriDate: '1 Şevval 1447',
+        ),
+      ],
+      5: [
+        IslamicEvent(
+          name: 'Arefe (Kurban)',
+          date: DateTime(2026, 5, 26),
+          hijriDate: '9 Zilhicce 1447',
+        ),
+        IslamicEvent(
+          name: 'Kurban Bayramı',
+          date: DateTime(2026, 5, 27),
+          hijriDate: '10 Zilhicce 1447',
+        ),
+      ],
+      6: [
+        IslamicEvent(
+          name: 'Hicri Yılbaşı',
+          date: DateTime(2026, 6, 16),
+          hijriDate: '1 Muharrem 1448',
+        ),
+        IslamicEvent(
+          name: 'Aşure Günü',
+          date: DateTime(2026, 6, 25),
+          hijriDate: '10 Muharrem 1448',
+        ),
+      ],
+      8: [
+        IslamicEvent(
+          name: 'Mevlid Kandili',
+          date: DateTime(2026, 8, 24),
+          hijriDate: '11 Rebiülevvel 1448',
+        ),
+      ],
+      12: [
+        IslamicEvent(
+          name: 'Üç Ayların Başlangıcı',
+          date: DateTime(2026, 12, 10),
+          hijriDate: '1 Receb 1448',
+        ),
+        IslamicEvent(
+          name: 'Regaib Kandili',
+          date: DateTime(2026, 12, 10),
+          hijriDate: '1 Receb 1448',
+        ),
+      ],
+    },
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Aladhan API (fallback & future years)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Future<List<IslamicEvent>> _fetchFromApi(int year) async {
+    try {
+      final DateTime now = DateTime(year);
+      final List<Future<List<IslamicEvent>>> futures = [];
+
+      for (int i = 0; i < 12; i++) {
+        final DateTime target = DateTime(now.year, now.month + i);
+        futures.add(_fetchMonth(target.month, target.year));
+      }
+
+      final List<List<IslamicEvent>> results = await Future.wait(futures);
+      final List<IslamicEvent> allEvents = [];
+      final Set<String> seen = {};
+
+      for (final List<IslamicEvent> monthEvents in results) {
+        for (final IslamicEvent event in monthEvents) {
+          final String key = '${event.name}_${event.date.toIso8601String()}';
+          if (seen.add(key)) allEvents.add(event);
+        }
+      }
+
+      return allEvents;
+    } catch (e) {
+      debugPrint('IslamicCalendarService API error: $e');
+      return getFallback2026();
+    }
+  }
+
   Future<List<IslamicEvent>> _fetchMonth(int month, int year) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
-        '/gToHCalendar/$month/$year',
-      );
+      final Response<Map<String, dynamic>> response =
+          await _dio.get<Map<String, dynamic>>('/gToHCalendar/$month/$year');
 
-      final data = response.data?['data'] as List<dynamic>?;
+      final List<dynamic>? data =
+          response.data?['data'] as List<dynamic>?;
       if (data == null) return [];
 
       final List<IslamicEvent> events = [];
@@ -69,28 +196,48 @@ class IslamicCalendarService {
             entry['gregorian'] as Map<String, dynamic>;
 
         final String gregDateStr = gregorian['date'] as String? ?? '';
-        final DateTime? gregDate = _parseDate(gregDateStr);
+        final DateTime? gregDate = _parseGregorianDate(gregDateStr);
         if (gregDate == null) continue;
 
-        final int hijriDay = int.tryParse(hijri['day']?.toString() ?? '') ?? 0;
-        final int hijriMonth =
-            (hijri['month'] as Map<String, dynamic>?)?['number'] as int? ?? 0;
+        final int rawHijriDay =
+            int.tryParse(hijri['day']?.toString() ?? '') ?? 0;
+        final Map<String, dynamic> hijriMonthMap =
+            hijri['month'] as Map<String, dynamic>? ?? {};
+        final int hijriMonth = hijriMonthMap['number'] as int? ?? 0;
+        final String hijriMonthEn = hijriMonthMap['en'] as String? ?? '';
+        final int hijriYear =
+            int.tryParse(hijri['year']?.toString() ?? '') ?? 0;
 
-        // 1) Aladhan'ın holidays dizisinden
+        final String hijriMonthTr =
+            _hijriMonthsTr[hijriMonthEn] ?? hijriMonthEn;
+
+        // Holidays dizisinden etkinlikler
         final List<dynamic> holidays =
             hijri['holidays'] as List<dynamic>? ?? [];
         for (final dynamic holiday in holidays) {
           final String name = holiday.toString();
-          final String? turkishName = _mapToTurkish(name);
-          if (turkishName != null) {
-            events.add(IslamicEvent(name: turkishName, date: gregDate));
+          final _MappedEvent? mapped =
+              _mapHoliday(name, rawHijriDay, hijriMonth);
+          if (mapped != null) {
+            events.add(IslamicEvent(
+              name: mapped.turkishName,
+              date: gregDate,
+              hijriDate: mapped.hijriDate.isNotEmpty
+                  ? '${mapped.hijriDate} $hijriYear'
+                  : '$rawHijriDay $hijriMonthTr $hijriYear',
+            ));
           }
         }
 
-        // 2) Hicri tarih bazlı Türk dini günleri (Kandiller)
-        final String? kandil = _checkKandil(hijriDay, hijriMonth);
-        if (kandil != null) {
-          events.add(IslamicEvent(name: kandil, date: gregDate));
+        // Hicri tarih bazlı tespit (API'de holiday olarak gelmeyen günler)
+        final _MappedEvent? extra =
+            _checkHijriDate(rawHijriDay, hijriMonth, hijriYear);
+        if (extra != null) {
+          events.add(IslamicEvent(
+            name: extra.turkishName,
+            date: gregDate,
+            hijriDate: extra.hijriDate,
+          ));
         }
       }
 
@@ -100,77 +247,147 @@ class IslamicCalendarService {
     }
   }
 
-  /// Aladhan İngilizce → Türkçe dönüşüm
-  String? _mapToTurkish(String englishName) {
-    if (englishName.startsWith('Urs ')) return null;
+  /// Aladhan holiday adından Türkçe eşleştirme.
+  /// Filtreli: Qadr sadece 27 Ramazan, Urs'ler hariç.
+  _MappedEvent? _mapHoliday(String englishName, int hijriDay, int hijriMonth) {
+    if (englishName.startsWith('Urs ') || englishName.startsWith('Birth of')) {
+      return null;
+    }
 
-    const Map<String, String> map = {
-      'Eid-ul-Fitr': 'Ramazan Bayramı',
-      'Eid-ul-Adha': 'Kurban Bayramı',
-      'Lailat-ul-Qadr': 'Kadir Gecesi',
-      '1st Muharram': 'Hicri Yılbaşı',
-      'Ashura': 'Aşure Günü',
-      'Mawlid': 'Mevlid Kandili',
-      'Shab-e-Meraj': 'Miraç Kandili',
-      'Lailat-ul-Bara\'at': 'Berat Kandili',
+    // Lailat-ul-Qadr: Aladhan tüm tek gecelere koyuyor, sadece 27 Ramazan'ı al
+    if (englishName == 'Lailat-ul-Qadr') {
+      if (hijriMonth == 9 && hijriDay == 27) {
+        return const _MappedEvent('Kadir Gecesi', '26 Ramazan');
+      }
+      return null;
+    }
+
+    const Map<String, _MappedEvent> map = {
+      'Eid-ul-Fitr': _MappedEvent('Ramazan Bayramı', '1 Şevval'),
+      'Eid-ul-Adha': _MappedEvent('Kurban Bayramı', '10 Zilhicce'),
+      'Ashura': _MappedEvent('Aşure Günü', '10 Muharrem'),
+      'Mawlid': _MappedEvent('Mevlid Kandili', '12 Rebiülevvel'),
+      'Lailat-ul-Miraj': _MappedEvent('Miraç Kandili', '27 Receb'),
+      "Lailat-ul-Bara'at": _MappedEvent('Berat Kandili', '15 Şaban'),
+      '1st Day of Ramadan': _MappedEvent('Ramazan Başlangıcı', '1 Ramazan'),
+      'Arafa': _MappedEvent('Arefe (Kurban)', '9 Zilhicce'),
     };
+
+    // Hajj gibi tanınmayan/gereksiz etiketleri atla
+    if (englishName == 'Hajj') return null;
+    if (englishName.contains('1st Muharram')) {
+      return const _MappedEvent('Hicri Yılbaşı', '1 Muharrem');
+    }
 
     return map[englishName];
   }
 
-  /// Hicri gün + ay numarasından Kandil tespiti
-  /// Aladhan'ın holidays dizisinde olmayanlar için
-  String? _checkKandil(int day, int month) {
-    // Receb = 7, Şaban = 8, Ramazan = 9
-    if (month == 7 && day == 27) return 'Miraç Kandili';
-    if (month == 8 && day == 15) return 'Berat Kandili';
-    if (month == 7 && day == 1) return 'Üç Ayların Başlangıcı';
-    if (month == 9 && day == 1) return 'Ramazan Başlangıcı';
-    if (month == 12 && day == 9) return 'Arefe (Kurban)';
-    if (month == 10 && day == 1) return null; // Aladhan zaten veriyor
-    if (month == 12 && day == 10) return null; // Aladhan zaten veriyor
+  /// Hicri gün/ay bazlı ek tespit (API holidays'da olmayanlar).
+  _MappedEvent? _checkHijriDate(int day, int month, int year) {
+    // 1 Muharrem → Hicri Yılbaşı
+    if (month == 1 && day == 1) {
+      return _MappedEvent('Hicri Yılbaşı', '1 Muharrem $year');
+    }
+    // 1 Receb → Üç Aylar + Regaib
+    if (month == 7 && day == 1) {
+      return _MappedEvent('Regaib Kandili', '1 Receb $year');
+    }
     return null;
   }
 
-  DateTime? _parseDate(String dateStr) {
+  DateTime? _parseGregorianDate(String dateStr) {
     try {
-      return DateFormat('dd-MM-yyyy').parse(dateStr);
+      final List<String> parts = dateStr.split('-');
+      if (parts.length != 3) return null;
+      return DateTime(
+        int.parse(parts[2]),
+        int.parse(parts[1]),
+        int.parse(parts[0]),
+      );
     } catch (_) {
       return null;
     }
   }
 
   List<IslamicEvent> _filterUpcoming(List<IslamicEvent> events) {
-    final today = DateTime.now();
-    final todayStart = DateTime(today.year, today.month, today.day);
+    final DateTime today = DateTime.now();
+    final DateTime todayStart = DateTime(today.year, today.month, today.day);
     return events
-        .where((e) => !e.date.isBefore(todayStart))
+        .where((IslamicEvent e) => !e.date.isBefore(todayStart))
         .toList();
   }
+
+  static const Map<String, String> _hijriMonthsTr = {
+    'Muḥarram': 'Muharrem',
+    'Ṣafar': 'Safer',
+    'Rabīʿ al-Awwal': 'Rebiülevvel',
+    'Rabīʿ al-Thānī': 'Rebiülahir',
+    'Jumādá al-Ūlá': 'Cemaziyelevvel',
+    'Jumādá al-Ākhirah': 'Cemaziyelahir',
+    'Rajab': 'Receb',
+    'Shaʿbān': 'Şaban',
+    'Ramaḍān': 'Ramazan',
+    'Shawwāl': 'Şevval',
+    'Dhū al-Qaʿdah': 'Zilkade',
+    'Dhū al-Ḥijjah': 'Zilhicce',
+  };
 
   /// Diyanet verisine dayalı statik fallback (API başarısız olursa)
   static List<IslamicEvent> getFallback2026() {
     return [
-      IslamicEvent(name: 'Ramazan Bayramı', date: DateTime(2026, 3, 20)),
-      IslamicEvent(name: 'Kurban Bayramı', date: DateTime(2026, 5, 27)),
-      IslamicEvent(name: 'Hicri Yılbaşı', date: DateTime(2026, 6, 16)),
-      IslamicEvent(name: 'Aşure Günü', date: DateTime(2026, 6, 25)),
-      IslamicEvent(name: 'Mevlid Kandili', date: DateTime(2026, 8, 24)),
-      IslamicEvent(name: 'Regaib Kandili', date: DateTime(2026, 12, 10)),
+      IslamicEvent(
+          name: 'Kadir Gecesi',
+          date: DateTime(2026, 3, 16),
+          hijriDate: '26 Ramazan 1447'),
+      IslamicEvent(
+          name: 'Ramazan Bayramı',
+          date: DateTime(2026, 3, 20),
+          hijriDate: '1 Şevval 1447'),
+      IslamicEvent(
+          name: 'Kurban Bayramı',
+          date: DateTime(2026, 5, 27),
+          hijriDate: '10 Zilhicce 1447'),
+      IslamicEvent(
+          name: 'Hicri Yılbaşı',
+          date: DateTime(2026, 6, 16),
+          hijriDate: '1 Muharrem 1448'),
+      IslamicEvent(
+          name: 'Aşure Günü',
+          date: DateTime(2026, 6, 25),
+          hijriDate: '10 Muharrem 1448'),
+      IslamicEvent(
+          name: 'Mevlid Kandili',
+          date: DateTime(2026, 8, 24),
+          hijriDate: '11 Rebiülevvel 1448'),
+      IslamicEvent(
+          name: 'Regaib Kandili',
+          date: DateTime(2026, 12, 10),
+          hijriDate: '1 Receb 1448'),
     ];
   }
 }
 
+class _MappedEvent {
+  const _MappedEvent(this.turkishName, this.hijriDate);
+  final String turkishName;
+  final String hijriDate;
+}
+
 class IslamicEvent {
-  const IslamicEvent({required this.name, required this.date});
+  const IslamicEvent({
+    required this.name,
+    required this.date,
+    this.hijriDate = '',
+  });
 
   final String name;
   final DateTime date;
+  final String hijriDate;
 
   int get daysUntil {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final eventDay = DateTime(date.year, date.month, date.day);
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime eventDay = DateTime(date.year, date.month, date.day);
     return eventDay.difference(today).inDays;
   }
 }

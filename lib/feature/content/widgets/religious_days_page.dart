@@ -5,7 +5,7 @@ import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../service/islamic_calendar_service.dart';
 
-final _eventsProvider = FutureProvider<List<IslamicEvent>>((ref) {
+final _eventsProvider = FutureProvider.autoDispose<List<IslamicEvent>>((ref) {
   return IslamicCalendarService().getUpcomingEvents();
 });
 
@@ -22,169 +22,319 @@ class ReligiousDaysPage extends ConsumerWidget {
         backgroundColor: AppColors.surface,
         elevation: 0,
         title: Text(
-          'Dini Günler & Bayramlar',
-          style: AppTextStyles.headlineSmall.copyWith(color: AppColors.accent),
+          'Dini Günler ${DateTime.now().year}',
+          style: AppTextStyles.headlineSmall.copyWith(
+            color: AppColors.onBackground,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.calendar_month_rounded,
+                color: AppColors.accent, size: 22),
+          ),
+        ],
       ),
       body: eventsAsync.when(
-        data: (List<IslamicEvent> events) => _buildList(events),
+        data: (List<IslamicEvent> events) => events.isEmpty
+            ? _buildEmpty()
+            : _buildGroupedList(events),
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.accent),
         ),
-        error: (_, __) => _buildList(IslamicCalendarService.getFallback2026()),
+        error: (_, __) =>
+            _buildGroupedList(IslamicCalendarService.getFallback2026()),
       ),
     );
   }
 
-  Widget _buildList(List<IslamicEvent> events) {
-    if (events.isEmpty) {
-      return const Center(
-        child: Text('Yaklaşan dini gün bulunamadı.', style: AppTextStyles.bodyMedium),
-      );
-    }
+  Widget _buildEmpty() {
+    return const Center(
+      child: Text(
+        'Yaklaşan dini gün bulunamadı.',
+        style: AppTextStyles.bodyMedium,
+      ),
+    );
+  }
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      itemCount: events.length,
-      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-      itemBuilder: (_, int index) {
-        final IslamicEvent event = events[index];
-        return _EventCard(event: event);
+  Widget _buildGroupedList(List<IslamicEvent> events) {
+    final Map<String, List<IslamicEvent>> grouped = _groupByMonth(events);
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      itemCount: grouped.length,
+      itemBuilder: (BuildContext context, int index) {
+        final String monthKey = grouped.keys.elementAt(index);
+        final List<IslamicEvent> monthEvents = grouped[monthKey]!;
+
+        return _MonthSection(
+          monthTitle: monthKey,
+          events: monthEvents,
+        );
       },
+    );
+  }
+
+  Map<String, List<IslamicEvent>> _groupByMonth(List<IslamicEvent> events) {
+    final Map<String, List<IslamicEvent>> groups = {};
+    for (final IslamicEvent event in events) {
+      final String key = _monthName(event.date.month);
+      groups.putIfAbsent(key, () => []).add(event);
+    }
+    return groups;
+  }
+
+  String _monthName(int month) {
+    const List<String> names = [
+      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+    ];
+    return names[month - 1];
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Ay Bölümü (Month Section)
+// ═══════════════════════════════════════════════════════════════════════════════
+class _MonthSection extends StatelessWidget {
+  const _MonthSection({required this.monthTitle, required this.events});
+
+  final String monthTitle;
+  final List<IslamicEvent> events;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+            top: AppSpacing.xl,
+            bottom: AppSpacing.md,
+          ),
+          child: Text(
+            monthTitle,
+            style: AppTextStyles.headlineLarge.copyWith(
+              color: AppColors.onBackground,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        for (int i = 0; i < events.length; i++)
+          _TimelineEventCard(
+            event: events[i],
+            isLast: i == events.length - 1,
+          ),
+      ],
     );
   }
 }
 
-class _EventCard extends StatelessWidget {
-  const _EventCard({required this.event});
+// ═══════════════════════════════════════════════════════════════════════════════
+// Timeline Event Card
+// ═══════════════════════════════════════════════════════════════════════════════
+class _TimelineEventCard extends StatelessWidget {
+  const _TimelineEventCard({required this.event, required this.isLast});
 
   final IslamicEvent event;
+  final bool isLast;
+
+  static const List<String> _months = [
+    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+  ];
+
+  static const List<String> _weekdays = [
+    'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe',
+    'Cuma', 'Cumartesi', 'Pazar',
+  ];
 
   @override
   Widget build(BuildContext context) {
     final int days = event.daysUntil;
     final bool isToday = days == 0;
+    final bool isTomorrow = days == 1;
     final bool isSoon = days <= 7 && days > 0;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        color: AppColors.surface,
-        border: Border.all(
-          color: isToday
-              ? AppColors.success.withValues(alpha: 0.5)
-              : isSoon
-                  ? AppColors.primary.withValues(alpha: 0.4)
-                  : AppColors.border,
-          width: isToday ? 1.2 : 0.8,
-        ),
-      ),
+    return IntrinsicHeight(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isToday
-                  ? AppColors.success.withValues(alpha: 0.15)
-                  : isSoon
-                      ? AppColors.primary.withValues(alpha: 0.15)
-                      : AppColors.surfaceVariant,
-            ),
-            child: Icon(
-              _getIcon(event.name),
-              color: isToday
-                  ? AppColors.success
-                  : isSoon
-                      ? AppColors.primary
-                      : AppColors.accent,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
+          // ── Sol: Tarih bloğu ────────────────────────────────────────────
+          SizedBox(
+            width: 80,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(event.name, style: AppTextStyles.headlineSmall),
-                const SizedBox(height: 2),
-                Text(
-                  _formatDate(event.date),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.accent,
+                Container(
+                  width: 80,
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                  child: Column(
+                    children: [
+                      Text(
+                        '${event.date.day}',
+                        style: AppTextStyles.displayLarge.copyWith(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w800,
+                          color: isToday
+                              ? AppColors.accent
+                              : isSoon
+                                  ? AppColors.primary
+                                  : AppColors.onBackground,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _months[event.date.month - 1],
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                        ),
+                      ),
+                      Text(
+                        _weekdays[event.date.weekday - 1],
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary.withValues(alpha: 0.7),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                // Timeline çizgisi
+                if (!isLast)
+                  Expanded(
+                    child: Center(
+                      child: Container(
+                        width: 1,
+                        color: AppColors.border.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
-          _buildBadge(days, isToday),
+          const SizedBox(width: AppSpacing.md),
+
+          // ── Sağ: İçerik kartı ──────────────────────────────────────────
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.only(
+                bottom: isLast ? 0 : AppSpacing.sm,
+              ),
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                color: AppColors.surface,
+                border: Border.all(
+                  color: isToday
+                      ? AppColors.accent.withValues(alpha: 0.4)
+                      : isSoon
+                          ? AppColors.primary.withValues(alpha: 0.3)
+                          : AppColors.border.withValues(alpha: 0.5),
+                  width: isToday ? 1 : 0.5,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Etkinlik adı
+                        Text(
+                          event.name,
+                          style: AppTextStyles.headlineSmall.copyWith(
+                            color: isToday
+                                ? AppColors.accent
+                                : isSoon
+                                    ? AppColors.primary
+                                    : AppColors.primaryLight,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (event.hijriDate.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            event.hijriDate,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 6),
+                        // Geri sayım
+                        _buildCountdown(days, isToday, isTomorrow),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textSecondary.withValues(alpha: 0.4),
+                    size: 22,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBadge(int days, bool isToday) {
+  Widget _buildCountdown(int days, bool isToday, bool isTomorrow) {
     final String text;
-    final Color bgColor;
-    final Color textColor;
+    final Color color;
 
     if (isToday) {
-      text = 'BUGÜN';
-      bgColor = AppColors.success.withValues(alpha: 0.2);
-      textColor = AppColors.success;
-    } else if (days == 1) {
-      text = 'YARIN';
-      bgColor = AppColors.primary.withValues(alpha: 0.2);
-      textColor = AppColors.primary;
+      text = 'Bugün';
+      color = AppColors.accent;
+    } else if (isTomorrow) {
+      text = 'Yarın';
+      color = AppColors.primary;
+    } else if (days < 30) {
+      text = '$days Gün Kaldı';
+      color = AppColors.textSecondary;
     } else {
-      text = '$days gün';
-      bgColor = AppColors.surfaceVariant;
-      textColor = AppColors.textSecondary;
+      final int months = days ~/ 30;
+      final int remainingDays = days % 30;
+      text = remainingDays > 0
+          ? '$months Ay $remainingDays Gün Kaldı'
+          : '$months Ay Kaldı';
+      color = AppColors.textSecondary;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
+    return Row(
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isToday ? AppColors.accent : AppColors.primary,
+          ),
         ),
-      ),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: color,
+            fontWeight: isToday || isTomorrow ? FontWeight.w600 : FontWeight.w400,
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
-  }
-
-  String _formatDate(DateTime date) {
-    const List<String> months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-    ];
-    const List<String> weekdays = [
-      'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar',
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}, ${weekdays[date.weekday - 1]}';
-  }
-
-  IconData _getIcon(String name) {
-    if (name.contains('Bayram')) return Icons.celebration_rounded;
-    if (name.contains('Kandil')) return Icons.auto_awesome_rounded;
-    if (name.contains('Kadir')) return Icons.star_rounded;
-    if (name.contains('Ramazan')) return Icons.mosque_rounded;
-    if (name.contains('Aşure')) return Icons.water_drop_rounded;
-    if (name.contains('Hicri')) return Icons.event_rounded;
-    if (name.contains('Arefe')) return Icons.wb_twilight_rounded;
-    return Icons.calendar_today_rounded;
   }
 }

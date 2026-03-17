@@ -41,10 +41,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            backgroundColor: Colors.transparent,
             expandedHeight: 60,
             floating: true,
             snap: true,
-            backgroundColor: AppColors.surface,
             elevation: 0,
             centerTitle: true,
             flexibleSpace: FlexibleSpaceBar(

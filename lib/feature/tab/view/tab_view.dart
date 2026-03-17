@@ -24,7 +24,7 @@ class TabView extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           routes: const [
             HomeRoute(),
-            PrayerTimesRoute(),
+            DreamRoute(),
             PdfRoute(),
             ContentRoute(),
           ],
@@ -45,9 +45,9 @@ class TabView extends ConsumerWidget {
                     label: 'Ana Sayfa',
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(Icons.access_time_outlined),
-                    activeIcon: Icon(Icons.access_time_filled_rounded),
-                    label: 'Namaz',
+                    icon: Icon(Icons.nights_stay_outlined),
+                    activeIcon: Icon(Icons.nights_stay_rounded),
+                    label: 'Rüya',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.menu_book_outlined),

@@ -98,7 +98,7 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 | Kod Üretimi (build_runner) | ✅ Aktif | auto_route_generator + injectable_generator |
 | AppInit Orkestrasyonu | ✅ Aktif | `lib/product/init/app_init.dart` |
 | Network (Dio + Chucker) | ✅ Aktif | `dio ^5.9.2` + `chucker_flutter ^1.9.1` (debug only), Aladhan tek kaynak |
-| Pusula (flutter_compass) | ✅ Aktif | `flutter_compass ^0.8.1` — manyetometre ile cihaz yönü, kıble bulucu |
+| Pusula (compassx) | ❌ Kaldırıldı | Kıble bulucu özelliği kaldırıldı |
 | Secure Storage | ⬜ Planlandı | Auth yokken gereksiz |
 | Shared Preferences | ✅ Aktif | `shared_preferences` — Kazalar sayacı (key-value) |
 | Local DB (sqflite) | ✅ Aktif | `sqflite` — Rüya defteri CRUD |
@@ -122,9 +122,10 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 |---|---|---|
 | Tab Scaffold | ✅ Aktif | `lib/feature/tab/view/tab_view.dart` |
 | Ana Sayfa (home) | ✅ Aktif | YouTube kartı + namaz vakitleri barı + Hicri takvim kartı + günlük hadis |
-| Namaz Vakitleri (prayer_times) | ✅ Aktif | Aladhan API (method=13 Diyanet), GPS konum, Hicri tarih, Kıble Bulucu (flutter_compass) |
+| Rüya Defteri (dream) | ✅ Aktif | SharedPreferences CRUD, hilal-yıldız temalı UI, tab olarak erişim |
+| Namaz Vakitleri (prayer_times) | ⚠️ Sadece veri | Tab kaldırıldı; notifier/provider ana sayfada PrayerTimesBar için kullanılıyor |
 | Kaside PDF (pdf) | ✅ Aktif | `syncfusion_flutter_pdfviewer`, continuous scroll |
-| Menü (content) | ✅ Aktif | Grid menü: Dini Günler, Yakın Camiler, Kazalar, Rüya Defteri, İslami Bilgiler |
+| Menü (content) | ✅ Aktif | Grid menü: Dini Günler, Yakın Camiler, Kazalar, İslami Bilgiler |
 
 > Yeni feature eklendiğinde bu tabloya satır ekle ve durumu güncelle.
 
@@ -213,17 +214,15 @@ lib/
 │   │       ├── live_stream_card.dart
 │   │       └── prayer_times_bar.dart  (Namaz vakitleri + büyük geri sayım)
 │   │
-│   ├── prayer_times/
+│   ├── dream/
+│   │   └── view/
+│   │       └── dream_view.dart           (Rüya Defteri — hilal-yıldız temalı UI, CRUD)
+│   │
+│   ├── prayer_times/                     (Tab kaldırıldı, sadece veri katmanı)
 │   │   ├── notifier/
-│   │   │   ├── prayer_times_notifier.dart  (PrayerTimesNotifier + State + PrayerTime)
-│   │   │   └── qibla_notifier.dart         (QiblaNotifier + QiblaState)
-│   │   ├── provider/
-│   │   │   ├── prayer_times_provider.dart
-│   │   │   └── qibla_provider.dart
-│   │   ├── view/
-│   │   │   └── prayer_times_view.dart
-│   │   └── widgets/
-│   │       └── qibla_compass_view.dart     (Fullscreen kıble pusulası UI)
+│   │   │   └── prayer_times_notifier.dart  (PrayerTimesNotifier + State + PrayerTime)
+│   │   └── provider/
+│   │       └── prayer_times_provider.dart
 │   │
 │   ├── pdf/
 │   │   └── view/
@@ -255,7 +254,6 @@ lib/
 │   ├── dream_journal_service.dart       (Rüya defteri — sqflite CRUD)
 │   ├── nearby_mosques_service.dart      (Overpass API — yakın cami arama)
 │   ├── prayer_times_service.dart        (Aladhan namaz vakitleri + Hicri tarih)
-│   └── qibla_service.dart               (Kıble yönü hesaplama + pusula stream)
 │
 └── product/
     ├── constants/
@@ -721,7 +719,7 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-17 | `IslamicCalendarService` oluşturuldu | Aladhan gToHCalendar API ile canlı dini günler (statik veri kaldırıldı) |
 | 2026-03-17 | HijriCalendarCard canlı API'ye bağlandı | Hardcoded event listesi → FutureProvider + API, fallback korundu |
 | 2026-03-17 | ContentNotifier canlı API'ye geçirildi | Dini günler artık IslamicCalendarService üzerinden geliyor |
-| 2026-03-17 | `flutter_compass` paketi eklendi | Cihaz manyetometre sensörü ile pusula heading |
+| 2026-03-17 | `compassx ^1.0.1` paketi eklendi (flutter_compass yerine) | True heading, kalibrasyon tespiti, daha stabil pusula |
 | 2026-03-17 | `QiblaService` oluşturuldu | Great Circle formülü ile kıble açısı hesaplama (API gerektirmez) |
 | 2026-03-17 | Kıble Bulucu (QiblaCompassView) eklendi | Namaz tab'ında pusula UI, canlı yön gösterme, mesafe bilgisi |
 | 2026-03-17 | Content tab grid menü yapısına dönüştürüldü | TabBar → 3 sütunlu kart grid (screenshot referanslı) |
@@ -731,6 +729,10 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-17 | Rüya Defteri eklendi | sqflite CRUD, başlık + içerik + tarih, düzenleme + silme |
 | 2026-03-17 | Yakın Camiler eklendi | Overpass API (OSM), 3km yarıçap, mesafe, harita yönlendirme |
 | 2026-03-17 | İslami Bilgiler ayrı sayfaya taşındı | Content grid menüden erişim |
+| 2026-03-17 | Kıble Bulucu tamamen kaldırıldı | QiblaService, QiblaNotifier, QiblaCompassView, compassx paketi silindi |
+| 2026-03-17 | Namaz tab'ı → Rüya Defteri tab'ına dönüştürüldü | DreamView oluşturuldu, gül motifli UI, PrayerTimesRoute kaldırıldı |
+| 2026-03-17 | Rüya Defteri content menüden kaldırıldı | Artık ana tab olarak erişiliyor |
+| 2026-03-17 | Rüya Defteri UI yenilendi | Gül motifi kaldırıldı → hilal-yıldız temalı dini rüya UI, gold accent + dark surface uyumlu |
 
 ---
 

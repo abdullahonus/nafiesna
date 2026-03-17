@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../notifier/prayer_times_notifier.dart';
@@ -7,9 +6,7 @@ import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/widget/common/app_loading_indicator.dart';
-import '../widgets/qibla_compass_view.dart';
 
-@RoutePage()
 class PrayerTimesView extends ConsumerStatefulWidget {
   const PrayerTimesView({super.key});
 
@@ -37,18 +34,6 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
         backgroundColor: AppColors.surface,
         elevation: 0,
         actions: [
-          IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const QiblaCompassView(),
-              ),
-            ),
-            icon: const Icon(
-              Icons.explore_rounded,
-              color: AppColors.accent,
-            ),
-            tooltip: 'Kıble Bulucu',
-          ),
           if (state.locationStatus == LocationStatus.permitted)
             IconButton(
               onPressed: state.isLoading
@@ -93,8 +78,6 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
           ],
 
           _buildPrayerList(state),
-          const SizedBox(height: AppSpacing.xl),
-          _buildQiblaCard(),
           const SizedBox(height: AppSpacing.xl),
           _buildLocationNote(state),
           const SizedBox(height: AppSpacing.lg),
@@ -312,82 +295,6 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  // ── Kıble bulucu kartı ───────────────────────────────────────────────────
-
-  Widget _buildQiblaCard() {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => const QiblaCompassView(),
-        ),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.accent.withValues(alpha: 0.1),
-              AppColors.accent.withValues(alpha: 0.03),
-            ],
-          ),
-          border: Border.all(
-            color: AppColors.accent.withValues(alpha: 0.3),
-            width: 0.8,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.accent.withValues(alpha: 0.15),
-                border: Border.all(
-                  color: AppColors.accent.withValues(alpha: 0.4),
-                ),
-              ),
-              child: const Icon(
-                Icons.explore_rounded,
-                color: AppColors.accent,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Kıble Bulucu',
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: AppColors.accent,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Pusulayı açarak kıble yönünü bulun',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: AppColors.accent,
-              size: 16,
-            ),
-          ],
-        ),
       ),
     );
   }

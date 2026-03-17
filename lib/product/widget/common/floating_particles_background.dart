@@ -27,7 +27,7 @@ class _FloatingParticlesBackgroundState
 
   // Uygulama renk paletine uygun: teal tonu + gold tonu
   static const List<Color> _palette = [
-    AppColors.primary,      // #008080 teal
+    AppColors.primary,
     AppColors.primaryLight, // #4DB6AC açık teal
     Color(0xFF26A69A),      // orta teal
     AppColors.accent,       // #D4AF37 gold

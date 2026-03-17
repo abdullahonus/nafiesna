@@ -8,6 +8,9 @@ import '../product/init/network/network_config.dart';
 /// Tek kaynak: api.aladhan.com/v1
 /// - Şehir bazlı: /timingsByCity/{DD-MM-YYYY}
 /// - Koordinat bazlı: /timings/{DD-MM-YYYY}
+///
+/// Hicri tarih düzeltme: Aladhan'ın Hicri takvimi Diyanet'ten 1 gün ileride.
+/// Düzeltme HijriDateData.fromAladhanJson içinde client-side yapılır.
 class PrayerTimesService {
   PrayerTimesService() : _dio = NetworkConfig.aladhanDio;
 

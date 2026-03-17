@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 abstract class AppColors {
-  // Brand — Teal primary, Gold accent (spec FR-007)
-  static const Color primary = Color(0xFF008080);
-  static const Color primaryLight = Color(0xFF4DB6AC);
-  static const Color primaryDark = Color(0xFF00695C);
+  // Brand — Kubbetül Hadra yeşili + Gold accent
+  static const Color primary = Color(0xFF1A7A3D);
+  static const Color primaryLight = Color(0xFF4CAF62);
+  static const Color primaryDark = Color(0xFF0E5C2B);
   static const Color accent = Color(0xFFD4AF37);
   static const Color accentLight = Color(0xFFFFD700);
 

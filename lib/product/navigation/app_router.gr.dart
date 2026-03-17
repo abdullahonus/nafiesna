@@ -27,6 +27,22 @@ class ContentRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DreamView]
+class DreamRoute extends PageRouteInfo<void> {
+  const DreamRoute({List<PageRouteInfo>? children})
+    : super(DreamRoute.name, initialChildren: children);
+
+  static const String name = 'DreamRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DreamView();
+    },
+  );
+}
+
+/// generated route for
 /// [HomeView]
 class HomeRoute extends PageRouteInfo<void> {
   const HomeRoute({List<PageRouteInfo>? children})
@@ -54,22 +70,6 @@ class PdfRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const PdfView();
-    },
-  );
-}
-
-/// generated route for
-/// [PrayerTimesView]
-class PrayerTimesRoute extends PageRouteInfo<void> {
-  const PrayerTimesRoute({List<PageRouteInfo>? children})
-    : super(PrayerTimesRoute.name, initialChildren: children);
-
-  static const String name = 'PrayerTimesRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const PrayerTimesView();
     },
   );
 }

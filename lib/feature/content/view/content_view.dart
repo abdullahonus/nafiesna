@@ -5,7 +5,7 @@ import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../widgets/religious_days_page.dart';
 import '../widgets/missed_prayers_page.dart';
-import '../widgets/dream_journal_page.dart';
+
 import '../widgets/nearby_mosques_page.dart';
 import '../widgets/islamic_info_page.dart';
 
@@ -47,12 +47,6 @@ class ContentView extends StatelessWidget {
               label: 'Kazalar',
               color: Color(0xFF4CAF50),
               page: MissedPrayersPage(),
-            ),
-            _MenuCard(
-              icon: Icons.auto_stories_rounded,
-              label: 'Rüya Defteri',
-              color: Color(0xFF9C27B0),
-              page: DreamJournalPage(),
             ),
             _MenuCard(
               icon: Icons.info_outline_rounded,

@@ -10,11 +10,11 @@ final _missedPrayerServiceProvider = Provider(
   (ref) => MissedPrayerService(),
 );
 
-final _countersProvider = FutureProvider<Map<String, int>>((ref) {
+final _countersProvider = FutureProvider.autoDispose<Map<String, int>>((ref) {
   return ref.read(_missedPrayerServiceProvider).getAll();
 });
 
-final _lastUpdatedProvider = FutureProvider<String?>((ref) {
+final _lastUpdatedProvider = FutureProvider.autoDispose<String?>((ref) {
   return ref.read(_missedPrayerServiceProvider).getLastUpdated();
 });
 
@@ -92,6 +92,7 @@ class _MissedPrayersPageState extends ConsumerState<MissedPrayersPage> {
                       count: _counters[MissedPrayerService.prayerKeys[i]] ?? 0,
                       onIncrement: () => _increment(MissedPrayerService.prayerKeys[i]),
                       onDecrement: () => _decrement(MissedPrayerService.prayerKeys[i]),
+                      onSetValue: (int v) => _setDirectly(MissedPrayerService.prayerKeys[i], v),
                     ),
                   ],
                 ],
@@ -132,6 +133,7 @@ class _MissedPrayersPageState extends ConsumerState<MissedPrayersPage> {
   Future<void> _increment(String key) async {
     setState(() => _counters[key] = (_counters[key] ?? 0) + 1);
     await ref.read(_missedPrayerServiceProvider).increment(key);
+    ref.invalidate(_countersProvider);
     ref.invalidate(_lastUpdatedProvider);
   }
 
@@ -140,6 +142,14 @@ class _MissedPrayersPageState extends ConsumerState<MissedPrayersPage> {
     if (current <= 0) return;
     setState(() => _counters[key] = current - 1);
     await ref.read(_missedPrayerServiceProvider).decrement(key);
+    ref.invalidate(_countersProvider);
+    ref.invalidate(_lastUpdatedProvider);
+  }
+
+  Future<void> _setDirectly(String key, int value) async {
+    setState(() => _counters[key] = value);
+    await ref.read(_missedPrayerServiceProvider).set(key, value);
+    ref.invalidate(_countersProvider);
     ref.invalidate(_lastUpdatedProvider);
   }
 }
@@ -150,12 +160,14 @@ class _CounterRow extends StatelessWidget {
     required this.count,
     required this.onIncrement,
     required this.onDecrement,
+    required this.onSetValue,
   });
 
   final String prayerKey;
   final int count;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
+  final ValueChanged<int> onSetValue;
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +280,7 @@ class _CounterRow extends StatelessWidget {
                 final int? value = int.tryParse(controller.text);
                 if (value != null && value >= 0) {
                   Navigator.of(ctx).pop();
-                  _updateValue(context, value);
+                  onSetValue(value);
                 }
               },
               child: Text(
@@ -284,16 +296,4 @@ class _CounterRow extends StatelessWidget {
     );
   }
 
-  void _updateValue(BuildContext context, int value) {
-    // Parent widget'ın state'ini güncellemek yerine,
-    // doğrudan SharedPreferences'a yaz ve sayfayı yenile
-    final MissedPrayerService service = MissedPrayerService();
-    service.set(prayerKey, value).then((_) {
-      if (context.mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(builder: (_) => const MissedPrayersPage()),
-        );
-      }
-    });
-  }
 }
