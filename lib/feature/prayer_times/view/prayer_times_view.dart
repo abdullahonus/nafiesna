@@ -35,6 +35,29 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
         title: const Text('Namaz Vakitleri'),
         backgroundColor: AppColors.surface,
         elevation: 0,
+        actions: [
+          // Konum yenile butonu
+          if (state.locationStatus == LocationStatus.permitted)
+            IconButton(
+              onPressed: state.isLoading
+                  ? null
+                  : () => ref.read(prayerTimesProvider.notifier).refresh(),
+              icon: state.isLocationLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.accent,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.my_location_rounded,
+                      color: AppColors.accent,
+                    ),
+              tooltip: 'Konumu yenile',
+            ),
+        ],
       ),
       body: state.isLoading
           ? const AppLoadingIndicator()
@@ -50,13 +73,29 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
         children: [
           _buildDateHeader(state),
           const SizedBox(height: AppSpacing.xl),
+
+          // İzin / GPS durumu kartı
+          if (_shouldShowPermissionBanner(state)) ...[
+            _buildPermissionBanner(state),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+
           _buildPrayerList(state),
           const SizedBox(height: AppSpacing.xl),
-          _buildLocationNote(),
+          _buildLocationNote(state),
+          const SizedBox(height: AppSpacing.lg),
         ],
       ),
     );
   }
+
+  bool _shouldShowPermissionBanner(PrayerTimesState state) {
+    return state.isPermissionDenied ||
+        state.isPermissionDeniedForever ||
+        state.isServiceDisabled;
+  }
+
+  // ── Tarih başlığı ─────────────────────────────────────────────────────────
 
   Widget _buildDateHeader(PrayerTimesState state) {
     return Container(
@@ -80,28 +119,123 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            state.hijriDate,
-            style: AppTextStyles.labelLarge.copyWith(color: AppColors.accent),
-          ),
-          const SizedBox(height: AppSpacing.xs),
+          if (state.hijriDate.isNotEmpty)
+            Text(
+              state.hijriDate,
+              style: AppTextStyles.labelLarge.copyWith(color: AppColors.accent),
+            ),
+          if (state.hijriDate.isNotEmpty) const SizedBox(height: AppSpacing.xs),
           Text(state.dateLabel, style: AppTextStyles.headlineSmall),
         ],
       ),
     );
   }
 
+  // ── İzin / GPS servis banneri ─────────────────────────────────────────────
+
+  Widget _buildPermissionBanner(PrayerTimesState state) {
+    final isForever = state.isPermissionDeniedForever;
+    final isServiceOff = state.isServiceDisabled;
+
+    final String title;
+    final String subtitle;
+    final String buttonLabel;
+    final VoidCallback onTap;
+
+    if (isServiceOff) {
+      title = 'Konum Servisi Kapalı';
+      subtitle = 'Bulunduğunuz yerin namaz vakitlerini görmek için '
+          'cihazınızın konum servisini açın.';
+      buttonLabel = 'Konum Ayarlarını Aç';
+      onTap = () =>
+          ref.read(prayerTimesProvider.notifier).openLocationSettings();
+    } else if (isForever) {
+      title = 'Konum İzni Gerekli';
+      subtitle = 'Uygulama ayarlarından konum iznini etkinleştirerek '
+          'bulunduğunuz yere ait Diyanet vakitlerini görebilirsiniz.';
+      buttonLabel = 'Uygulama Ayarlarını Aç';
+      onTap = () => ref.read(prayerTimesProvider.notifier).openAppSettings();
+    } else {
+      title = 'Konum İzni';
+      subtitle = 'Bulunduğunuz yere ait doğru namaz vakitlerini '
+          'Diyanet verisinden göstermek için konum izni gereklidir.';
+      buttonLabel = 'İzin Ver';
+      onTap = () => ref
+          .read(prayerTimesProvider.notifier)
+          .requestLocationPermission();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        color: AppColors.accent.withValues(alpha: 0.07),
+        border: Border.all(
+          color: AppColors.accent.withValues(alpha: 0.3),
+          width: 0.8,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isServiceOff
+                ? Icons.location_off_rounded
+                : Icons.location_on_rounded,
+            color: AppColors.accent,
+            size: 22,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.accent,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                GestureDetector(
+                  onTap: onTap,
+                  child: Text(
+                    buttonLabel,
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.primary,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Vakitler listesi ──────────────────────────────────────────────────────
+
   Widget _buildPrayerList(PrayerTimesState state) {
     return Column(
       children: List.generate(state.prayers.length, (index) {
         final prayer = state.prayers[index];
         final isActive = index == state.currentPrayerIndex;
-        return _buildPrayerRow(prayer, isActive, index);
+        return _buildPrayerRow(prayer, isActive);
       }),
     );
   }
 
-  Widget _buildPrayerRow(PrayerTime prayer, bool isActive, int index) {
+  Widget _buildPrayerRow(PrayerTime prayer, bool isActive) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -111,7 +245,9 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        color: isActive ? AppColors.primary.withValues(alpha: 0.15) : AppColors.surface,
+        color: isActive
+            ? AppColors.primary.withValues(alpha: 0.15)
+            : AppColors.surface,
         border: Border.all(
           color: isActive ? AppColors.primary : AppColors.border,
           width: isActive ? 1 : 0.5,
@@ -125,7 +261,8 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
             child: Text(
               prayer.name,
               style: isActive
-                  ? AppTextStyles.headlineSmall.copyWith(color: AppColors.primary)
+                  ? AppTextStyles.headlineSmall
+                      .copyWith(color: AppColors.primary)
                   : AppTextStyles.bodyLarge,
             ),
           ),
@@ -165,15 +302,36 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
     );
   }
 
-  Widget _buildLocationNote() {
-    return const Row(
+  // ── Konum notu ────────────────────────────────────────────────────────────
+
+  Widget _buildLocationNote(PrayerTimesState state) {
+    final locationText = state.locationName.isNotEmpty
+        ? state.locationName
+        : 'İstanbul — Diyanet İşleri Başkanlığı';
+
+    final isGpsActive = state.locationStatus == LocationStatus.permitted;
+
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.location_on_rounded, color: AppColors.textSecondary, size: 14),
-        SizedBox(width: 4),
-        Text(
-          'İstanbul vakitleri — Diyanet İşleri Başkanlığı',
-          style: AppTextStyles.bodySmall,
+        Icon(
+          isGpsActive
+              ? Icons.my_location_rounded
+              : Icons.location_on_outlined,
+          color: isGpsActive ? AppColors.accent : AppColors.textSecondary,
+          size: 14,
+        ),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            locationText,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: isGpsActive
+                  ? AppColors.accent.withValues(alpha: 0.8)
+                  : AppColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ),
       ],
     );

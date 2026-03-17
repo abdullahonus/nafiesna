@@ -646,6 +646,13 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-17 | fawazahmed0 Nawawi 40 (İngilizce) → **hadeethenc.com** Türkçe Faziletler kategori | Tüm metin Türkçe, Arapça orijinal + kaynak + derece eklendi |
 | 2026-03-17 | HadithCard güncellendi: Arapça metin (RTL), derece rozeti, Türkçe kaynak | Yeni API alanlarını göstermek için |
 | 2026-03-17 | İmsak hesabı: fajr - 10 dk (Diyanet API imsak vermiyor) | Türkiye standardı |
+| 2026-03-17 | `geolocator` eklendi | GPS konum desteği |
+| 2026-03-17 | Nominatim (OSM) ters coğrafi kodlama eklendi | Koordinat → şehir adı |
+| 2026-03-17 | `LocationService` oluşturuldu | GPS + Nominatim + Diyanet location search |
+| 2026-03-17 | `PrayerTimesService` koordinat bazlı metod eklendi | GPS ile namaz vakti |
+| 2026-03-17 | `PrayerTimesNotifier` konum durumu eklendi (`LocationStatus`) | İzin yönetimi |
+| 2026-03-17 | `PrayerTimesView` izin banneri + GPS ikonu eklendi | Kullanıcıya konum bilgisi |
+| 2026-03-17 | iOS Info.plist + Android Manifest konum izinleri eklendi | Native entegrasyon |
 
 ---
 

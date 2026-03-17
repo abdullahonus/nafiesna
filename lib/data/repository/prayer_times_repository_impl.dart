@@ -11,4 +11,17 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   Future<PrayerTimesModel> getTodayTimings({int locationId = 9541}) {
     return _service.getTodayTimings(locationId: locationId);
   }
+
+  @override
+  Future<PrayerTimesModel> getTodayTimingsByCoordinates({
+    required double latitude,
+    required double longitude,
+    int? locationId,
+  }) {
+    return _service.getTodayTimingsByCoordinates(
+      latitude: latitude,
+      longitude: longitude,
+      locationId: locationId,
+    );
+  }
 }

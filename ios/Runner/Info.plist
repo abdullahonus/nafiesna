@@ -50,5 +50,9 @@
 		<string>https</string>
 		<string>http</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Bulunduğunuz yere ait namaz vakitlerini Diyanet İşleri verisiyle göstermek için konumunuza ihtiyaç duyuyoruz.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Bulunduğunuz yere ait namaz vakitlerini Diyanet İşleri verisiyle göstermek için konumunuza ihtiyaç duyuyoruz.</string>
 </dict>
 </plist>
