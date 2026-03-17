@@ -1,4 +1,4 @@
-package com.example.nafiesna
+package com.artra.nafiesna
 
 import io.flutter.embedding.android.FlutterActivity
 
