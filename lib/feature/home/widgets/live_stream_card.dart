@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
+import '../../../product/init/app_init.dart';
 
 class LiveStreamCard extends StatelessWidget {
   const LiveStreamCard({super.key});
@@ -10,17 +12,38 @@ class LiveStreamCard extends StatelessWidget {
   static const String _channelUrl =
       'https://www.youtube.com/@NafiEsna/streams';
 
-  Future<void> _openChannel(BuildContext context) async {
-    final Uri uri = Uri.parse(_channelUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('YouTube açılamadı.'),
-          behavior: SnackBarBehavior.floating,
-        ),
+  Future<void> _openStream(BuildContext context) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? savedUrl = prefs.getString(kLiveStreamUrlKey);
+    final String targetUrl = (savedUrl != null && savedUrl.isNotEmpty)
+        ? savedUrl
+        : _channelUrl;
+
+    await _launchUrl(context, targetUrl);
+  }
+
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
+    try {
+      bool launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
       );
+      if (!launched) {
+        launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      }
+      if (!launched) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('YouTube açılamadı.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -56,7 +79,7 @@ class LiveStreamCard extends StatelessWidget {
 
   Widget _buildThumbnail(BuildContext context) {
     return GestureDetector(
-      onTap: () => _openChannel(context),
+      onTap: () => _openStream(context),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppSpacing.radiusLg),
@@ -167,7 +190,7 @@ class LiveStreamCard extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => _openChannel(context),
+            onTap: () => _openStream(context),
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
