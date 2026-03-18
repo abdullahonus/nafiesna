@@ -104,8 +104,8 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 | Local DB (sqflite) | ❌ Kaldırıldı | SharedPreferences'a taşındı |
 | Firebase | ✅ Aktif | `firebase_core ^4.5.0` — Android + iOS config tamamlandı |
 | Push Notification (FCM) | ✅ Aktif | `firebase_messaging ^16.1.2` — topic: `live_stream` |
-| Cloud Functions | ✅ Aktif | `functions/` — YouTube canlı yayın kontrolü, her 5 dk |
-| YouTube Data API v3 | ✅ Aktif | Canlı yayın durumu kontrolü (client + Cloud Function) |
+| Cloud Functions | ❌ Kaldırıldı | Manuel FCM bildirimi tercih edildi |
+| YouTube Data API v3 | ❌ Kaldırıldı | Manuel FCM bildirimi tercih edildi |
 | Deeplink | ⬜ Planlandı | — |
 | Session Timeout | ❌ Kullanılmıyor | Auth yok |
 | SSL Pinning | ❌ Kullanılmıyor | Network katmanı henüz yok |
@@ -737,8 +737,8 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-17 | Rüya Defteri UI yenilendi | Gül motifi kaldırıldı → hilal-yıldız temalı dini rüya UI, gold accent + dark surface uyumlu |
 | 2026-03-17 | Bundle ID değiştirildi | `com.example.nafiesna` → `com.artra.nafiesna` (Android + iOS + Kotlin dizini) |
 | 2026-03-17 | Firebase entegrasyonu | `firebase_core` + `firebase_messaging` eklendi, FCM topic subscribe (`live_stream`), APNs ayarları |
-| 2026-03-17 | YouTube canlı yayın kontrolü | `YouTubeLiveService` + `LiveStreamCard` Riverpod ile canlı/offline durumu, animasyonlu badge |
-| 2026-03-17 | Cloud Function eklendi | `functions/index.js` — her 5 dk YouTube API kontrolü, Firestore state, FCM push bildirimi |
+| 2026-03-17 | Firebase + FCM entegrasyonu | Manuel bildirim: Firebase Console'dan topic `live_stream`'e push gönderimi |
+| 2026-03-17 | Cloud Function + YouTube API kaldırıldı | Manuel FCM bildirimi tercih edildi, $0 maliyet garantisi |
 
 ---
 

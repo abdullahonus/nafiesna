@@ -1,9 +1,12 @@
+import 'dart:io' show Platform;
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../utility/injection/injection.dart';
 import '../navigation/app_router.dart';
 
@@ -59,17 +62,41 @@ class AppInit {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint('FCM foreground: ${message.notification?.title}');
     });
+
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+
+    messaging.getInitialMessage().then((RemoteMessage? message) {
+      if (message != null) {
+        _handleNotificationTap(message);
+      }
+    });
+  }
+
+  static Future<void> _handleNotificationTap(RemoteMessage message) async {
+    final String? url = message.data['url'] as String?;
+    if (url == null || url.isEmpty) return;
+
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   static Future<void> _subscribeToTopicWhenReady(
     FirebaseMessaging messaging,
   ) async {
+    if (Platform.isAndroid) {
+      await messaging.subscribeToTopic('live_stream');
+      debugPrint('FCM: subscribed to live_stream topic (Android)');
+      return;
+    }
+
     for (int i = 0; i < 10; i++) {
       try {
         final String? apnsToken = await messaging.getAPNSToken();
         if (apnsToken != null) {
           await messaging.subscribeToTopic('live_stream');
-          debugPrint('FCM: subscribed to live_stream topic');
+          debugPrint('FCM: subscribed to live_stream topic (iOS)');
           return;
         }
       } catch (e) {
