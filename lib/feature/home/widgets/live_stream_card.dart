@@ -1,16 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
+import '../../../service/youtube_live_service.dart';
 
-class LiveStreamCard extends StatelessWidget {
+// TODO: YouTube Data API key'i güvenli bir yere taşınacak (env / remote config)
+const String _youtubeApiKey = 'AIzaSyDus2ZdOtY77hiQCp9cS_Bue9Xv_93BYXc';
+
+final _ytServiceProvider = Provider(
+  (ref) => YouTubeLiveService(apiKey: _youtubeApiKey),
+);
+
+final _liveStatusProvider = FutureProvider.autoDispose<LiveStreamInfo>((ref) {
+  return ref.read(_ytServiceProvider).checkLiveStatus();
+});
+
+class LiveStreamCard extends ConsumerWidget {
   const LiveStreamCard({super.key});
 
-  static const String _liveStreamUrl = 'https://www.youtube.com/@NafiEsna/streams';
+  static const String _channelUrl =
+      'https://www.youtube.com/@NafiEsna/streams';
 
-  Future<void> _openChannel(BuildContext context) async {
-    final uri = Uri.parse(_liveStreamUrl);
+  Future<void> _openUrl(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else if (context.mounted) {
@@ -24,7 +38,10 @@ class LiveStreamCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<LiveStreamInfo> liveAsync = ref.watch(_liveStatusProvider);
+    final bool isLive = liveAsync.valueOrNull?.isLive ?? false;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
@@ -33,12 +50,19 @@ class LiveStreamCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [AppColors.surface, AppColors.surfaceVariant],
         ),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        border: Border.all(
+          color: isLive
+              ? Colors.red.withValues(alpha: 0.4)
+              : AppColors.border,
+          width: isLive ? 1.0 : 0.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.08),
-            blurRadius: 16,
-            spreadRadius: 0,
+            color: isLive
+                ? Colors.red.withValues(alpha: 0.15)
+                : AppColors.accent.withValues(alpha: 0.08),
+            blurRadius: isLive ? 24 : 16,
+            spreadRadius: isLive ? 2 : 0,
             offset: const Offset(0, 4),
           ),
         ],
@@ -46,16 +70,26 @@ class LiveStreamCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildThumbnail(context),
-          _buildInfo(context),
+          _buildThumbnail(context, liveAsync),
+          _buildInfo(context, isLive),
         ],
       ),
     );
   }
 
-  Widget _buildThumbnail(BuildContext context) {
+  Widget _buildThumbnail(
+    BuildContext context,
+    AsyncValue<LiveStreamInfo> liveAsync,
+  ) {
+    final LiveStreamInfo? info = liveAsync.valueOrNull;
+    final bool isLive = info?.isLive ?? false;
+
     return GestureDetector(
-      onTap: () => _openChannel(context),
+      onTap: () {
+        final String url =
+            isLive && info?.videoId != null ? info!.videoUrl : _channelUrl;
+        _openUrl(context, url);
+      },
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppSpacing.radiusLg),
@@ -66,15 +100,14 @@ class LiveStreamCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF0A1628), Color(0xFF001A1A)],
-                  ),
-                ),
-              ),
+              if (isLive && info?.thumbnailUrl != null)
+                Image.network(
+                  info!.thumbnailUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildGradientBg(),
+                )
+              else
+                _buildGradientBg(),
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -100,32 +133,7 @@ class LiveStreamCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.circle, color: Colors.white, size: 8),
-                          SizedBox(width: 4),
-                          Text(
-                            'CANLI / YAKINDA',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildBadge(isLive),
                   ],
                 ),
               ),
@@ -136,7 +144,81 @@ class LiveStreamCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfo(BuildContext context) {
+  Widget _buildGradientBg() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF0A1628), Color(0xFF001A1A)],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(bool isLive) {
+    if (isLive) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.withValues(alpha: 0.5),
+              blurRadius: 12,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _PulsingDot(),
+            SizedBox(width: 6),
+            Text(
+              'CANLI YAYIN',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(
+          color: AppColors.border.withValues(alpha: 0.5),
+          width: 0.5,
+        ),
+      ),
+      child: const Text(
+        'CANLI YAYIN YOK',
+        style: TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfo(BuildContext context, bool isLive) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
@@ -155,29 +237,35 @@ class LiveStreamCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('NafiEsna', style: AppTextStyles.labelLarge),
-                Text('Canlı Yayın & Sohbet', style: AppTextStyles.bodySmall),
+                const Text('NafiEsna', style: AppTextStyles.labelLarge),
+                Text(
+                  isLive ? 'Şu an canlı yayında!' : 'Canlı Yayın & Sohbet',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: isLive ? Colors.red : AppColors.textSecondary,
+                    fontWeight: isLive ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
               ],
             ),
           ),
           GestureDetector(
-            onTap: () => _openChannel(context),
+            onTap: () => _openUrl(context, _channelUrl),
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.xs,
               ),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: isLive ? Colors.red : AppColors.primary,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
-              child: const Text(
-                'İzle',
-                style: TextStyle(
+              child: Text(
+                isLive ? 'İzle' : 'Kanala Git',
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -187,6 +275,53 @@ class LiveStreamCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Canlı yayın göstergesi — nabız gibi atan kırmızı nokta
+class _PulsingDot extends StatefulWidget {
+  const _PulsingDot();
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (_, __) {
+        return Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(
+              alpha: 0.5 + (_controller.value * 0.5),
+            ),
+          ),
+        );
+      },
     );
   }
 }
