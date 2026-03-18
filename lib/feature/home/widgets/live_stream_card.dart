@@ -19,6 +19,7 @@ class LiveStreamCard extends StatelessWidget {
         ? savedUrl
         : _channelUrl;
 
+    if (!context.mounted) return;
     await _launchUrl(context, targetUrl);
   }
 

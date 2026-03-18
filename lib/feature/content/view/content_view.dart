@@ -5,9 +5,11 @@ import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../widgets/religious_days_page.dart';
 import '../widgets/missed_prayers_page.dart';
-
 import '../widgets/nearby_mosques_page.dart';
 import '../widgets/islamic_info_page.dart';
+import '../widgets/aksam_virdi_page.dart';
+import '../widgets/ali_imran_page.dart';
+
 
 @RoutePage()
 class ContentView extends StatelessWidget {
@@ -53,6 +55,18 @@ class ContentView extends StatelessWidget {
               label: 'İslami Bilgiler',
               color: Color(0xFF2196F3),
               page: IslamicInfoPage(),
+            ),
+            _MenuCard(
+              icon: Icons.wb_twilight_rounded,
+              label: 'Akşam Virdi',
+              color: AppColors.accent,
+              page: AksamVirdiPage(),
+            ),
+            _MenuCard(
+              icon: Icons.menu_book_rounded,
+              label: 'Âl-i İmrân\n18–27',
+              color: AppColors.primary,
+              page: AliImranPage(),
             ),
           ],
         ),

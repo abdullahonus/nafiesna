@@ -56,4 +56,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/kaside.pdf
+    - assets/kaside_i_burde.pdf
+    - assets/evrad_i_serif.pdf

@@ -56,7 +56,10 @@ class AppInit {
 
     await _initLocalNotifications();
 
-    _setupFirebaseMessaging();
+    // unawaited bırakıyoruz — FCM setup arka planda çalışsın, uygulama bloklanmasın
+    _setupFirebaseMessaging().catchError((Object e) {
+      debugPrint('FCM: setup hatası — $e');
+    });
   }
 
   static Future<void> _initLocalNotifications() async {
@@ -109,36 +112,53 @@ class AppInit {
     }
   }
 
-  static void _setupFirebaseMessaging() {
+  static Future<void> _setupFirebaseMessaging() async {
     final FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    messaging.requestPermission().then((NotificationSettings settings) {
+    // İzin iste — hata durumunda sessizce devam et
+    try {
+      final NotificationSettings settings =
+          await messaging.requestPermission();
+
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
-        _subscribeToTopicWhenReady(messaging);
+        // iOS'ta APNS token geç gelebilir; hata yönetimli fire-and-forget
+        _subscribeToTopicWhenReady(messaging).catchError((Object e) {
+          debugPrint('FCM: topic subscribe hatası — $e');
+        });
 
         if (kDebugMode) {
+          // getToken() iOS'ta APNS token hazır değilse fırlatır → catchError zorunlu
           messaging.getToken().then((String? token) {
             debugPrint('FCM Token: $token');
+          }).catchError((Object e) {
+            debugPrint('FCM: getToken hatası (simülatörde beklenen) — $e');
           });
         }
       }
-    });
+    } catch (e) {
+      debugPrint('FCM: requestPermission hatası — $e');
+    }
 
-    messaging.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    // Ön plan bildirim ayarları
+    try {
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    } catch (e) {
+      debugPrint('FCM: foreground options hatası — $e');
+    }
 
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);
-
     FirebaseMessaging.onMessageOpenedApp.listen(_handleFcmTap);
 
+    // Uygulama kapalıyken gelen mesaj — APNS hatası fırlatabileceğinden guard et
     messaging.getInitialMessage().then((RemoteMessage? message) {
-      if (message != null) {
-        _handleFcmTap(message);
-      }
+      if (message != null) _handleFcmTap(message);
+    }).catchError((Object e) {
+      debugPrint('FCM: getInitialMessage hatası — $e');
     });
   }
 
@@ -211,24 +231,40 @@ class AppInit {
   ) async {
     if (Platform.isAndroid) {
       await messaging.subscribeToTopic('live_stream');
-      debugPrint('FCM: subscribed to live_stream topic (Android)');
+      debugPrint('FCM: live_stream topic\'a abone olundu (Android)');
       return;
     }
 
-    for (int i = 0; i < 10; i++) {
+    // iOS: APNS token cihaza gelmeden subscribe yapılamaz.
+    // Simülatörde APNS hiç gelmez; max 5 deneme × 4 saniye = 20 saniye.
+    const int maxAttempts = 5;
+    const Duration retryDelay = Duration(seconds: 4);
+
+    for (int i = 0; i < maxAttempts; i++) {
       try {
         final String? apnsToken = await messaging.getAPNSToken();
-        if (apnsToken != null) {
+        if (apnsToken != null && apnsToken.isNotEmpty) {
           await messaging.subscribeToTopic('live_stream');
-          debugPrint('FCM: subscribed to live_stream topic (iOS)');
+          debugPrint('FCM: live_stream topic\'a abone olundu (iOS)');
           return;
         }
+        // Token null → henüz hazır değil, bekle
+        debugPrint('FCM: APNS token henüz yok (deneme ${i + 1}/$maxAttempts)');
+      } on FirebaseException catch (e) {
+        // [apns-token-not-set] beklenen hata — sessizce devam et
+        debugPrint(
+          'FCM: APNS token hazır değil (deneme ${i + 1}/$maxAttempts) — ${e.code}',
+        );
       } catch (e) {
-        debugPrint('FCM: APNS token not ready yet (attempt ${i + 1})');
+        debugPrint('FCM: beklenmedik hata (deneme ${i + 1}) — $e');
       }
-      await Future<void>.delayed(const Duration(seconds: 3));
+
+      if (i < maxAttempts - 1) {
+        await Future<void>.delayed(retryDelay);
+      }
     }
-    debugPrint('FCM: Could not subscribe — APNS token not available');
+
+    debugPrint('FCM: APNS token alınamadı — topic subscribe yapılamadı.');
   }
 
   static Future<void> _requestLocationPermission() async {
