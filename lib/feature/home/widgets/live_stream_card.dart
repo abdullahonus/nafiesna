@@ -7,7 +7,7 @@ import '../../../product/constants/app_spacing.dart';
 import '../../../service/youtube_live_service.dart';
 
 // TODO: YouTube Data API key'i güvenli bir yere taşınacak (env / remote config)
-const String _youtubeApiKey = 'AIzaSyDus2ZdOtY77hiQCp9cS_Bue9Xv_93BYXc';
+const String _youtubeApiKey = 'AIzaSyC2AcvtBZ9TZCQft6az47UspEI5sJbo1UM';
 
 final _ytServiceProvider = Provider(
   (ref) => YouTubeLiveService(apiKey: _youtubeApiKey),
@@ -21,7 +21,7 @@ class LiveStreamCard extends ConsumerWidget {
   const LiveStreamCard({super.key});
 
   static const String _channelUrl =
-      'https://www.youtube.com/@NafiEsna/streams';
+      'https://www.youtube.com/@bloomberght/streams';
 
   Future<void> _openUrl(BuildContext context, String url) async {
     final Uri uri = Uri.parse(url);
@@ -51,9 +51,7 @@ class LiveStreamCard extends ConsumerWidget {
           colors: [AppColors.surface, AppColors.surfaceVariant],
         ),
         border: Border.all(
-          color: isLive
-              ? Colors.red.withValues(alpha: 0.4)
-              : AppColors.border,
+          color: isLive ? Colors.red.withValues(alpha: 0.4) : AppColors.border,
           width: isLive ? 1.0 : 0.5,
         ),
         boxShadow: [
@@ -86,8 +84,9 @@ class LiveStreamCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        final String url =
-            isLive && info?.videoId != null ? info!.videoUrl : _channelUrl;
+        final String url = isLive && info?.videoId != null
+            ? info!.videoUrl
+            : _channelUrl;
         _openUrl(context, url);
       },
       child: ClipRRect(

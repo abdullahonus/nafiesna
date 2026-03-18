@@ -29,28 +29,28 @@ class AppInit {
 
     getIt.registerSingleton<AppRouter>(AppRouter());
 
-    await Future.wait([
-      _requestLocationPermission(),
-      _setupFirebaseMessaging(),
-    ]);
+    await _requestLocationPermission();
+
+    _setupFirebaseMessaging();
   }
 
-  static Future<void> _setupFirebaseMessaging() async {
+  static void _setupFirebaseMessaging() {
     final FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    final NotificationSettings settings = await messaging.requestPermission();
+    messaging.requestPermission().then((NotificationSettings settings) {
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        _subscribeToTopicWhenReady(messaging);
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
-        settings.authorizationStatus == AuthorizationStatus.provisional) {
-      await messaging.subscribeToTopic('live_stream');
-
-      if (kDebugMode) {
-        final String? token = await messaging.getToken();
-        debugPrint('FCM Token: $token');
+        if (kDebugMode) {
+          messaging.getToken().then((String? token) {
+            debugPrint('FCM Token: $token');
+          });
+        }
       }
-    }
+    });
 
-    await messaging.setForegroundNotificationPresentationOptions(
+    messaging.setForegroundNotificationPresentationOptions(
       alert: true,
       badge: true,
       sound: true,
@@ -59,6 +59,25 @@ class AppInit {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint('FCM foreground: ${message.notification?.title}');
     });
+  }
+
+  static Future<void> _subscribeToTopicWhenReady(
+    FirebaseMessaging messaging,
+  ) async {
+    for (int i = 0; i < 10; i++) {
+      try {
+        final String? apnsToken = await messaging.getAPNSToken();
+        if (apnsToken != null) {
+          await messaging.subscribeToTopic('live_stream');
+          debugPrint('FCM: subscribed to live_stream topic');
+          return;
+        }
+      } catch (e) {
+        debugPrint('FCM: APNS token not ready yet (attempt ${i + 1})');
+      }
+      await Future<void>.delayed(const Duration(seconds: 3));
+    }
+    debugPrint('FCM: Could not subscribe — APNS token not available');
   }
 
   static Future<void> _requestLocationPermission() async {

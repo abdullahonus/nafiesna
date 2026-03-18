@@ -6,13 +6,15 @@ class YouTubeLiveService {
   YouTubeLiveService({required String apiKey}) : _apiKey = apiKey;
 
   final String _apiKey;
-  static const String _channelHandle = '@NafiEsna';
+  static const String _channelHandle = '@bloomberght';
   static const String _baseUrl = 'https://www.googleapis.com/youtube/v3';
 
-  final Dio _dio = Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 8),
-    receiveTimeout: const Duration(seconds: 8),
-  ));
+  final Dio _dio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 8),
+      receiveTimeout: const Duration(seconds: 8),
+    ),
+  );
 
   String? _cachedChannelId;
   LiveStreamInfo? _cachedResult;
@@ -52,7 +54,8 @@ class YouTubeLiveService {
                 as Map<String, dynamic>;
         final String videoId =
             ((items[0] as Map<String, dynamic>)['id']
-                as Map<String, dynamic>)['videoId'] as String;
+                    as Map<String, dynamic>)['videoId']
+                as String;
 
         _cachedResult = LiveStreamInfo(
           isLive: true,
@@ -84,15 +87,13 @@ class YouTubeLiveService {
       },
     );
 
-    final List<dynamic> items =
-        response.data!['items'] as List<dynamic>? ?? [];
+    final List<dynamic> items = response.data!['items'] as List<dynamic>? ?? [];
 
     if (items.isEmpty) {
       throw Exception('YouTube channel not found: $_channelHandle');
     }
 
-    _cachedChannelId =
-        (items[0] as Map<String, dynamic>)['id'] as String;
+    _cachedChannelId = (items[0] as Map<String, dynamic>)['id'] as String;
     return _cachedChannelId!;
   }
 
