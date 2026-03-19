@@ -15,6 +15,7 @@ import '../widgets/hadith_card.dart';
 import '../widgets/hijri_calendar_card.dart';
 import '../widgets/live_stream_card.dart';
 import '../widgets/prayer_times_bar.dart';
+import '../../../product/widget/common/sohbet_popup.dart';
 
 @RoutePage()
 class HomeView extends ConsumerStatefulWidget {
@@ -28,9 +29,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(homeProvider.notifier).init();
       ref.read(prayerTimesProvider.notifier).init();
+      
+      // Random Sohbet Popup
+      SohbetPopup.show(context);
     });
   }
 

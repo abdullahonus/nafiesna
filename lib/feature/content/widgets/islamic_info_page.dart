@@ -36,7 +36,7 @@ class IslamicInfoItem {
 
 // ── Veriler ────────────────────────────────────────────────────────────────
 
-const List<IslamicInfo> _infos = [
+const List<IslamicInfo> islamicInfos = [
   IslamicInfo(
     title: 'Âl-i İmrân 18–27',
     subtitle: 'Yatsı sonrası okunan âyetler ve faziletleri',
@@ -670,8 +670,8 @@ class _IslamicInfoPageState extends State<IslamicInfoPage> {
 
   List<IslamicInfo> get _filtered {
     final q = _query.toLowerCase().trim();
-    if (q.isEmpty) return _infos;
-    return _infos.where((info) {
+    if (q.isEmpty) return islamicInfos;
+    return islamicInfos.where((info) {
       return info.title.toLowerCase().contains(q) ||
           info.subtitle.toLowerCase().contains(q) ||
           info.items.any(
