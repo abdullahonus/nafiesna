@@ -1,18 +1,19 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../notifier/home_notifier.dart';
-import '../provider/home_provider.dart';
+
+import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
-import '../../../product/constants/app_spacing.dart';
-import '../../../product/widget/common/app_loading_indicator.dart';
 import '../../../product/widget/common/app_error_state.dart';
+import '../../../product/widget/common/app_loading_indicator.dart';
+import '../../prayer_times/provider/prayer_times_provider.dart';
+import '../notifier/home_notifier.dart';
+import '../provider/home_provider.dart';
 import '../widgets/hadith_card.dart';
+import '../widgets/hijri_calendar_card.dart';
 import '../widgets/live_stream_card.dart';
 import '../widgets/prayer_times_bar.dart';
-import '../widgets/hijri_calendar_card.dart';
-import '../../prayer_times/provider/prayer_times_provider.dart';
 
 @RoutePage()
 class HomeView extends ConsumerStatefulWidget {
@@ -40,27 +41,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
       backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
+          const SliverAppBar(
             backgroundColor: Colors.transparent,
-            expandedHeight: 60,
-            floating: true,
-            snap: true,
             elevation: 0,
-            centerTitle: true,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              titlePadding: const EdgeInsets.only(bottom: AppSpacing.md),
-              title: Text(
-                'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيمِ',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  fontFamily: 'serif',
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ),
+            automaticallyImplyLeading: true,
           ),
           SliverToBoxAdapter(
             child: Padding(

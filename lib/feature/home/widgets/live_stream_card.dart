@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../product/init/theme/app_colors.dart';
-import '../../../product/init/theme/app_text_styles.dart';
+
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/app_init.dart';
+import '../../../product/init/theme/app_colors.dart';
+import '../../../product/init/theme/app_text_styles.dart';
 
 class LiveStreamCard extends StatelessWidget {
   const LiveStreamCard({super.key});
 
-  static const String _channelUrl =
-      'https://www.youtube.com/@NafiEsna/streams';
+  static const String _channelUrl = 'https://www.youtube.com/@NafiEsna/streams';
 
   Future<void> _openStream(BuildContext context) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -70,10 +70,7 @@ class LiveStreamCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildThumbnail(context),
-          _buildInfo(context),
-        ],
+        children: [_buildThumbnail(context), _buildInfo(context)],
       ),
     );
   }
@@ -96,7 +93,10 @@ class LiveStreamCard extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFF0A1628), Color(0xFF001A1A)],
+                    colors: [
+                      Color.fromARGB(255, 34, 106, 3),
+                      Color.fromARGB(255, 0, 26, 10),
+                    ],
                   ),
                 ),
               ),
@@ -104,7 +104,8 @@ class LiveStreamCard extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
+                    Image.asset('assets/icon/icon.png', height: 90),
+                    /*  Container(
                       width: 68,
                       height: 48,
                       decoration: BoxDecoration(
@@ -123,7 +124,7 @@ class LiveStreamCard extends StatelessWidget {
                         color: Colors.white,
                         size: 36,
                       ),
-                    ),
+                    ), */
                     const SizedBox(height: AppSpacing.sm),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -132,8 +133,9 @@ class LiveStreamCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.9),
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusSm,
+                        ),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,

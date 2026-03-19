@@ -62,6 +62,11 @@ class _PdfPage extends StatefulWidget {
 
 class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
   final PdfViewerController _pdfController = PdfViewerController();
+  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _pageController = TextEditingController();
+  PdfTextSearchResult? _searchResult;
+  bool _isSearchMode = false;
+
   bool _isLoading = true;
   bool _hasError = false;
   int _currentPage = 1;
@@ -73,7 +78,23 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
   @override
   void dispose() {
     _pdfController.dispose();
+    _searchController.dispose();
+    _pageController.dispose();
     super.dispose();
+  }
+
+  void _performSearch(String query) {
+    if (query.isEmpty) return;
+    _searchResult = _pdfController.searchText(query);
+    if (mounted) setState(() {});
+  }
+
+  void _jumpToPage(String value) {
+    if (value.isEmpty) return;
+    final page = int.tryParse(value);
+    if (page != null && page > 0 && page <= _totalPages) {
+      _pdfController.jumpToPage(page);
+    }
   }
 
   @override
@@ -83,22 +104,7 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
       children: [
         Column(
           children: [
-            if (!_isLoading && !_hasError)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.xs,
-                  horizontal: AppSpacing.md,
-                ),
-                color: AppColors.surfaceVariant,
-                width: double.infinity,
-                child: Text(
-                  'Sayfa: $_currentPage / $_totalPages',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.right,
-                ),
-              ),
+            if (!_isLoading && !_hasError) _buildTopBar(),
             Expanded(child: _buildPdfViewer()),
           ],
         ),
@@ -124,6 +130,134 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
             message: '${widget.title} yüklenemedi.\nAsset dosyası bulunamadı.',
           ),
       ],
+    );
+  }
+
+  Widget _buildTopBar() {
+    if (_isSearchMode) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
+        color: AppColors.surfaceVariant,
+        child: Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 36,
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Metin ara...',
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.search, size: 18),
+                      onPressed: () => _performSearch(_searchController.text),
+                    ),
+                  ),
+                  onSubmitted: _performSearch,
+                ),
+              ),
+            ),
+            if (_searchResult != null && _searchResult!.hasResult) ...[
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36),
+                icon: const Icon(Icons.keyboard_arrow_up_rounded),
+                onPressed: () {
+                  _searchResult?.previousInstance();
+                  setState(() {});
+                },
+              ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36),
+                icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                onPressed: () {
+                  _searchResult?.nextInstance();
+                  setState(() {});
+                },
+              ),
+            ],
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 36),
+              icon: const Icon(Icons.close_rounded),
+              onPressed: () {
+                setState(() {
+                  _isSearchMode = false;
+                  _searchResult?.clear();
+                  _searchController.clear();
+                });
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 8),
+      color: AppColors.surfaceVariant,
+      child: Row(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _isSearchMode = true),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                children: [
+                  const Icon(Icons.search_rounded, size: 20, color: AppColors.primary),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text('Ara', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
+                ],
+              ),
+            ),
+          ),
+          const Spacer(),
+          Text(
+            'Sayfa:',
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 48,
+            height: 28,
+            child: TextField(
+              controller: _pageController,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.zero,
+                filled: true,
+                fillColor: AppColors.background,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  borderSide: BorderSide.none,
+                ),
+                hintText: '$_currentPage',
+                hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint),
+              ),
+              onSubmitted: (val) {
+                _jumpToPage(val);
+                _pageController.clear();
+              },
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '/ $_totalPages',
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
     );
   }
 

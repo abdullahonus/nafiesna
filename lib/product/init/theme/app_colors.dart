@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 abstract class AppColors {
   // Brand — Kubbetül Hadra yeşili + Gold accent
-  static const Color primary = Color(0xFF1A7A3D);
+  static const Color primary = Color(0xFF235926);
   static const Color primaryLight = Color(0xFF4CAF62);
   static const Color primaryDark = Color(0xFF0E5C2B);
   static const Color accent = Color(0xFFD4AF37);
