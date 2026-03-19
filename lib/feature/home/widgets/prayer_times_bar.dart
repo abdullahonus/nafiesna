@@ -6,6 +6,7 @@ import '../../prayer_times/provider/prayer_times_provider.dart';
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
+import '../../../product/widget/common/permission_warnings.dart';
 
 class PrayerTimesBar extends ConsumerStatefulWidget {
   const PrayerTimesBar({super.key});
@@ -161,22 +162,33 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
   }
 
   Widget _buildNextPrayerHeader(String nextName) {
-    return Column(
+    return Stack(
+      clipBehavior: Clip.none,
       children: [
-        Text(
-          nextName,
-          style: AppTextStyles.headlineLarge.copyWith(
-            color: AppColors.onBackground,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
-          ),
+        const Align(
+          alignment: Alignment.topRight,
+          child: LocationInfoWarningButton(),
         ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          'Vaktin Çıkmasına',
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
-            letterSpacing: 0.3,
+        Center(
+          child: Column(
+            children: [
+              Text(
+                nextName,
+                style: AppTextStyles.headlineLarge.copyWith(
+                  color: AppColors.onBackground,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Vaktin Çıkmasına',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
           ),
         ),
       ],

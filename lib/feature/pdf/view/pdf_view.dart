@@ -136,31 +136,49 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
   Widget _buildTopBar() {
     if (_isSearchMode) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
-        color: AppColors.surfaceVariant,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 8),
+        color: AppColors.primary.withValues(alpha: 0.08),
         child: Row(
           children: [
             Expanded(
               child: SizedBox(
-                height: 36,
+                height: 40,
                 child: TextField(
                   controller: _searchController,
-                  style: const TextStyle(fontSize: 13),
+                  style: const TextStyle(fontSize: 14),
+                  textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
                     hintText: 'Metin ara...',
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                      borderSide: BorderSide.none,
+                      borderSide: const BorderSide(color: AppColors.primary, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      borderSide: BorderSide(
+                        color: AppColors.primary.withValues(alpha: 0.4),
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
                     ),
                     filled: true,
-                    fillColor: AppColors.background,
+                    fillColor: AppColors.surface,
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.search, size: 18),
-                      onPressed: () => _performSearch(_searchController.text),
+                      icon: const Icon(Icons.search, size: 20, color: AppColors.primary),
+                      onPressed: () {
+                         _performSearch(_searchController.text);
+                         FocusScope.of(context).unfocus();
+                      },
                     ),
                   ),
-                  onSubmitted: _performSearch,
+                  onSubmitted: (val) {
+                    _performSearch(val);
+                    FocusScope.of(context).unfocus();
+                  },
                 ),
               ),
             ),
@@ -168,7 +186,7 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 36),
-                icon: const Icon(Icons.keyboard_arrow_up_rounded),
+                icon: const Icon(Icons.keyboard_arrow_up_rounded, color: AppColors.primary),
                 onPressed: () {
                   _searchResult?.previousInstance();
                   setState(() {});
@@ -177,7 +195,7 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 36),
-                icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
                 onPressed: () {
                   _searchResult?.nextInstance();
                   setState(() {});
@@ -187,13 +205,14 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
             IconButton(
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 36),
-              icon: const Icon(Icons.close_rounded),
+              icon: const Icon(Icons.close_rounded, color: AppColors.error),
               onPressed: () {
                 setState(() {
                   _isSearchMode = false;
                   _searchResult?.clear();
                   _searchController.clear();
                 });
+                FocusScope.of(context).unfocus();
               },
             ),
           ],
@@ -202,20 +221,26 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 8),
-      color: AppColors.surfaceVariant,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
+      color: AppColors.surfaceVariant.withValues(alpha: 0.9),
       child: Row(
         children: [
           InkWell(
             onTap: () => setState(() => _isSearchMode = true),
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             child: Padding(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               child: Row(
                 children: [
                   const Icon(Icons.search_rounded, size: 20, color: AppColors.primary),
                   const SizedBox(width: AppSpacing.xs),
-                  Text('Ara', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
+                  Text(
+                    'Kelime Ara',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -223,15 +248,19 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
           const Spacer(),
           Text(
             'Sayfa:',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(width: 8),
           SizedBox(
-            width: 48,
-            height: 28,
+            width: 52,
+            height: 32,
             child: TextField(
               controller: _pageController,
               keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.go,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
               decoration: InputDecoration(
@@ -240,7 +269,19 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
                 fillColor: AppColors.background,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: BorderSide.none,
+                  borderSide: BorderSide(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  borderSide: BorderSide(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  borderSide: const BorderSide(color: AppColors.primary),
                 ),
                 hintText: '$_currentPage',
                 hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint),
@@ -248,13 +289,40 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
               onSubmitted: (val) {
                 _jumpToPage(val);
                 _pageController.clear();
+                FocusScope.of(context).unfocus();
               },
             ),
           ),
           const SizedBox(width: 4),
           Text(
             '/ $_totalPages',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 10),
+          InkWell(
+            onTap: () {
+              if (_pageController.text.isNotEmpty) {
+                _jumpToPage(_pageController.text);
+                _pageController.clear();
+              }
+              FocusScope.of(context).unfocus();
+            },
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white,
+                size: 14,
+              ),
+            ),
           ),
         ],
       ),

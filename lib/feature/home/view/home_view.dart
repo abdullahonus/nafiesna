@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
+import '../../../product/widget/common/permission_warnings.dart';
 import '../../../product/widget/common/app_error_state.dart';
 import '../../../product/widget/common/app_loading_indicator.dart';
 import '../../prayer_times/provider/prayer_times_provider.dart';
@@ -52,6 +53,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const NotificationWarningWidget(),
                   const LiveStreamCard(),
                   const SizedBox(height: AppSpacing.md),
                   const PrayerTimesBar(),

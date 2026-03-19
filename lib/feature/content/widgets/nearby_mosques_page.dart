@@ -7,6 +7,7 @@ import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../service/nearby_mosques_service.dart';
 import '../../../service/location_service.dart';
+import '../../../product/widget/common/permission_warnings.dart';
 
 final _mosqueServiceProvider = Provider((ref) => NearbyMosquesService());
 final _locationServiceProvider = Provider((ref) => LocationService());
@@ -100,6 +101,7 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
         ),
         actions: [
+          const LocationInfoWarningButton(),
           IconButton(
             onPressed: _isLoading ? null : _loadMosques,
             icon: const Icon(Icons.refresh_rounded, color: AppColors.accent),
