@@ -30,7 +30,7 @@ final FlutterLocalNotificationsPlugin _localNotifications =
     FlutterLocalNotificationsPlugin();
 
 const AndroidNotificationChannel _androidChannel = AndroidNotificationChannel(
-  'live_stream_channel_v3',
+  'live_stream_channel_v4',
   'Canlı Yayın Bildirimleri',
   description: 'NafiEsna canlı yayın bildirimleri',
   importance: Importance.max,
