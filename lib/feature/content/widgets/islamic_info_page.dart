@@ -92,9 +92,9 @@ const List<IslamicInfo> _infos = [
     ],
   ),
   IslamicInfo(
-    title: 'Akşam Virdi',
-    subtitle: 'Akşam namazı sonrası okunacak zikir ve sureler',
-    icon: Icons.wb_twilight_rounded,
+    title: 'Gece virdi-Yatmadan evvel okunulması gerekir',
+    subtitle: 'Gece ve uyku öncesi okunacak zikir ve sureler',
+    icon: Icons.nights_stay_rounded,
     color: AppColors.accent,
     items: [
       IslamicInfoItem(
@@ -264,6 +264,11 @@ const List<IslamicInfo> _infos = [
             'Resulullah (asm) namaz sonunda buyurdu ki: "Ben on iki melek gördüm. '
             'Her biri, bu kelimeleri (Allah\'ın huzuruna) kendisi yükseltmek için koşuşmuşlardı."',
       ),
+      IslamicInfoItem(
+        title: 'Ne Zaman Okunur?',
+        content:
+            'Bu zikir, namazda rükûdan doğrulurken "Rabbenâ lekel hamd" dedikten hemen sonra okunabilir.',
+      ),
     ],
   ),
   IslamicInfo(
@@ -291,7 +296,7 @@ const List<IslamicInfo> _infos = [
       IslamicInfoItem(
         title: 'Bedir Zaferi ve Fazileti',
         content:
-            '17. Gece, Bedir Zaferinin gecesidir. Yarın, Enfal Suresi 41. Ayette geçen '
+            'Ramazan ayının 17. Gecesi Bedir zaferinin alındığı gecedir. Bugün, Enfal Suresi 41. Ayette geçen '
             'Hakla batılın ayrıldığı FURKAN Günüdür. Başta RASÛLULLAH (S.A.V.) ve 313 Arslan gibi '
             'Sahabe-i Kirâm ve Cebrail, Mikail, İsrafil (A.S.) komutasında 3000 melekle '
             'RABBİMİZİN yardımıyla kazanılan zafer gecesidir!\n\n'
@@ -491,19 +496,55 @@ const List<IslamicInfo> _infos = [
     color: Colors.blueAccent,
     items: [
       IslamicInfoItem(
-        title: 'Abdest Duaları Listesi',
+        title: 'Eller Yıkanırken',
         content:
-            '• Eller yıkanırken: Ya rabbi Hasetlikten, Cimrilikten, bahillikten beni muhafaza eyle\n'
-            '• Ağız Yıkanırken: Ya Rabbi Dedikodudan, gıybetten ve kötü sözden beni muhafaza eyle\n'
-            '• Burnu Yıkanırken: Ya Rabbi Gururdan, kibirden ve riyadan beni muhafaza eyle\n'
-            '• Yüz Yıkanırken: Ya Rabbi kimi yüzlerin kararacağı günde sen yüzümü aydınlat\n'
-            '• Sağ Kol Yıkanırken: Ya Rabbi beni kitabını sağından alanlardan eyle\n'
-            '• Sol kol yıkanırken: Ya Rabbi beni kitabını solundan ve arkasından alanlardan eyleme\n'
-            '• Baş Mesh Edilirken: Ya Rabbi Güneş bir mızrak indiğinde gölgende serinleteceğin 7 zümreden birine girebilmeyi bana nasib eyle\n'
-            '• Kulaklar Mesh Edilirken: Ya Rabbi Duyduklarımla amel edebilmeyi nasib eyle\n'
-            '• Boyun Mesh Edilirken: Ya Rabbi Sen Bize Şah damarımızdan daha yakınsın bunun idrakine varabilmeyi bana nasib eyle\n'
-            '• Ayaklar Yıkanırken: Ya Rabbi beni Sıratımüstakimden ayırma, sırat köprüsünde ayağımı kaydırma ayağımı sabit eyle\n'
-            '• Sakallar Hilallenirken: Allahım abdestimi nur eyle',
+            'Ya Rabbi! Hasetlikten, cimrilikten ve bahillikten beni muhafaza eyle.',
+      ),
+      IslamicInfoItem(
+        title: 'Ağız Yıkanırken (Mazmaza)',
+        content:
+            'Ya Rabbi! Dedikodudan, gıybetten ve kötü sözden beni muhafaza eyle.',
+      ),
+      IslamicInfoItem(
+        title: 'Burun Yıkanırken (İstinşak)',
+        content: 'Ya Rabbi! Gururdan, kibirden ve riyadan beni muhafaza eyle.',
+      ),
+      IslamicInfoItem(
+        title: 'Yüz Yıkanırken',
+        content:
+            'Ya Rabbi! Kimi yüzlerin kararacağı günde sen yüzümü aydınlat.',
+      ),
+      IslamicInfoItem(
+        title: 'Sağ Kol Yıkanırken',
+        content: 'Ya Rabbi! Beni kitabını sağından alanlardan eyle.',
+      ),
+      IslamicInfoItem(
+        title: 'Sol Kol Yıkanırken',
+        content:
+            'Ya Rabbi! Beni kitabını solundan ve arkasından alanlardan eyleme.',
+      ),
+      IslamicInfoItem(
+        title: 'Baş Mesh Edilirken',
+        content:
+            'Ya Rabbi! Güneş bir mızrak indiğinde, gölgende serinleteceğin 7 zümreden birine girebilmeyi bana nasib eyle.',
+      ),
+      IslamicInfoItem(
+        title: 'Kulaklar Mesh Edilirken',
+        content: 'Ya Rabbi! Duyduklarımla amel edebilmeyi nasib eyle.',
+      ),
+      IslamicInfoItem(
+        title: 'Boyun Mesh Edilirken',
+        content:
+            'Ya Rabbi! Sen bize şah damarımızdan daha yakınsın, bunun idrakine varabilmeyi bana nasib eyle.',
+      ),
+      IslamicInfoItem(
+        title: 'Ayaklar Yıkanırken',
+        content:
+            'Ya Rabbi! Beni Sırât-ı Müstakîm’den ayırma, sırat köprüsünde ayağımı kaydırma, ayağımı sabit eyle.',
+      ),
+      IslamicInfoItem(
+        title: 'Sakallar Hilallenirken',
+        content: 'Allah’ım! Abdestimi nur eyle.',
       ),
     ],
   ),
@@ -547,7 +588,11 @@ const List<IslamicInfo> _infos = [
       IslamicInfoItem(
         title: 'İstiğfarın Bereketi (Nuh 10-12)',
         content:
-            'فَقُلْتُ اسْتَغْفِرُوا رَبَّكُمْ اِنَّهُ كَانَ غَفَّارًا ﴿١٠﴾ يُرْسِلِ السَّمَاءَ عَلَيْكُمْ مِدْرَارًا ﴿١١﴾ وَيُمْدِدْكُمْ بِاَمْوَالٍ وَبَن۪ينَ وَيَجْعَلْ لَكُمْ جَنَّاتٍ وَيَجْعَلْ لَكُمْ اَنْهَارًا ﴿١٢﴾\n\n'
+            'فَقُلْتُ اسْتَغْفِرُوا رَبَّكُمْ اِنَّهُ كَانَ غَفَّارًا ﴿١٠﴾ يُرْسِلِ السَّمَاءَ عَلَيْكُمْ مِدْرَارًا ﴿١١﴾ وَيُمْدِدْكُمْ بِاَمْوَالٍ وَبَن۪ينَ وَيَجْعELْ لَكُمْ جَنَّاتٍ وَيَجْعَلْ لَكُمْ اَنْهَارًا ﴿١٢﴾\n\n'
+            'Okunuşu:\n'
+            '10. "Fekultü-stagfirû rabbeküm innehû kâne gaffârâ(n)."\n'
+            '11. "Yursili-ssemâe \'aleyküm midrârâ(n)."\n'
+            '12. "Ve yumdidküm bi-emvâlin ve benîne ve yec\'al leküm cennâtin ve yec\'al leküm enhârâ(n)."\n\n'
             'Meali: 10: Onlara dedim ki: "Rabbinizden bağışlanma dileyin! Çünkü O, günahları çokça bağışlayıcıdır."\n'
             '11: "Bağışlanma dileyin ki üzerinize bol bol yağmur yağdırsın."\n'
             '12: "Mallarınızı, evlatlarınızı çoğaltsın, size bağlar, bahçeler versin, sizin için ırmaklar akıtsın."',
@@ -604,21 +649,6 @@ const List<IslamicInfo> _infos = [
             'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ\n\n'
             'Okunuşu: "Euzü bi kelimatillahit-tammati min şerri ma halak"\n\n'
             'Anlamı: "Yarattığı şeylerin şerrinden Allah’ın tam olan kelimelerine sığınırım."',
-      ),
-    ],
-  ),
-  IslamicInfo(
-    title: 'Nuh Aleyhisselam’ın  Duası',
-    subtitle: 'Ev halkı, anne-baba ve müminler için mağfiret dileği',
-    icon: Icons.roofing_rounded,
-    color: Colors.purple,
-    items: [
-      IslamicInfoItem(
-        title: 'Nuh Suresi 28. Ayet',
-        content:
-            'رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَلِمَنْ دَخَلَ بَيْتِيَ مُؤْمِناً وَلِلْمُؤْمِنِينَ وَالْمُؤْمِنَاتِ وَلَا تَزِدِ الظَّالِمِينَ إِلَّا تَبَاراً\n\n'
-            'Okunuşu: "Rabbigfirlî ve li vâlideyye ve li men dehale beytiye mu’minen ve lil mu’minîne vel mu’minât ve lâ tezidiz zâlimîne illâ tebârâ."\n\n'
-            'Anlamı: "Rabbim! Beni, ana-babamı, iman etmiş olarak evime girenleri, iman eden erkekleri ve iman eden kadınları bağışla, zalimlerin de ancak helâkini arttır."',
       ),
     ],
   ),

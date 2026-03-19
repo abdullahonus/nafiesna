@@ -9,8 +9,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../utility/injection/injection.dart';
+
 import '../navigation/app_router.dart';
+import '../utility/injection/injection.dart';
 
 const String kLiveStreamUrlKey = 'last_live_stream_url';
 
@@ -34,6 +35,7 @@ const AndroidNotificationChannel _androidChannel = AndroidNotificationChannel(
   description: 'NafiEsna canlı yayın bildirimleri',
   importance: Importance.high,
   playSound: true,
+  sound: RawResourceAndroidNotificationSound('hu'),
 );
 
 class AppInit {
@@ -68,10 +70,10 @@ class AppInit {
 
     const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
@@ -85,13 +87,12 @@ class AppInit {
 
     await _localNotifications
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_androidChannel);
   }
 
-  static Future<void> _onNotificationTap(
-    NotificationResponse response,
-  ) async {
+  static Future<void> _onNotificationTap(NotificationResponse response) async {
     final String? url = response.payload;
     if (url == null || url.isEmpty) return;
 
@@ -117,8 +118,7 @@ class AppInit {
 
     // İzin iste — hata durumunda sessizce devam et
     try {
-      final NotificationSettings settings =
-          await messaging.requestPermission();
+      final NotificationSettings settings = await messaging.requestPermission();
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
@@ -129,11 +129,14 @@ class AppInit {
 
         if (kDebugMode) {
           // getToken() iOS'ta APNS token hazır değilse fırlatır → catchError zorunlu
-          messaging.getToken().then((String? token) {
-            debugPrint('FCM Token: $token');
-          }).catchError((Object e) {
-            debugPrint('FCM: getToken hatası (simülatörde beklenen) — $e');
-          });
+          messaging
+              .getToken()
+              .then((String? token) {
+                debugPrint('FCM Token: $token');
+              })
+              .catchError((Object e) {
+                debugPrint('FCM: getToken hatası (simülatörde beklenen) — $e');
+              });
         }
       }
     } catch (e) {
@@ -155,11 +158,14 @@ class AppInit {
     FirebaseMessaging.onMessageOpenedApp.listen(_handleFcmTap);
 
     // Uygulama kapalıyken gelen mesaj — APNS hatası fırlatabileceğinden guard et
-    messaging.getInitialMessage().then((RemoteMessage? message) {
-      if (message != null) _handleFcmTap(message);
-    }).catchError((Object e) {
-      debugPrint('FCM: getInitialMessage hatası — $e');
-    });
+    messaging
+        .getInitialMessage()
+        .then((RemoteMessage? message) {
+          if (message != null) _handleFcmTap(message);
+        })
+        .catchError((Object e) {
+          debugPrint('FCM: getInitialMessage hatası — $e');
+        });
   }
 
   static Future<void> _saveLiveUrl(RemoteMessage message) async {
@@ -170,9 +176,7 @@ class AppInit {
     debugPrint('FCM: live stream URL saved — $url');
   }
 
-  static Future<void> _showForegroundNotification(
-    RemoteMessage message,
-  ) async {
+  static Future<void> _showForegroundNotification(RemoteMessage message) async {
     await _saveLiveUrl(message);
 
     final RemoteNotification? notification = message.notification;
@@ -193,11 +197,13 @@ class AppInit {
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
           playSound: true,
+          sound: const RawResourceAndroidNotificationSound('hu'),
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
+          sound: 'hu.mp3',
         ),
       ),
       payload: url,

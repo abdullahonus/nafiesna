@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/navigation/app_router.dart';
 import '../../../product/widget/common/floating_particles_background.dart';
@@ -15,19 +16,12 @@ class TabView extends ConsumerWidget {
       children: [
         // Animasyonlu arka plan — RepaintBoundary sayfa içeriğini yeniden
         // çizmeden bağımsız olarak çalışır (performans koruması)
-        const RepaintBoundary(
-          child: FloatingParticlesBackground(),
-        ),
+        const RepaintBoundary(child: FloatingParticlesBackground()),
 
         AutoTabsScaffold(
           // Partiküllerin görünmesi için scaffold şeffaf
           backgroundColor: Colors.transparent,
-          routes: const [
-            HomeRoute(),
-            DreamRoute(),
-            PdfRoute(),
-            ContentRoute(),
-          ],
+          routes: const [HomeRoute(), DreamRoute(), PdfRoute(), ContentRoute()],
           bottomNavigationBuilder: (context, tabsRouter) {
             return Container(
               decoration: const BoxDecoration(
@@ -52,7 +46,7 @@ class TabView extends ConsumerWidget {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.menu_book_outlined),
                     activeIcon: Icon(Icons.menu_book_rounded),
-                    label: 'Kaside',
+                    label: 'Kitapçık',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.mosque_outlined),
