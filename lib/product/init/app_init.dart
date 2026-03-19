@@ -30,10 +30,10 @@ final FlutterLocalNotificationsPlugin _localNotifications =
     FlutterLocalNotificationsPlugin();
 
 const AndroidNotificationChannel _androidChannel = AndroidNotificationChannel(
-  'live_stream_channel_v2',
+  'live_stream_channel_v3',
   'Canlı Yayın Bildirimleri',
   description: 'NafiEsna canlı yayın bildirimleri',
-  importance: Importance.high,
+  importance: Importance.max,
   playSound: true,
   sound: RawResourceAndroidNotificationSound('hu'),
 );
@@ -193,8 +193,8 @@ class AppInit {
           _androidChannel.id,
           _androidChannel.name,
           channelDescription: _androidChannel.description,
-          importance: Importance.high,
-          priority: Priority.high,
+          importance: Importance.max,
+          priority: Priority.max,
           icon: '@mipmap/ic_launcher',
           playSound: true,
           sound: const RawResourceAndroidNotificationSound('hu'),
