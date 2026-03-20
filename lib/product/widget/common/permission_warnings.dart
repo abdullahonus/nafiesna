@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../init/theme/app_colors.dart';
@@ -32,10 +34,22 @@ class _NotificationWarningWidgetState extends State<NotificationWarningWidget> w
   }
 
   Future<void> _checkStatus() async {
-    final status = await Permission.notification.status;
+    bool isDenied = false;
+
+    if (Platform.isIOS) {
+      // iOS'ta bildirim izinleri için FirebaseMessaging ayarları en güvenilir kaynaktır.
+      final settings = await FirebaseMessaging.instance.getNotificationSettings();
+      isDenied = settings.authorizationStatus == AuthorizationStatus.denied ||
+          settings.authorizationStatus == AuthorizationStatus.notDetermined;
+    } else {
+      // Android ve diğer platformlar için permission_handler kullanımı yeterlidir.
+      final status = await Permission.notification.status;
+      isDenied = !(status.isGranted || status.isProvisional || status.isLimited);
+    }
+
     if (mounted) {
       setState(() {
-        _isDenied = !(status.isGranted || status.isProvisional || status.isLimited);
+        _isDenied = isDenied;
       });
     }
   }
@@ -46,15 +60,27 @@ class _NotificationWarningWidgetState extends State<NotificationWarningWidget> w
 
     return GestureDetector(
       onTap: () async {
-        final current = await Permission.notification.status;
-        if (current.isPermanentlyDenied) {
-          openAppSettings();
+        if (Platform.isIOS) {
+          final settings = await FirebaseMessaging.instance.getNotificationSettings();
+          if (settings.authorizationStatus == AuthorizationStatus.denied) {
+            openAppSettings();
+          } else {
+            // İzin istenmemişse veya provisional ise isteyebiliriz.
+            // Zaten izin verilmişse requestPermission() mevcut durumu döner, dialog açmaz.
+            await FirebaseMessaging.instance.requestPermission();
+            await _checkStatus();
+          }
         } else {
-          final result = await Permission.notification.request();
-          if (mounted) {
-            setState(() {
-              _isDenied = !(result.isGranted || result.isProvisional || result.isLimited);
-            });
+          final current = await Permission.notification.status;
+          if (current.isPermanentlyDenied) {
+            openAppSettings();
+          } else {
+            final result = await Permission.notification.request();
+            if (mounted) {
+              setState(() {
+                _isDenied = !(result.isGranted || result.isProvisional || result.isLimited);
+              });
+            }
           }
         }
       },
