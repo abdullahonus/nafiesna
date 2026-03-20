@@ -44,9 +44,11 @@ class DreamJournalService {
     return entries..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
-  /// Firestore'dan verileri çekip lokale eşitler
+  /// Firestore'dan verileri çekip lokale eşitler.
+  /// Sadece authorized prefix + geçerli uid varsa çalışır.
   Future<List<DreamEntry>> syncFromFirestore() async {
-    if (!_isAuthorized) return getAll();
+    final uid = _uid;
+    if (!_isAuthorized || uid == null || uid.isEmpty) return getAll();
 
     try {
       final snapshot = await _userDreamsCollection?.get();

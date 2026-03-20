@@ -52,7 +52,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> loginAsAuthorized(String email, String password) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, userId: null);
+    state = state.copyWith(isLoading: true, clearError: true, clearUserId: true);
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -88,7 +88,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(
       role: UserRole.unauthenticated,
       isLoading: false,
-      userId: null,
+      clearUserId: true,
+      clearError: true,
     );
   }
 }

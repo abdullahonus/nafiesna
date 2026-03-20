@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/navigation/app_router.dart';
+import '../../../product/state/auth/auth_provider.dart';
+import '../../../product/state/auth/model/user_role.dart';
 import '../../../product/widget/common/floating_particles_background.dart';
 
 @RoutePage()
@@ -12,6 +14,13 @@ class TabView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Logout olunca login sayfasına yönlendir
+    ref.listen(authProvider, (previous, next) {
+      if (next.role == UserRole.unauthenticated) {
+        context.router.root.replaceAll([const LoginRoute()]);
+      }
+    });
+
     return Stack(
       children: [
         // Animasyonlu arka plan — RepaintBoundary sayfa içeriğini yeniden
@@ -62,3 +71,4 @@ class TabView extends ConsumerWidget {
     );
   }
 }
+

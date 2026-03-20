@@ -21,8 +21,15 @@ final _dreamServiceProvider = Provider((ref) {
   return DreamJournalService(prefix);
 });
 
-final _dreamsProvider = FutureProvider.autoDispose<List<DreamEntry>>((ref) {
-  return ref.watch(_dreamServiceProvider).syncFromFirestore();
+final _dreamsProvider = FutureProvider.autoDispose<List<DreamEntry>>((ref) async {
+  final authState = ref.watch(authProvider);
+  final service = ref.watch(_dreamServiceProvider);
+  // Sadece authorized + uid varsa Firestore sync yap.
+  // Aksi halde (logout sonrası dahil) sadece local veriyi döndür.
+  if (authState.role == UserRole.authorized && authState.userId != null) {
+    return service.syncFromFirestore();
+  }
+  return service.getAll();
 });
 
 // ── Ana Sayfa ────────────────────────────────────────────────────────────────

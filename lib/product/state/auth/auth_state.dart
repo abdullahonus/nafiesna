@@ -19,12 +19,14 @@ class AuthState extends Equatable {
     bool? isLoading,
     String? errorMessage,
     String? userId,
+    bool clearUserId = false,
+    bool clearError = false,
   }) {
     return AuthState(
       role: role ?? this.role,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage ?? this.errorMessage,
-      userId: userId ?? this.userId,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      userId: clearUserId ? null : (userId ?? this.userId),
     );
   }
 
