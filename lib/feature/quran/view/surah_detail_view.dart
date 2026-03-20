@@ -213,10 +213,10 @@ class SurahDetailView extends ConsumerWidget {
       }
 
       final verseStyle = GoogleFonts.scheherazadeNew(
-        fontSize: 24,
-        fontWeight: FontWeight.w500,
-        height: 2.4,
+        fontSize: 25,
+        height: 2.5,
         color: _kText,
+        wordSpacing: 3,
       );
 
       // Divine Name Highlighting uygula

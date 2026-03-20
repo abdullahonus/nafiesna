@@ -376,9 +376,9 @@ class _MushafSinglePage extends ConsumerWidget {
       }
 
       final verseStyle = GoogleFonts.scheherazadeNew(
-        fontSize: 24,
-        fontWeight: FontWeight.w500,
-        height: 2.2,
+        fontSize: 25,
+        height: 2.5,
+        wordSpacing: 3,
         color: _kText,
       );
 
@@ -542,9 +542,9 @@ class _MushafSinglePage extends ConsumerWidget {
                 children: processArabicText(
                   verse.arabicText,
                   GoogleFonts.scheherazadeNew(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w500,
-                    height: 1.8,
+                    fontSize: 25,
+                    height: 2.5,
+                    wordSpacing: 3,
                     color: _kText,
                   ),
                 ),

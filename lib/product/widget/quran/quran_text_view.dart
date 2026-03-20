@@ -242,8 +242,9 @@ class ScholarlyArabicTextWithHighlight extends StatelessWidget {
       final arabicTextPart = match.group(0)!;
       final arabicStyle = GoogleFonts.scheherazadeNew(
         textStyle: style,
-        fontSize: (style?.fontSize ?? 14) * 1.4,
-        height: 1.5,
+        fontSize: 25,
+        height: 2.5,
+        wordSpacing: 3,
       );
 
       spans.addAll(processArabicText(arabicTextPart, arabicStyle));

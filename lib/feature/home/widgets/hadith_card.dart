@@ -75,8 +75,9 @@ class HadithCard extends StatelessWidget {
                   children: processArabicText(
                     hadith.arabicText,
                     GoogleFonts.scheherazadeNew(
-                      fontSize: 22,
-                      height: 1.6,
+                      fontSize: 25,
+                      height: 2.5,
+                      wordSpacing: 3,
                       color: context.colors.accent.withValues(alpha: 0.9),
                     ),
                   ),
