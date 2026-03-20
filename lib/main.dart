@@ -27,7 +27,7 @@ class NafiesnaApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'NafieSna',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       routerConfig: router.config(
         reevaluateListenable: ReevaluateListenable.stream(
           ref.watch(authProvider.notifier).stream,

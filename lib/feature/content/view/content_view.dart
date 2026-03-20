@@ -147,7 +147,7 @@ class ContentView extends ConsumerWidget {
                       Text(
                         'SİLSİLE-İ TARÎK-İ ‘UŞŞÂKİYYE',
                         style: AppTextStyles.headlineSmall.copyWith(
-                          color: const Color.fromARGB(255, 255, 222, 4),
+                          color: AppColors.accent,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.1,
                           fontSize: 16,

@@ -7,20 +7,20 @@ import '../../constants/app_spacing.dart';
 // ignore_for_file: deprecated_member_use
 
 abstract class AppTheme {
-  static ThemeData get dark {
+  static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
+      primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
         onPrimary: AppColors.onPrimary,
         secondary: AppColors.accent,
-        onSecondary: AppColors.background,
+        onSecondary: AppColors.surface,
         surface: AppColors.surface,
         onSurface: AppColors.onBackground,
         error: AppColors.error,
-        background: AppColors.background,
         onBackground: AppColors.onBackground,
       ),
       appBarTheme: const AppBarTheme(
@@ -31,8 +31,8 @@ abstract class AppTheme {
         titleTextStyle: AppTextStyles.headlineMedium,
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.dark,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(

@@ -111,36 +111,39 @@ class _QuranViewState extends State<QuranView>
   }
 
   Widget _buildBody() {
+    Widget content;
     switch (_selectedTab) {
       case 1:
-        return const _SurahListBody();
+        content = const _SurahListBody();
+        break;
       case 2:
-        return const _JuzListBody();
+        content = const _JuzListBody();
+        break;
       case 3:
-        return const _SayfaListBody();
+        content = const _SayfaListBody();
+        break;
       default:
-        return _buildHomePage();
+        content = _buildHomePage();
     }
+
+    return Stack(
+      children: [
+        // Soluk arka plan ikonu - Tüm sayfayı kaplar
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.04, // Göz yormaması için çok düşük opaklık
+            child: Image.asset('assets/icon/appicon.png', fit: BoxFit.cover),
+          ),
+        ),
+        // Ana içerik
+        content,
+      ],
+    );
   }
 
   Widget _buildHomePage() {
     return Stack(
       children: [
-        // Soluk arka plan ikonu
-        Positioned.fill(
-          child: Opacity(
-            opacity: 0.06,
-            child: Center(
-              child: Image.asset(
-                'assets/icon/appicon.png',
-                width: 300,
-                height: 300,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-        ),
-
         // İçerik
         SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(12, 20, 12, 20),
@@ -284,9 +287,9 @@ class _QuranTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.4),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: color.withValues(alpha: 0.5),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -419,42 +422,58 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
         ),
         const SizedBox(height: 6),
         Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             itemCount: filtered.length,
-            separatorBuilder: (_, __) =>
-                Divider(color: _kAccent.withValues(alpha: 0.2), height: 1),
             itemBuilder: (context, index) {
               final s = filtered[index];
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(vertical: 2),
-                leading: _islamicStar(s.id),
-                title: Text(
-                  s.turkishName,
-                  style: const TextStyle(
-                    color: _kText,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: _kSurface,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: _kAccent.withValues(alpha: 0.3)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _kAccent.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
                   ),
-                ),
-                subtitle: Text(
-                  '${s.englishName.toUpperCase()}  •  ${s.ayahsCount} Ayet',
-                  style: const TextStyle(color: _kTextLight, fontSize: 11),
-                ),
-                trailing: Text(
-                  s.arabicName,
-                  style: const TextStyle(
-                    fontFamily: 'Amiri',
-                    fontSize: 22,
-                    color: _kText,
-                    fontWeight: FontWeight.w400,
+                  leading: _islamicStar(s.id),
+                  title: Text(
+                    s.turkishName,
+                    style: const TextStyle(
+                      color: _kText,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-                onTap: () => context.router.push(
-                  SurahDetailRoute(
-                    surahId: s.id,
-                    surahName: s.turkishName,
-                    arabicName: s.arabicName,
+                  subtitle: Text(
+                    '${s.englishName.toUpperCase()}  •  ${s.ayahsCount} Ayet',
+                    style: const TextStyle(color: _kTextLight, fontSize: 11),
+                  ),
+                  trailing: Text(
+                    s.arabicName,
+                    style: const TextStyle(
+                      fontFamily: 'Amiri',
+                      fontSize: 22,
+                      color: _kText,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  onTap: () => context.router.push(
+                    SurahDetailRoute(
+                      surahId: s.id,
+                      surahName: s.turkishName,
+                      arabicName: s.arabicName,
+                    ),
                   ),
                 ),
               );
@@ -570,17 +589,23 @@ class _JuzListBody extends StatelessWidget {
         final startPage = juzNo == 1 ? 1 : (juzNo - 1) * 20 + 2;
         final endPage = juzNo == 30 ? 604 : (juzNo * 20 + 1);
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          elevation: 0,
-          color: _kSurface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: _kAccent.withValues(alpha: 0.25)),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: _kSurface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: _kAccent.withValues(alpha: 0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: _kAccent.withValues(alpha: 0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: ExpansionTile(
             iconColor: _kAccent,
-            collapsedIconColor: _kTextLight,
+            collapsedIconColor: _kAccent,
             title: Row(
               children: [
                 _islamicStar(juzNo),
@@ -693,16 +718,23 @@ class _SayfaListBody extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color: _kSurface,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: _kAccent.withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: _kAccent.withValues(alpha: 0.2),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             alignment: Alignment.center,
             child: Text(
               '$pageNo',
               style: const TextStyle(
                 color: _kText,
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
             ),
           ),

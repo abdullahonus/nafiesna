@@ -127,10 +127,29 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     // Login Fields
                     _buildTextField(
                       controller: _usernameController,
-                      hint: 'Kullanıcı Adı',
+                      hint: 'Kullanıcı Adı veya E-posta',
                       icon: Icons.person_outline_rounded,
-                      keyboardType: TextInputType.text,
-                      suffixText: '@nafiesna.com',
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ActionChip(
+                        backgroundColor: AppColors.accent.withValues(alpha: 0.1),
+                        side: BorderSide(color: AppColors.accent.withValues(alpha: 0.3)),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                        labelStyle: const TextStyle(color: AppColors.accent, fontSize: 13, fontWeight: FontWeight.bold),
+                        label: const Text('+ @nafiesna.com Ekle'),
+                        onPressed: () {
+                          final currentText = _usernameController.text;
+                          if (!currentText.contains('@')) {
+                            _usernameController.text = '$currentText@nafiesna.com';
+                            _usernameController.selection = TextSelection.fromPosition(
+                              TextPosition(offset: _usernameController.text.length),
+                            );
+                          }
+                        },
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     _buildTextField(
@@ -174,7 +193,10 @@ class _LoginViewState extends ConsumerState<LoginView> {
                               final password = _passwordController.text.trim();
                               if (username.isEmpty || password.isEmpty) return;
 
-                              final email = '$username@nafiesna.com';
+                              final email = username.contains('@') 
+                                  ? username 
+                                  : '$username@nafiesna.com';
+                              
                               await ref
                                   .read(authProvider.notifier)
                                   .loginAsAuthorized(email, password);

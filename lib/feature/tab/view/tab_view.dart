@@ -31,49 +31,104 @@ class TabView extends ConsumerWidget {
           // Partiküllerin görünmesi için scaffold şeffaf
           backgroundColor: Colors.transparent,
           routes: const [HomeRoute(), DreamRoute(), PdfRoute(), ContentRoute(), QuranRoute()],
-          bottomNavigationBuilder: (context, tabsRouter) {
-            return Container(
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: AppColors.border, width: 0.5),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          floatingActionButton: Builder(
+            builder: (context) {
+              final tabsRouter = AutoTabsRouter.of(context);
+              final isActive = tabsRouter.activeIndex == 2;
+              return Container(
+                margin: const EdgeInsets.only(top: 24), // Biraz yukarıda durması için
+                child: FloatingActionButton(
+                  shape: const CircleBorder(),
+                  backgroundColor: isActive ? AppColors.primary : AppColors.surface,
+                  elevation: 4,
+                  onPressed: () => tabsRouter.setActiveIndex(2),
+                  child: Icon(
+                    isActive ? Icons.menu_book_rounded : Icons.menu_book_outlined,
+                    color: isActive ? AppColors.onPrimary : AppColors.primary,
+                    size: 28,
+                  ),
                 ),
-              ),
-              child: BottomNavigationBar(
-                currentIndex: tabsRouter.activeIndex,
-                onTap: tabsRouter.setActiveIndex,
-                type: BottomNavigationBarType.fixed, // 5 item olunca düzgün görünmesi için
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home_outlined),
-                    activeIcon: Icon(Icons.home_rounded),
-                    label: 'Ana Sayfa',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.nights_stay_outlined),
-                    activeIcon: Icon(Icons.nights_stay_rounded),
-                    label: 'Rüya',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.menu_book_outlined),
-                    activeIcon: Icon(Icons.menu_book_rounded),
-                    label: 'Kitapçık',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.mosque_outlined),
-                    activeIcon: Icon(Icons.mosque_rounded),
-                    label: 'Bilgi',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.chrome_reader_mode_outlined),
-                    activeIcon: Icon(Icons.chrome_reader_mode_rounded),
-                    label: 'Kuran',
-                  ),
-                ],
+              );
+            },
+          ),
+          bottomNavigationBuilder: (context, tabsRouter) {
+            return BottomAppBar(
+              shape: const CircularNotchedRectangle(),
+              notchMargin: 8,
+              color: AppColors.navBackground,
+              elevation: 8,
+              padding: EdgeInsets.zero,
+              clipBehavior: Clip.antiAlias,
+              child: Container(
+                height: 60,
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: AppColors.border, width: 0.5)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(tabsRouter, 0, Icons.home_outlined, Icons.home_rounded, 'Ana Sayfa'),
+                    _buildNavItem(tabsRouter, 1, Icons.nights_stay_outlined, Icons.nights_stay_rounded, 'Rüya'),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => tabsRouter.setActiveIndex(2),
+                      child: SizedBox(
+                        width: 50,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Kitapçık',
+                              style: TextStyle(
+                                color: tabsRouter.activeIndex == 2 ? AppColors.navSelected : AppColors.navUnselected,
+                                fontSize: 10,
+                                fontWeight: tabsRouter.activeIndex == 2 ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      ),
+                    ),
+                    _buildNavItem(tabsRouter, 3, Icons.mosque_outlined, Icons.mosque_rounded, 'Bilgi'),
+                    _buildNavItem(tabsRouter, 4, Icons.chrome_reader_mode_outlined, Icons.chrome_reader_mode_rounded, 'Kuran'),
+                  ],
+                ),
               ),
             );
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildNavItem(TabsRouter router, int index, IconData iconOff, IconData iconOn, String label) {
+    final isActive = router.activeIndex == index;
+    final color = isActive ? AppColors.navSelected : AppColors.navUnselected;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => router.setActiveIndex(index),
+      child: SizedBox(
+        width: 65,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(isActive ? iconOn : iconOff, color: color, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.visible,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

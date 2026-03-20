@@ -100,6 +100,7 @@ class HijriCalendarCard extends ConsumerWidget {
                 'Hicri Takvim',
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w700,
+                  color: Colors.white,
                 ),
               ),
               if (hijriDate.isNotEmpty) ...[
@@ -143,7 +144,7 @@ class HijriCalendarCard extends ConsumerWidget {
         Text(
           '${event.name}: $dateFormatted',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.onBackground,
+            color: Colors.white.withValues(alpha: 0.9),
             fontWeight: FontWeight.w500,
           ),
           textAlign: TextAlign.center,

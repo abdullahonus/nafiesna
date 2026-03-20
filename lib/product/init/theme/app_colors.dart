@@ -5,34 +5,34 @@ abstract class AppColors {
   static const Color primary = Color(0xFF235926);
   static const Color primaryLight = Color(0xFF4CAF62);
   static const Color primaryDark = Color(0xFF0E5C2B);
-  static const Color accent = Color(0xFFD4AF37);
-  static const Color accentLight = Color(0xFFFFD700);
+  static const Color accent = Color(0xFFB8860B); // Daha soft altın
+  static const Color accentLight = Color(0xFFD4AF37);
 
   // Semantic
-  static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFF9800);
-  static const Color error = Color(0xFFCF6679);
-  static const Color info = Color(0xFF2196F3);
+  static const Color success = Color(0xFF388E3C);
+  static const Color warning = Color(0xFFF57C00);
+  static const Color error = Color(0xFFD32F2F);
+  static const Color info = Color(0xFF1976D2);
 
-  // Dark Surface
-  static const Color background = Color(0xFF0D0D0D);
-  static const Color surface = Color(0xFF1A1A1A);
-  static const Color surfaceVariant = Color(0xFF242424);
-  static const Color surfaceElevated = Color(0xFF2C2C2C);
+  // Light/Cream Surface (Kuran Teması ile Uyumlu)
+  static const Color background = Color(0xFFFAF5E9);
+  static const Color surface = Color(0xFFFDFBF7);
+  static const Color surfaceVariant = Color(0xFFF5EDD3);
+  static const Color surfaceElevated = Color(0xFFFFFFFF);
 
   // Text
   static const Color onPrimary = Color(0xFFFFFFFF);
-  static const Color onBackground = Color(0xFFE8E8E8);
-  static const Color textSecondary = Color(0xFF9E9E9E);
-  static const Color textDisabled = Color(0xFF616161);
-  static const Color textHint = Color(0xFF757575);
+  static const Color onBackground = Color(0xFF2B1E0E); // Koyu kahvemtırak siyah
+  static const Color textSecondary = Color(0xFF8B7355); // Koyu kum/krem rengi
+  static const Color textDisabled = Color(0xFFBCAAA4);
+  static const Color textHint = Color(0xFFA1887F);
 
   // Bottom Nav
-  static const Color navBackground = Color(0xFF141414);
+  static const Color navBackground = Color(0xFFF5EDD3); // Sayfa rengi (alt tablar popup çıksın diye)
   static const Color navSelected = primary;
-  static const Color navUnselected = Color(0xFF6B6B6B);
+  static const Color navUnselected = Color(0xFF8B7355);
 
   // Divider / Border
-  static const Color divider = Color(0xFF2A2A2A);
-  static const Color border = Color(0xFF333333);
+  static const Color divider = Color(0xFFE2D5C4);
+  static const Color border = Color(0xFFD7C4A3);
 }
