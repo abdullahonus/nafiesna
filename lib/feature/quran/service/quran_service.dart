@@ -39,10 +39,12 @@ class QuranService {
       final responses = await Future.wait([
         _dio.get('https://api.alquran.cloud/v1/page/$pageNumber/quran-uthmani'),
         _dio.get('https://api.alquran.cloud/v1/page/$pageNumber/tr.diyanet'),
+        _dio.get('https://api.alquran.cloud/v1/page/$pageNumber/tr.transliteration'),
       ]);
 
       final arabicData = responses[0].data['data']['ayahs'] as List;
       final trData = responses[1].data['data']['ayahs'] as List;
+      final latData = responses[2].data['data']['ayahs'] as List;
 
       final List<QuranPageVerse> verses = [];
       for (int i = 0; i < arabicData.length; i++) {
@@ -50,6 +52,7 @@ class QuranService {
           numberInSurah: arabicData[i]['numberInSurah'],
           arabicText: arabicData[i]['text'],
           translationText: trData[i]['text'],
+          transliterationText: latData[i]['text'],
           surahId: arabicData[i]['surah']['number'],
           surahName: arabicData[i]['surah']['name'],
         ));

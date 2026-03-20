@@ -1,13 +1,17 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../product/constants/app_spacing.dart';
-import '../../../product/init/theme/app_colors.dart';
-import '../../../product/init/theme/app_text_styles.dart';
-import '../../../product/widget/common/app_loading_indicator.dart';
-import '../../../product/widget/common/app_error_state.dart';
 import '../provider/quran_provider.dart';
 import '../model/quran_verse_model.dart';
+
+// ── Aynı krem tema ───────────────────────────────────────────────────────────
+const _kBg = Color(0xFFFAF5E9);
+const _kPaper = Color(0xFFF5EDD3);
+const _kText = Color(0xFF1A0F00);
+const _kAccent = Color(0xFFB8860B);
+const _kVerseNum = Color(0xFFCC6666);   // pembe-kırmızı (resimdeki gibi)
+const _kSurahHeader = Color(0xFF8B4513);
+const _kMuted = Color(0xFF7A6040);
 
 @RoutePage()
 class SurahDetailView extends ConsumerWidget {
@@ -27,94 +31,191 @@ class SurahDetailView extends ConsumerWidget {
     final asyncVerses = ref.watch(surahDetailProvider(surahId));
     final showTransliteration = ref.watch(quranPreferencesProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          children: [
-            Text(surahName, style: AppTextStyles.headlineSmall.copyWith(fontWeight: FontWeight.bold)),
-            Text(arabicName, style: AppTextStyles.labelLarge.copyWith(color: AppColors.accent)),
+    return Theme(
+      data: ThemeData.light().copyWith(
+        scaffoldBackgroundColor: _kBg,
+        appBarTheme: AppBarTheme(
+          backgroundColor: _kPaper,
+          foregroundColor: _kText,
+          elevation: 0.5,
+          shadowColor: _kAccent.withValues(alpha: 0.3),
+          iconTheme: IconThemeData(color: _kText),
+        ),
+        dividerColor: _kAccent.withValues(alpha: 0.25),
+      ),
+      child: Scaffold(
+        backgroundColor: _kBg,
+        appBar: AppBar(
+          title: Column(
+            children: [
+              Text(
+                surahName,
+                style: TextStyle(
+                  fontFamily: 'Amiri',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: _kSurahHeader,
+                ),
+              ),
+              Text(
+                arabicName,
+                style: TextStyle(
+                  fontFamily: 'Amiri',
+                  fontSize: 16,
+                  color: _kAccent,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+          centerTitle: true,
+          backgroundColor: _kPaper,
+          actions: [
+            IconButton(
+              icon: Icon(
+                showTransliteration ? Icons.text_fields_rounded : Icons.translate_rounded,
+                color: showTransliteration ? _kVerseNum : _kMuted,
+              ),
+              tooltip: showTransliteration ? 'Okunuşu Gizle' : 'Okunuşu Göster',
+              onPressed: () {
+                ref.read(quranPreferencesProvider.notifier).toggleTransliteration();
+              },
+            ),
+            const SizedBox(width: 4),
           ],
         ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              showTransliteration ? Icons.text_fields_rounded : Icons.translate_rounded,
-              color: showTransliteration ? AppColors.accent : AppColors.textSecondary,
-            ),
-            tooltip: showTransliteration ? 'Okunuşu Gizle' : 'Okunuşu Göster',
-            onPressed: () {
-              ref.read(quranPreferencesProvider.notifier).toggleTransliteration();
-            },
+        body: asyncVerses.when(
+          data: (verses) => _buildContent(verses, showTransliteration),
+          loading: () => Center(
+            child: CircularProgressIndicator(color: _kAccent, strokeWidth: 2),
           ),
-          const SizedBox(width: AppSpacing.sm),
-        ],
-      ),
-      body: asyncVerses.when(
-        data: (verses) => _buildVerseList(verses, showTransliteration),
-        loading: () => const Center(child: AppLoadingIndicator()),
-        error: (error, stack) => AppErrorState(
-          message: error.toString(),
-          onRetry: () => ref.read(surahDetailProvider(surahId)),
+          error: (e, _) => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.wifi_off_rounded, color: _kAccent, size: 48),
+                const SizedBox(height: 12),
+                Text('Sure yüklenemedi.', style: TextStyle(color: _kText)),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildVerseList(List<QuranVerse> verses, bool showTransliteration) {
+  Widget _buildContent(List<QuranVerse> verses, bool showTranslit) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.lg),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── BLOK 1: Tüm sure Arapça metni (sağdan sola akıcı) ──────────
-          _buildArabicBlock(verses),
+          // ── BLOK 1: Arapça metin (kağıt çerçeveli) ─────────────────────
+          _paperCard(
+            child: _buildArabicBlock(verses),
+          ),
 
-          const SizedBox(height: AppSpacing.xl),
-          Divider(color: AppColors.accent.withValues(alpha: 0.25), thickness: 1),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: 10),
 
-          // ── BLOK 2: Numaralı Türkçe okunuş (resimdeki gibi) ─────────────
-          if (showTransliteration) ...[
-            _buildTransliterationBlock(verses),
-            const SizedBox(height: AppSpacing.xl),
-            Divider(color: AppColors.accent.withValues(alpha: 0.25), thickness: 1),
-            const SizedBox(height: AppSpacing.lg),
+          // ── BLOK 2: Türkçe okunuş (gizlenebilir) ───────────────────────
+          if (showTranslit) ...[
+            _paperCard(
+              label: 'Okunuş',
+              child: _buildTransliterationBlock(verses),
+            ),
+            const SizedBox(height: 10),
           ],
 
-          // ── BLOK 3: Numaralı Türkçe meal ────────────────────────────────
-          _buildTranslationBlock(verses),
-
-          const SizedBox(height: AppSpacing.xl),
+          // ── BLOK 3: Türkçe meal ─────────────────────────────────────────
+          _paperCard(
+            label: 'Meâl',
+            child: _buildTranslationBlock(verses),
+          ),
         ],
       ),
     );
   }
 
-  // Arapça metin — sağdan sola, hepsi birleşik akıyor (resimdeki gibi)
+  Widget _paperCard({required Widget child, String? label}) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: _kPaper,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: _kAccent.withValues(alpha: 0.4), width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (label != null) ...[
+              Row(
+                children: [
+                  Text('❖ ', style: TextStyle(color: _kAccent, fontSize: 12)),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: _kAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+              Divider(color: _kAccent.withValues(alpha: 0.3), height: 16, thickness: 0.8),
+            ],
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Tüm ayetler birleşik Arapça (resimdeki gibi)
   Widget _buildArabicBlock(List<QuranVerse> verses) {
     final spans = <InlineSpan>[];
-    for (final verse in verses) {
-      spans.add(
-        TextSpan(
-          text: '${verse.arabicText} ',
-          style: TextStyle(
-            fontFamily: 'Amiri',
-            fontSize: 26,
-            fontWeight: FontWeight.w400,
-            height: 2.2,
-            color: AppColors.onBackground,
+    for (final v in verses) {
+      spans.add(TextSpan(
+        text: '${v.arabicText} ',
+        style: TextStyle(
+          fontFamily: 'Amiri',
+          fontSize: 25,
+          fontWeight: FontWeight.w400,
+          height: 2.2,
+          color: _kText,
+        ),
+      ));
+      // Pembe ayet gülü (resimdeki gibi)
+      spans.add(WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: _kVerseNum, width: 1.2),
+            color: _kVerseNum.withValues(alpha: 0.1),
+          ),
+          child: Text(
+            _toArabicNumeral(v.number),
+            style: TextStyle(
+              fontSize: 10,
+              color: _kVerseNum,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Amiri',
+            ),
           ),
         ),
-      );
-      spans.add(
-        WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: _buildVerseMarker(verse.number),
-        ),
-      );
+      ));
       spans.add(const TextSpan(text: '  '));
     }
 
@@ -125,87 +226,76 @@ class SurahDetailView extends ConsumerWidget {
     );
   }
 
-  // Türkçe okunuş — numaralı, düz metin (resimdeki gibi birleşik paragraf)
+  // Numaralı Türkçe okunuş (düz metin)
   Widget _buildTransliterationBlock(List<QuranVerse> verses) {
     final spans = <InlineSpan>[];
-    for (final verse in verses) {
-      // Numara — koyu renkli
-      spans.add(
-        TextSpan(
-          text: '${verse.number} ',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            color: AppColors.accent,
-          ),
+    for (final v in verses) {
+      spans.add(TextSpan(
+        text: '${v.number} ',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: _kVerseNum,
         ),
-      );
-      // Okunuş metni — düz, okunaklı
-      spans.add(
-        TextSpan(
-          text: '${verse.transliteration}  ',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w400,
-            height: 1.9,
-            color: AppColors.onBackground,
-          ),
+      ));
+      spans.add(TextSpan(
+        text: '${v.transliteration}  ',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          height: 1.9,
+          color: _kText,
         ),
-      );
+      ));
     }
-
     return RichText(
       textAlign: TextAlign.left,
       text: TextSpan(children: spans),
     );
   }
 
-  // Türkçe meal — numaralı, her ayet ayrı satırda
+  // Numaralı Türkçe meal
   Widget _buildTranslationBlock(List<QuranVerse> verses) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: verses.map((verse) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildVerseMarker(verse.number),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  verse.translation,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    height: 1.7,
-                    color: AppColors.onBackground.withValues(alpha: 0.9),
-                  ),
-                ),
-              ),
-            ],
+    final spans = <InlineSpan>[];
+    for (final v in verses) {
+      spans.add(WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Container(
+          margin: const EdgeInsets.only(right: 6, bottom: 2),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: _kVerseNum, width: 1.2),
+            color: _kVerseNum.withValues(alpha: 0.1),
           ),
-        );
-      }).toList(),
+          child: Text(
+            '${v.number}',
+            style: TextStyle(
+              fontSize: 10,
+              color: _kVerseNum,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ));
+      spans.add(TextSpan(
+        text: '${v.translation}  ',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          height: 1.9,
+          color: _kText.withValues(alpha: 0.9),
+        ),
+      ));
+    }
+    return RichText(
+      textAlign: TextAlign.left,
+      text: TextSpan(children: spans),
     );
   }
 
-  Widget _buildVerseMarker(int number) {
-    return Container(
-      width: 26,
-      height: 26,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.6), width: 1),
-      ),
-      child: Text(
-        '$number',
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: AppColors.accent,
-        ),
-      ),
-    );
+  String _toArabicNumeral(int n) {
+    const d = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return n.toString().split('').map((c) => d[int.parse(c)]).join();
   }
 }
