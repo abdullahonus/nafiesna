@@ -16,22 +16,21 @@ class HadithCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary.withValues(alpha: 0.08),
-            AppColors.accent.withValues(alpha: 0.05),
-          ],
-        ),
+        color: AppColors.surface,
         border: Border.all(
           color: AppColors.primary.withValues(alpha: 0.3),
           width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.06),
+            color: AppColors.primary.withValues(alpha: 0.12),
             blurRadius: 12,
+            spreadRadius: 2,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: AppColors.accent.withValues(alpha: 0.1),
+            blurRadius: 6,
             spreadRadius: 0,
             offset: const Offset(0, 3),
           ),

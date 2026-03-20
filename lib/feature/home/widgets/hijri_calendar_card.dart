@@ -1,16 +1,16 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../prayer_times/provider/prayer_times_provider.dart';
+
+import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
-import '../../../product/constants/app_spacing.dart';
 import '../../../service/islamic_calendar_service.dart';
+import '../../prayer_times/provider/prayer_times_provider.dart';
 
-final _calendarServiceProvider = Provider(
-  (ref) => IslamicCalendarService(),
-);
+final _calendarServiceProvider = Provider((ref) => IslamicCalendarService());
 
 final _nextEventProvider = FutureProvider<IslamicEvent?>((ref) {
   final service = ref.read(_calendarServiceProvider);
@@ -22,30 +22,47 @@ class HijriCalendarCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hijriDate = ref.watch(
-      prayerTimesProvider.select((s) => s.hijriDate),
-    );
-    final isLoading = ref.watch(
-      prayerTimesProvider.select((s) => s.isLoading),
-    );
+    final hijriDate = ref.watch(prayerTimesProvider.select((s) => s.hijriDate));
+    final isLoading = ref.watch(prayerTimesProvider.select((s) => s.isLoading));
     final nextEventAsync = ref.watch(_nextEventProvider);
 
     if (isLoading) return const SizedBox.shrink();
+
+    final now = DateTime.now();
+    final hour = now.hour;
+    // Gündüz vakti
+    final bool isDay = hour >= 5 && hour < 19;
 
     return Container(
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        color: const Color(0xFF151520),
+        gradient: isDay
+            ? const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF63B8EE), // Parlak gökyüzü mavisi
+                  Color(0xFF3895D3), // Daha doygun mavi
+                ],
+              )
+            : null,
+        color: !isDay ? const Color(0xFF151520) : null,
         border: Border.all(
           color: AppColors.border.withValues(alpha: 0.5),
           width: 0.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.06),
+            color: AppColors.primary.withValues(alpha: 0.15),
             blurRadius: 16,
+            spreadRadius: 2,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: AppColors.accent.withValues(alpha: 0.15),
+            blurRadius: 8,
             spreadRadius: 0,
             offset: const Offset(0, 4),
           ),
@@ -53,19 +70,22 @@ class HijriCalendarCard extends ConsumerWidget {
       ),
       child: Stack(
         children: [
-          const _StarField(),
+          if (isDay) const _CloudField(),
+          if (!isDay) const _StarField(),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               children: [
-                _buildHeader(hijriDate),
+                _buildHeader(hijriDate, isDay),
                 const SizedBox(height: AppSpacing.lg),
-                const _CrescentMoon(),
+                if (isDay) const _GlowingSun(),
+                if (!isDay) const _CrescentMoon(),
                 const SizedBox(height: AppSpacing.xl),
                 nextEventAsync.when(
-                  data: (event) =>
-                      event != null ? _buildEventInfo(event) : const SizedBox.shrink(),
-                  loading: () => const SizedBox(
+                  data: (event) => event != null
+                      ? _buildEventInfo(event)
+                      : const SizedBox.shrink(),
+                  loading: () => SizedBox(
                     height: 40,
                     child: Center(
                       child: SizedBox(
@@ -73,7 +93,8 @@ class HijriCalendarCard extends ConsumerWidget {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 1.5,
-                          color: AppColors.accent,
+                          // Mavi üzerinde iyi durması için gündüz beyaz
+                          color: isDay ? Colors.white : AppColors.accent,
                         ),
                       ),
                     ),
@@ -88,7 +109,7 @@ class HijriCalendarCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(String hijriDate) {
+  Widget _buildHeader(String hijriDate, bool isDay) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -108,7 +129,9 @@ class HijriCalendarCard extends ConsumerWidget {
                 Text(
                   hijriDate,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.accent,
+                    color: isDay
+                        ? Colors.white.withValues(alpha: 0.9)
+                        : AppColors.accent,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -116,9 +139,9 @@ class HijriCalendarCard extends ConsumerWidget {
             ],
           ),
         ),
-        const Icon(
+        Icon(
           Icons.diamond_rounded,
-          color: AppColors.accent,
+          color: isDay ? Colors.white : AppColors.accent,
           size: 18,
         ),
       ],
@@ -126,8 +149,10 @@ class HijriCalendarCard extends ConsumerWidget {
   }
 
   Widget _buildEventInfo(IslamicEvent event) {
-    final String dateFormatted =
-        DateFormat('d MMMM, EEEE', 'tr_TR').format(event.date);
+    final String dateFormatted = DateFormat(
+      'd MMMM, EEEE',
+      'tr_TR',
+    ).format(event.date);
     final int daysLeft = event.daysUntil;
 
     final String countdownText;
@@ -156,13 +181,14 @@ class HijriCalendarCard extends ConsumerWidget {
             vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.accent.withValues(alpha: 0.12),
+            color: Colors.white.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           ),
           child: Text(
             countdownText,
             style: AppTextStyles.labelLarge.copyWith(
-              color: AppColors.accent,
+              color: Colors
+                  .white, // Gece için AppColors.accent kullanıyorduk ama beyaz ikisine de çok şık olur.
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -177,7 +203,11 @@ class HijriCalendarCard extends ConsumerWidget {
     final today = DateTime(now.year, now.month, now.day);
 
     for (final event in fallback) {
-      final eventDay = DateTime(event.date.year, event.date.month, event.date.day);
+      final eventDay = DateTime(
+        event.date.year,
+        event.date.month,
+        event.date.day,
+      );
       if (!eventDay.isBefore(today)) {
         return _buildEventInfo(event);
       }
@@ -186,7 +216,7 @@ class HijriCalendarCard extends ConsumerWidget {
   }
 }
 
-/// Yıldız alanı — sabit konumlu küçük noktalar
+/// Yıldız alanı — gece teması için
 class _StarField extends StatelessWidget {
   const _StarField();
 
@@ -245,6 +275,119 @@ class _StarPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+/// Bulut alanı — gündüz teması için
+class _CloudField extends StatelessWidget {
+  const _CloudField();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 260,
+      width: double.infinity,
+      child: CustomPaint(painter: _CloudPainter()),
+    );
+  }
+}
+
+class _CloudPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint cloudPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.12)
+      ..style = PaintingStyle.fill;
+
+    _drawCloud(
+      canvas,
+      Offset(size.width * 0.2, size.height * 0.2),
+      0.8,
+      cloudPaint,
+    );
+    _drawCloud(
+      canvas,
+      Offset(size.width * 0.8, size.height * 0.15),
+      0.6,
+      cloudPaint,
+    );
+    _drawCloud(
+      canvas,
+      Offset(size.width * 0.65, size.height * 0.6),
+      1.0,
+      cloudPaint,
+    );
+    _drawCloud(
+      canvas,
+      Offset(size.width * 0.15, size.height * 0.7),
+      0.5,
+      cloudPaint,
+    );
+  }
+
+  void _drawCloud(Canvas canvas, Offset center, double scale, Paint paint) {
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.scale(scale);
+
+    canvas.drawCircle(const Offset(-15, 5), 15, paint);
+    canvas.drawCircle(const Offset(15, 5), 15, paint);
+    canvas.drawCircle(const Offset(0, -5), 20, paint);
+
+    canvas.drawRect(const Rect.fromLTRB(-15, 5, 15, 20), paint);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Parlayan Güneş — gündüz teması için
+class _GlowingSun extends StatelessWidget {
+  const _GlowingSun();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 90,
+      height: 90,
+      child: CustomPaint(painter: _SunPainter()),
+    );
+  }
+}
+
+class _SunPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double cx = size.width / 2;
+    final double cy = size.height / 2;
+    final double r = size.width * 0.35;
+
+    final Paint sunPaint = Paint()
+      ..shader = const RadialGradient(
+        center: Alignment(-0.2, -0.2),
+        colors: [
+          Color(0xFFFFF9C4), // Çok açık sarı
+          Color(0xFFFFD54F), // Amber
+          Color(0xFFFFB300), // Turuncu
+        ],
+      ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r));
+
+    canvas.drawCircle(Offset(cx, cy), r, sunPaint);
+
+    final Paint glowPaint = Paint()
+      ..color = const Color(0xFFFFD54F).withValues(alpha: 0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+    canvas.drawCircle(Offset(cx, cy), r + 8, glowPaint);
+
+    final Paint wideGlowPaint = Paint()
+      ..color = const Color(0xFFFFB300).withValues(alpha: 0.15)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24);
+    canvas.drawCircle(Offset(cx, cy), r + 20, wideGlowPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 /// Hilal (crescent moon) çizimi
 class _CrescentMoon extends StatelessWidget {
   const _CrescentMoon();
@@ -269,11 +412,7 @@ class _MoonPainter extends CustomPainter {
     final Paint moonPaint = Paint()
       ..shader = const RadialGradient(
         center: Alignment(-0.3, -0.3),
-        colors: [
-          Color(0xFFE8E0D0),
-          Color(0xFFB0A890),
-          Color(0xFF787060),
-        ],
+        colors: [Color(0xFFE8E0D0), Color(0xFFB0A890), Color(0xFF787060)],
       ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r));
 
     canvas.drawCircle(Offset(cx, cy), r, moonPaint);

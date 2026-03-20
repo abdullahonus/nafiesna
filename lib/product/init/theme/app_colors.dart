@@ -15,10 +15,10 @@ abstract class AppColors {
   static const Color info = Color(0xFF1976D2);
 
   // Light/Cream Surface (Kuran Teması ile Uyumlu)
-  static const Color background = Color(0xFFFAF5E9);
-  static const Color surface = Color(0xFFFDFBF7);
-  static const Color surfaceVariant = Color(0xFFF5EDD3);
-  static const Color surfaceElevated = Color(0xFFFFFFFF);
+  static const Color background = Color(0xFFE4D5B7); // Daha koyu kum / parşömen
+  static const Color surface = Color(0xFFEBE0C5);
+  static const Color surfaceVariant = Color(0xFFDCC8A3);
+  static const Color surfaceElevated = Color(0xFFF0E6D0);
 
   // Text
   static const Color onPrimary = Color(0xFFFFFFFF);
@@ -28,7 +28,9 @@ abstract class AppColors {
   static const Color textHint = Color(0xFFA1887F);
 
   // Bottom Nav
-  static const Color navBackground = Color(0xFFF5EDD3); // Sayfa rengi (alt tablar popup çıksın diye)
+  static const Color navBackground = Color(
+    0xFFDCC8A3,
+  ); // Sayfa rengi (alt tablar popup çıksın diye)
   static const Color navSelected = primary;
   static const Color navUnselected = Color(0xFF8B7355);
 

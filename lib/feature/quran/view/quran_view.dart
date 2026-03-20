@@ -6,11 +6,11 @@ import '../model/surah_list_data.dart';
 
 // Kuran sekme renklerini ve tasarımını diğer sekmelerden tamamen izole ediyoruz.
 // Kendi krem temalı renk paleti
-const _kBackground = Color(0xFFF4EFE4);
-const _kSurface = Color(0xFFEDE7D6);
-const _kText = Color(0xFF2B1E0E);
-const _kTextLight = Color(0xFF8B7355);
-const _kAccent = Color(0xFFB8860B); // Koyu altın
+const _kBackground = Color(0xFFE4D5B7); // Global background
+const _kSurface = Color(0xFFEBE0C5);    // Global surface
+const _kText = Color(0xFF2B1E0E);       // Global onBackground
+const _kTextLight = Color(0xFF8B7355);  // Global textSecondary
+const _kAccent = Color(0xFFB8860B);     // Koyu altın
 
 // Karo renkleri (resimdeki gibi mat tonlar)
 const _colorGreen = Color(0xFF5C7A5C);

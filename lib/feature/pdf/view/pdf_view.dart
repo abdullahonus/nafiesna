@@ -8,6 +8,7 @@ import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/widget/common/app_error_state.dart';
 import '../../../product/widget/common/app_loading_indicator.dart';
+import '../../../product/widget/common/watermark_overlay.dart';
 
 @RoutePage()
 class PdfView extends ConsumerWidget {
@@ -108,6 +109,7 @@ class _PdfPageState extends State<_PdfPage> with AutomaticKeepAliveClientMixin {
             Expanded(child: _buildPdfViewer()),
           ],
         ),
+        const WatermarkOverlay(),
         if (_isLoading)
           Container(
             color: AppColors.background,

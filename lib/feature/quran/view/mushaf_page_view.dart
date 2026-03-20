@@ -7,9 +7,9 @@ import '../model/quran_page_model.dart';
 import '../model/surah_list_data.dart';
 
 // ── Mushaf Renk Teması ───────────────────────────────────────────────────────
-const _kBg = Color(0xFFFAF5E9);          // krem kağıt arka plan
-const _kPaper = Color(0xFFF5EDD3);       // sayfa rengi
-const _kText = Color(0xFF1A0F00);        // koyu mürekkep
+const _kBg = Color(0xFFE4D5B7);          // krem kağıt arka plan
+const _kPaper = Color(0xFFEBE0C5);       // sayfa rengi
+const _kText = Color(0xFF2B1E0E);        // koyu mürekkep
 const _kAccent = Color(0xFFB8860B);      // altın kenar
 const _kVerseNum = Color(0xFFCC6666);    // pembe-kırmızı (resimdeki gibi)
 const _kSurahHeader = Color(0xFF8B4513); // sure başlığı

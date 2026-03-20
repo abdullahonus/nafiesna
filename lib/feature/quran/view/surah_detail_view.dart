@@ -5,9 +5,9 @@ import '../provider/quran_provider.dart';
 import '../model/quran_verse_model.dart';
 
 // ── Aynı krem tema ───────────────────────────────────────────────────────────
-const _kBg = Color(0xFFFAF5E9);
-const _kPaper = Color(0xFFF5EDD3);
-const _kText = Color(0xFF1A0F00);
+const _kBg = Color(0xFFE4D5B7);
+const _kPaper = Color(0xFFEBE0C5);
+const _kText = Color(0xFF2B1E0E);
 const _kAccent = Color(0xFFB8860B);
 const _kVerseNum = Color(0xFFCC6666);   // pembe-kırmızı (resimdeki gibi)
 const _kSurahHeader = Color(0xFF8B4513);

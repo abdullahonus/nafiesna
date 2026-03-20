@@ -120,28 +120,23 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.surface,
-            AppColors.surfaceVariant.withValues(alpha: 0.6),
-          ],
-        ),
+        color: AppColors.surface,
         border: Border.all(
           color: AppColors.accent.withValues(alpha: 0.15),
           width: 0.6,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.12),
+            color: AppColors.primary.withValues(alpha: 0.12),
             blurRadius: 24,
             spreadRadius: 2,
+            offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.06),
-            blurRadius: 48,
-            spreadRadius: 4,
+            color: AppColors.accent.withValues(alpha: 0.15),
+            blurRadius: 10,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
           ),
         ],
       ),

@@ -18,6 +18,7 @@ import '../widgets/prayer_times_bar.dart';
 import '../../../product/widget/common/sohbet_popup.dart';
 import '../../../product/state/auth/auth_provider.dart';
 import '../../../product/state/auth/model/user_role.dart';
+import '../../../product/widget/common/watermark_overlay.dart'; // Added import
 
 @RoutePage()
 class HomeView extends ConsumerStatefulWidget {
@@ -46,8 +47,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: CustomScrollView(
-        slivers: [
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
           const SliverAppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -72,6 +75,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
               ),
             ),
           ),
+            ],
+          ),
+          // Tüm sayfanın (ve butonların) üzerine binen ama tıklanmayı engellemeyen filigran
+          const WatermarkOverlay(),
         ],
       ),
     );
