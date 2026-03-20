@@ -40,12 +40,12 @@ class _NotificationWarningWidgetState extends ConsumerState<NotificationWarningW
     bool isDenied = false;
 
     if (Platform.isIOS) {
-      // iOS'ta bildirim izinleri için FirebaseMessaging ayarları en güvenilir kaynaktır.
       final settings = await FirebaseMessaging.instance.getNotificationSettings();
-      isDenied = settings.authorizationStatus == AuthorizationStatus.denied ||
-          settings.authorizationStatus == AuthorizationStatus.notDetermined;
+      // Sadece kullanıcı açıkça reddettiyse uyarı göster.
+      // notDetermined = henüz sorulmadı → uyarı gösterme (dialog zaten açılıyor).
+      // authorized / provisional / ephemeral → izin var, uyarı gösterme.
+      isDenied = settings.authorizationStatus == AuthorizationStatus.denied;
     } else {
-      // Android ve diğer platformlar için permission_handler kullanımı yeterlidir.
       final status = await Permission.notification.status;
       isDenied = !(status.isGranted || status.isProvisional || status.isLimited);
     }
