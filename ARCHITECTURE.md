@@ -65,7 +65,7 @@ Kullanıcı bir istek yaptığında:
 NafieSna; @NafiEsna YouTube kanalının canlı yayınlarını,
 günlük hadisleri, namaz vakitlerini, Kaside-i Bürde PDF'ini
 ve dini bilgileri tek bir uygulamada sunan İslami içerik platformudur.
-Auth gerektirmez — tüm içerikler herkese açıktır.
+Auth sistemi aktif — Misafir girişi (yerel kayıt) ve Yetkili girişi (Firebase) desteklenir.
 ```
 
 ### Ana Domain'ler (Feature Grupları)
@@ -99,10 +99,13 @@ Auth gerektirmez — tüm içerikler herkese açıktır.
 | AppInit Orkestrasyonu | ✅ Aktif | `lib/product/init/app_init.dart` |
 | Network (Dio + Chucker) | ✅ Aktif | `dio ^5.9.2` + `chucker_flutter ^1.9.1` (debug only), Aladhan tek kaynak |
 | Pusula (compassx) | ❌ Kaldırıldı | Kıble bulucu özelliği kaldırıldı |
-| Secure Storage | ⬜ Planlandı | Auth yokken gereksiz |
+| Auth Sistemi (Guest/Firebase) | ✅ Aktif | Misafir girişi + yetkili kullanıcı ayrımı |
+| Secure Storage | ⬜ Planlandı | Auth / token saklama |
 | Shared Preferences | ✅ Aktif | `shared_preferences` — Kazalar sayacı (key-value) |
 | Local DB (sqflite) | ❌ Kaldırıldı | SharedPreferences'a taşındı |
-| Firebase | ✅ Aktif | `firebase_core ^4.5.0` — Android + iOS config tamamlandı |
+| Cloud Functions | ❌ Kaldırıldı | Manuel FCM bildirimi tercih edildi |
+| Firebase Auth | ✅ Aktif | Email/Password girişi (Admin yönetimli) |
+| Cloud Firestore | ✅ Aktif | Yetkili kullanıcı rüyaları ve kaza sayıları kalıcı depolama |
 | Push Notification (FCM) | ✅ Aktif | `firebase_messaging ^16.1.2` — topic: `live_stream` |
 | Cloud Functions | ❌ Kaldırıldı | Manuel FCM bildirimi tercih edildi |
 | YouTube Data API v3 | ❌ Kaldırıldı | Manuel FCM bildirimi tercih edildi |
@@ -739,6 +742,11 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-17 | Firebase entegrasyonu | `firebase_core` + `firebase_messaging` eklendi, FCM topic subscribe (`live_stream`), APNs ayarları |
 | 2026-03-17 | Firebase + FCM entegrasyonu | Manuel bildirim: Firebase Console'dan topic `live_stream`'e push gönderimi |
 | 2026-03-17 | Cloud Function + YouTube API kaldırıldı | Manuel FCM bildirimi tercih edildi, $0 maliyet garantisi |
+| 2026-03-20 | Auth Sistemi & Misafir Girişi | Misafir girişi, yetkili kullanıcı ayrımı ve veri izolasyonu eklendi |
+| 2026-03-20 | Servis Refaktörü (Prefix) | Misafir ve yetkili kullanıcı verileri ayrıştırıldı (guest_ vs auth_) |
+| 2026-03-20 | Firebase Auth Entegrasyonu | `firebase_auth` eklendi, yetkili giriş akışı Firebase'e bağlandı |
+| 2026-03-20 | Cloud Firestore Entegrasyonu | `cloud_firestore` eklendi; rüyalar ve kaza sayıları kullanıcı bazlı buluta senkronize |
+| 2026-03-20 | AuthGuard logout navigasyon düzeltildi | `router.replaceAll` → `router.root.replaceAll` (nested router sorunu) |
 
 ---
 

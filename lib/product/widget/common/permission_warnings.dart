@@ -4,15 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../init/theme/app_colors.dart';
 import '../../init/theme/app_text_styles.dart';
+import '../../state/auth/auth_provider.dart';
+import '../../state/auth/model/user_role.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class NotificationWarningWidget extends StatefulWidget {
+class NotificationWarningWidget extends ConsumerStatefulWidget {
   const NotificationWarningWidget({super.key});
 
   @override
-  State<NotificationWarningWidget> createState() => _NotificationWarningWidgetState();
+  ConsumerState<NotificationWarningWidget> createState() => _NotificationWarningWidgetState();
 }
 
-class _NotificationWarningWidgetState extends State<NotificationWarningWidget> with WidgetsBindingObserver {
+class _NotificationWarningWidgetState extends ConsumerState<NotificationWarningWidget> with WidgetsBindingObserver {
   bool _isDenied = false;
 
   @override
@@ -56,6 +59,10 @@ class _NotificationWarningWidgetState extends State<NotificationWarningWidget> w
 
   @override
   Widget build(BuildContext context) {
+    // Sadece yetkili kullanıcılar bildirim uyarısı görür
+    final authRole = ref.watch(authProvider).role;
+    if (authRole != UserRole.authorized) return const SizedBox.shrink();
+
     if (!_isDenied) return const SizedBox.shrink();
 
     return GestureDetector(

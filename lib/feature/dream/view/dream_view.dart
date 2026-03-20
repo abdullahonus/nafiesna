@@ -4,16 +4,25 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
+import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
-import '../../../product/constants/app_spacing.dart';
+import '../../../product/state/auth/auth_provider.dart';
+import '../../../product/state/auth/model/user_role.dart';
 import '../../../service/dream_journal_service.dart';
 
 // ── Providers ────────────────────────────────────────────────────────────────
-final _dreamServiceProvider = Provider((ref) => DreamJournalService());
+final _dreamServiceProvider = Provider((ref) {
+  final authState = ref.watch(authProvider);
+  final prefix = authState.role == UserRole.authorized && authState.userId != null
+      ? 'auth_${authState.userId}'
+      : 'guest';
+  return DreamJournalService(prefix);
+});
 
-final _dreamsProvider = FutureProvider<List<DreamEntry>>((ref) {
-  return ref.read(_dreamServiceProvider).getAll();
+final _dreamsProvider = FutureProvider.autoDispose<List<DreamEntry>>((ref) {
+  return ref.watch(_dreamServiceProvider).syncFromFirestore();
 });
 
 // ── Ana Sayfa ────────────────────────────────────────────────────────────────
@@ -173,10 +182,7 @@ class DreamView extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                '${dreams.length} Rüya',
-                style: AppTextStyles.headlineSmall,
-              ),
+              Text('${dreams.length} Rüya', style: AppTextStyles.headlineSmall),
             ],
           ),
         ),
@@ -282,8 +288,10 @@ class _DreamCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String dateStr =
-        DateFormat('dd MMM yyyy, HH:mm', 'tr_TR').format(dream.createdAt);
+    final String dateStr = DateFormat(
+      'dd MMM yyyy, HH:mm',
+      'tr_TR',
+    ).format(dream.createdAt);
     final bool wasEdited =
         dream.updatedAt.difference(dream.createdAt).inMinutes > 1;
 
@@ -369,8 +377,7 @@ class _DreamCard extends StatelessWidget {
                         dateStr,
                         style: AppTextStyles.bodySmall.copyWith(
                           fontSize: 11,
-                          color:
-                              AppColors.textSecondary.withValues(alpha: 0.7),
+                          color: AppColors.textSecondary.withValues(alpha: 0.7),
                         ),
                       ),
                       if (wasEdited) ...[
@@ -381,16 +388,18 @@ class _DreamCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusSm),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusSm,
+                            ),
                             color: AppColors.surfaceVariant,
                           ),
                           child: Text(
                             'düzenlendi',
                             style: AppTextStyles.bodySmall.copyWith(
                               fontSize: 9,
-                              color: AppColors.textSecondary
-                                  .withValues(alpha: 0.6),
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.6,
+                              ),
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -438,13 +447,17 @@ class _DreamCard extends StatelessWidget {
           value: 'delete',
           child: Row(
             children: [
-              const Icon(Icons.delete_outline_rounded,
-                  color: AppColors.error, size: 16),
+              const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.error,
+                size: 16,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 'Sil',
-                style:
-                    AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.error,
+                ),
               ),
             ],
           ),
@@ -457,19 +470,18 @@ class _DreamCard extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════════
 // Rüya Editörü
 // ═══════════════════════════════════════════════════════════════════════════════
-class _DreamEditorPage extends StatefulWidget {
+class _DreamEditorPage extends ConsumerStatefulWidget {
   const _DreamEditorPage({this.existingDream});
 
   final DreamEntry? existingDream;
 
   @override
-  State<_DreamEditorPage> createState() => _DreamEditorPageState();
+  ConsumerState<_DreamEditorPage> createState() => _DreamEditorPageState();
 }
 
-class _DreamEditorPageState extends State<_DreamEditorPage> {
+class _DreamEditorPageState extends ConsumerState<_DreamEditorPage> {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
-  final DreamJournalService _service = DreamJournalService();
   bool _saving = false;
 
   bool get _isEditing => widget.existingDream != null;
@@ -477,10 +489,12 @@ class _DreamEditorPageState extends State<_DreamEditorPage> {
   @override
   void initState() {
     super.initState();
-    _titleController =
-        TextEditingController(text: widget.existingDream?.title ?? '');
-    _contentController =
-        TextEditingController(text: widget.existingDream?.content ?? '');
+    _titleController = TextEditingController(
+      text: widget.existingDream?.title ?? '',
+    );
+    _contentController = TextEditingController(
+      text: widget.existingDream?.content ?? '',
+    );
   }
 
   @override
@@ -560,8 +574,7 @@ class _DreamEditorPageState extends State<_DreamEditorPage> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusLg),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     color: AppColors.surface,
                     border: Border.all(
                       color: AppColors.accent.withValues(alpha: 0.1),
@@ -647,10 +660,16 @@ class _DreamEditorPageState extends State<_DreamEditorPage> {
     setState(() => _saving = true);
 
     try {
+      final authState = ref.read(authProvider);
+      final prefix = authState.role == UserRole.authorized && authState.userId != null
+          ? 'auth_${authState.userId}'
+          : 'guest';
+      final service = DreamJournalService(prefix);
+
       if (_isEditing) {
-        await _service.update(widget.existingDream!.id, title, content);
+        await service.update(widget.existingDream!.id, title, content);
       } else {
-        await _service.insert(title, content);
+        await service.insert(title, content);
       }
 
       if (mounted) Navigator.of(context).pop(true);

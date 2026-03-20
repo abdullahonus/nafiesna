@@ -5,13 +5,19 @@ import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../service/missed_prayer_service.dart';
+import '../../../product/state/auth/auth_provider.dart';
+import '../../../product/state/auth/model/user_role.dart';
 
-final _missedPrayerServiceProvider = Provider(
-  (ref) => MissedPrayerService(),
-);
+final _missedPrayerServiceProvider = Provider((ref) {
+  final authState = ref.watch(authProvider);
+  final prefix = authState.role == UserRole.authorized && authState.userId != null
+      ? 'auth_${authState.userId}'
+      : 'guest';
+  return MissedPrayerService(prefix);
+});
 
 final _countersProvider = FutureProvider.autoDispose<Map<String, int>>((ref) {
-  return ref.read(_missedPrayerServiceProvider).getAll();
+  return ref.watch(_missedPrayerServiceProvider).syncFromFirestore();
 });
 
 final _lastUpdatedProvider = FutureProvider.autoDispose<String?>((ref) {
@@ -68,65 +74,70 @@ class _MissedPrayersPageState extends ConsumerState<MissedPrayersPage> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
               padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                color: AppColors.surface,
-                border: Border.all(color: AppColors.border, width: 0.5),
-              ),
               child: Column(
                 children: [
-                  for (int i = 0; i < MissedPrayerService.prayerKeys.length; i++) ...[
-                    if (i > 0)
-                      Divider(
-                        color: AppColors.border.withValues(alpha: 0.5),
-                        height: 1,
-                      ),
-                    _CounterRow(
-                      prayerKey: MissedPrayerService.prayerKeys[i],
-                      count: _counters[MissedPrayerService.prayerKeys[i]] ?? 0,
-                      onIncrement: () => _increment(MissedPrayerService.prayerKeys[i]),
-                      onDecrement: () => _decrement(MissedPrayerService.prayerKeys[i]),
-                      onSetValue: (int v) => _setDirectly(MissedPrayerService.prayerKeys[i], v),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                      color: AppColors.surface,
+                      border: Border.all(color: AppColors.border, width: 0.5),
                     ),
-                  ],
+                    child: Column(
+                      children: [
+                        for (int i = 0;
+                            i < MissedPrayerService.prayerKeys.length;
+                            i++) ...[
+                          if (i > 0)
+                            Divider(
+                              color: AppColors.border.withValues(alpha: 0.5),
+                              height: 1,
+                            ),
+                          _CounterRow(
+                            prayerKey: MissedPrayerService.prayerKeys[i],
+                            count: _counters[MissedPrayerService.prayerKeys[i]] ?? 0,
+                            onIncrement: () =>
+                                _increment(MissedPrayerService.prayerKeys[i]),
+                            onDecrement: () =>
+                                _decrement(MissedPrayerService.prayerKeys[i]),
+                            onSetValue: (int v) =>
+                                _setDirectly(MissedPrayerService.prayerKeys[i], v),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Toplu kaza girişi için rakamların üzerine dokununuz.',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  lastUpdatedAsync.when(
+                    data: (String? date) {
+                      if (date == null) return const SizedBox.shrink();
+                      final DateTime parsed = DateTime.parse(date);
+                      final String formatted =
+                          DateFormat('dd.MM.yyyy HH:mm', 'tr_TR').format(parsed);
+                      return Text(
+                        '(*) Son Kayıt Tarihi: $formatted',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary.withValues(alpha: 0.7),
+                          fontSize: 11,
+                        ),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Toplu kaza girişi için rakamların üzerine dokununuz.',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            lastUpdatedAsync.when(
-              data: (String? date) {
-                if (date == null) return const SizedBox.shrink();
-                final DateTime parsed = DateTime.parse(date);
-                final String formatted =
-                    DateFormat('dd.MM.yyyy HH:mm', 'tr_TR').format(parsed);
-                return Text(
-                  '(*) Son Kayıt Tarihi: $formatted',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary.withValues(alpha: 0.7),
-                    fontSize: 11,
-                  ),
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

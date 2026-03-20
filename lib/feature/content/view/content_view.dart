@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
+import '../../../product/state/auth/auth_provider.dart';
 import '../widgets/islamic_info_page.dart';
 import '../widgets/missed_prayers_page.dart';
 import '../widgets/nearby_mosques_page.dart';
@@ -11,11 +13,11 @@ import '../widgets/religious_days_page.dart';
 import '../widgets/silsile_page.dart';
 
 @RoutePage()
-class ContentView extends StatelessWidget {
+class ContentView extends ConsumerWidget {
   const ContentView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
@@ -25,7 +27,7 @@ class ContentView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Öne Çıkarılan Büyük Kart (Sohbet Notları vs.)
+              // ... existing content ...
               GestureDetector(
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -258,9 +260,63 @@ class ContentView extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: AppSpacing.xxl),
+              // Çıkış Yap Butonu
+              _buildLogoutButton(context, ref),
+              const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () => _showLogoutDialog(context, ref),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.error.withValues(alpha: 0.1),
+          foregroundColor: AppColors.error,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            side: const BorderSide(color: AppColors.error, width: 0.5),
+          ),
+        ),
+        icon: const Icon(Icons.logout_rounded, size: 20),
+        label: const Text(
+          'Çıkış Yap',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Çıkış Yap'),
+        content: const Text(
+          'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ref.read(authProvider.notifier).logout();
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Çıkış Yap'),
+          ),
+        ],
       ),
     );
   }

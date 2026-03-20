@@ -10,7 +10,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../navigation/app_router.dart';
 import '../utility/injection/injection.dart';
 
 const String kLiveStreamUrlKey = 'last_live_stream_url';
@@ -52,16 +51,24 @@ class AppInit {
 
     await configureDependencies();
 
-    getIt.registerSingleton<AppRouter>(AppRouter());
+    // AppRouter artık Riverpod üzerinden sağlanıyor
+    // getIt.registerSingleton<AppRouter>(AppRouter());
 
-    await _requestLocationPermission();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? roleStr = prefs.getString('user_role');
+    final bool isGuest = roleStr == 'guest';
 
-    await _initLocalNotifications();
+    if (!isGuest) {
+      await _requestLocationPermission();
+      await _initLocalNotifications();
 
-    // unawaited bırakıyoruz — FCM setup arka planda çalışsın, uygulama bloklanmasın
-    _setupFirebaseMessaging().catchError((Object e) {
-      debugPrint('FCM: setup hatası — $e');
-    });
+      // unawaited bırakıyoruz — FCM setup arka planda çalışsın, uygulama bloklanmasın
+      _setupFirebaseMessaging().catchError((Object e) {
+        debugPrint('FCM: setup hatası — $e');
+      });
+    } else {
+      debugPrint('AppInit: Misafir girişi, bildirimler ve konum atlandı.');
+    }
   }
 
   static Future<void> _initLocalNotifications() async {

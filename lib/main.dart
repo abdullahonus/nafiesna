@@ -1,11 +1,12 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'product/init/app_init.dart';
 import 'product/init/theme/app_theme.dart';
-import 'product/navigation/app_router.dart';
-import 'product/utility/injection/injection.dart';
+import 'product/navigation/app_router_provider.dart';
+import 'product/state/auth/auth_provider.dart';
 
 void main() async {
   await AppInit.make();
@@ -21,13 +22,16 @@ class NafiesnaApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = getIt<AppRouter>();
+    final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
       title: 'NafieSna',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: router.config(
+        reevaluateListenable: ReevaluateListenable.stream(
+          ref.watch(authProvider.notifier).stream,
+        ),
         navigatorObservers: () => [
           if (kDebugMode) ChuckerFlutter.navigatorObserver,
         ],

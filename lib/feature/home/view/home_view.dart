@@ -16,6 +16,8 @@ import '../widgets/hijri_calendar_card.dart';
 import '../widgets/live_stream_card.dart';
 import '../widgets/prayer_times_bar.dart';
 import '../../../product/widget/common/sohbet_popup.dart';
+import '../../../product/state/auth/auth_provider.dart';
+import '../../../product/state/auth/model/user_role.dart';
 
 @RoutePage()
 class HomeView extends ConsumerStatefulWidget {
@@ -58,7 +60,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const NotificationWarningWidget(),
-                  const LiveStreamCard(),
+                  if (ref.watch(authProvider).role == UserRole.authorized)
+                    const LiveStreamCard(),
                   const SizedBox(height: AppSpacing.md),
                   const PrayerTimesBar(),
                   const SizedBox(height: AppSpacing.md),
