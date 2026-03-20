@@ -142,7 +142,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                 icon: Icon(Icons.chevron_left_rounded, color: _kText),
                 onPressed: _currentPage > 1
                     ? () => _pageController.previousPage(
-                          duration: const Duration(milliseconds: 350),
+                          duration: Duration(milliseconds: 350),
                           curve: Curves.easeInOut,
                         )
                     : null,
@@ -151,7 +151,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
               Row(
                 children: [
                   Text('❖', style: TextStyle(color: _kAccent, fontSize: 14)),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     '$_currentPage / 604',
                     style: TextStyle(
@@ -160,7 +160,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text('❖', style: TextStyle(color: _kAccent, fontSize: 14)),
                 ],
               ),
@@ -169,7 +169,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                 icon: Icon(Icons.chevron_right_rounded, color: _kText),
                 onPressed: _currentPage < 604
                     ? () => _pageController.nextPage(
-                          duration: const Duration(milliseconds: 350),
+                          duration: Duration(milliseconds: 350),
                           curve: Curves.easeInOut,
                         )
                     : null,
@@ -232,7 +232,7 @@ class _MushafSinglePage extends ConsumerWidget {
   final int pageNumber;
   final ValueChanged<String> onSurahNameChanged;
 
-  const _MushafSinglePage({
+  _MushafSinglePage({
     required this.pageNumber,
     required this.onSurahNameChanged,
   });
@@ -259,7 +259,7 @@ class _MushafSinglePage extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               CircularProgressIndicator(color: _kAccent, strokeWidth: 2),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text('Sayfa $pageNumber yükleniyor...',
                   style: TextStyle(color: _kAccent, fontSize: 13)),
             ],
@@ -268,18 +268,18 @@ class _MushafSinglePage extends ConsumerWidget {
       ),
       error: (e, _) => Container(
         color: _kBg,
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.wifi_off_rounded, color: _kAccent, size: 48),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               'Sayfa yüklenemedi.\nİnternet bağlantınızı kontrol edin.',
               textAlign: TextAlign.center,
               style: TextStyle(color: _kText),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             TextButton(
               onPressed: () => ref.invalidate(pageDetailProvider(pageNumber)),
               child: Text('Tekrar Dene', style: TextStyle(color: _kAccent)),
@@ -310,7 +310,7 @@ class _MushafSinglePage extends ConsumerWidget {
       if (spans.isNotEmpty) {
         children.add(
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: RichText(
               textAlign: TextAlign.justify,
               textDirection: TextDirection.rtl,
@@ -337,8 +337,8 @@ class _MushafSinglePage extends ConsumerWidget {
         children.add(
           Container(
             width: double.infinity,
-            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             decoration: BoxDecoration(
               color: _kAccent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(4),
@@ -356,7 +356,7 @@ class _MushafSinglePage extends ConsumerWidget {
                     color: _kSurahHeader,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   surahMetadata.turkishName,
                   textAlign: TextAlign.center,
@@ -394,8 +394,8 @@ class _MushafSinglePage extends ConsumerWidget {
           child: GestureDetector(
             onTap: () => _showTranslation(context, v),
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              padding: const EdgeInsets.all(5),
+              margin: EdgeInsets.symmetric(horizontal: 3),
+              padding: EdgeInsets.all(5),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: _kVerseNum, width: 1.2),
@@ -415,7 +415,7 @@ class _MushafSinglePage extends ConsumerWidget {
         ),
       );
 
-      spans.add(const TextSpan(text: ' '));
+      spans.add(TextSpan(text: ' '));
     }
 
     flush();
@@ -426,7 +426,7 @@ class _MushafSinglePage extends ConsumerWidget {
     return Container(
       color: _kBg,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
+        padding: EdgeInsets.fromLTRB(12, 8, 12, 20),
         child: Column(
           children: [
             DecoratedBox(
@@ -439,12 +439,12 @@ class _MushafSinglePage extends ConsumerWidget {
                   BoxShadow(
                     color: Colors.brown.withValues(alpha: 0.1),
                     blurRadius: 6,
-                    offset: const Offset(0, 2),
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: children,
@@ -453,10 +453,10 @@ class _MushafSinglePage extends ConsumerWidget {
             ),
 
             // Latince okunuş bloğu
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              padding: EdgeInsets.fromLTRB(12, 10, 12, 12),
               decoration: BoxDecoration(
                 color: _kPaper,
                 borderRadius: BorderRadius.circular(4),
@@ -479,7 +479,7 @@ class _MushafSinglePage extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   transliBlock,
                 ],
               ),
@@ -519,7 +519,7 @@ class _MushafSinglePage extends ConsumerWidget {
 
   // Ayet numarasını Arapça rakama çevir
   String _toArabicNumeral(int n) {
-    const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    final arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
     return n.toString().split('').map((d) => arabicDigits[int.parse(d)]).join();
   }
 
@@ -530,10 +530,10 @@ class _MushafSinglePage extends ConsumerWidget {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        padding: EdgeInsets.fromLTRB(20, 20, 20, 32),
         decoration: BoxDecoration(
           color: _kPaper,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           border: Border(top: BorderSide(color: _kAccent.withValues(alpha: 0.5), width: 1)),
         ),
         child: Column(
@@ -556,7 +556,7 @@ class _MushafSinglePage extends ConsumerWidget {
                 Text(' ❖', style: TextStyle(color: _kAccent, fontSize: 14)),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             // Arapça
             Text(
               verse.arabicText,

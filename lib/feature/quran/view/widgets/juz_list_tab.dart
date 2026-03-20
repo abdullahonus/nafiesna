@@ -71,7 +71,7 @@ class JuzListTab extends StatelessWidget {
                     'Sayfa $pageNo',
                     style: AppTextStyles.bodyMedium,
                   ),
-                  trailing: const Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondary),
+                  trailing: Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondary),
                   onTap: () {
                     context.router.push(MushafPageRoute(pageNumber: pageNo));
                   },

@@ -1,22 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-
 import '../../../product/navigation/app_router.dart';
+import '../../../product/init/theme/app_colors.dart';
+import '../../../product/init/theme/app_text_styles.dart';
 import '../model/surah_list_data.dart';
-
-// Kuran sekme renklerini ve tasarımını diğer sekmelerden tamamen izole ediyoruz.
-// Kendi krem temalı renk paleti
-const _kBackground = Color(0xFFE4D5B7); // Global background
-const _kSurface = Color(0xFFEBE0C5);    // Global surface
-const _kText = Color(0xFF2B1E0E);       // Global onBackground
-const _kTextLight = Color(0xFF8B7355);  // Global textSecondary
-const _kAccent = Color(0xFFB8860B);     // Koyu altın
-
-// Karo renkleri (resimdeki gibi mat tonlar)
-const _colorGreen = Color(0xFF5C7A5C);
-const _colorBurgundy = Color(0xFF8B4A4A);
-const _colorBrown = Color(0xFF7A6040);
-const _colorSlate = Color(0xFF4A6B7A);
 
 @RoutePage()
 class QuranView extends StatefulWidget {
@@ -45,72 +32,71 @@ class _QuranViewState extends State<QuranView>
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      // Kuran sekmesine özel aydınlık tema
-      data: ThemeData.light().copyWith(
-        scaffoldBackgroundColor: _kBackground,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: _kSurface,
-          foregroundColor: _kText,
-          elevation: 0,
-          titleTextStyle: TextStyle(
+    final c = AppThemeColors.of(context);
+    final isDark = context.isDark;
+
+    // Karo renkleri — temaya göre değişir
+    final colorGreen = isDark ? const Color(0xFF3B523B) : const Color(0xFF5C7A5C);
+    final colorBurgundy = isDark ? const Color(0xFF5A3030) : const Color(0xFF8B4A4A);
+    final colorBrown = isDark ? const Color(0xFF52402A) : const Color(0xFF7A6040);
+    final colorSlate = isDark ? const Color(0xFF2E444D) : const Color(0xFF4A6B7A);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Kur\'ân-ı Kerîm',
+          style: TextStyle(
             fontFamily: 'Amiri',
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: _kText,
+            color: c.onBackground,
             letterSpacing: 0.5,
           ),
         ),
-        dividerColor: _kTextLight.withValues(alpha: 0.3),
+        centerTitle: true,
+        backgroundColor: c.surface,
+        elevation: 0.5,
+        shadowColor: c.textSecondary.withValues(alpha: 0.3),
+        bottom: _selectedTab > 0
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(38),
+                child: _buildBackButton(c),
+              )
+            : null,
       ),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Kur\'ân-ı Kerîm',
-            style: TextStyle(
-              fontFamily: 'Amiri',
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: _kText,
-            ),
-          ),
-          centerTitle: true,
-          backgroundColor: _kSurface,
-          elevation: 0.5,
-          shadowColor: _kTextLight.withValues(alpha: 0.3),
-          bottom: _selectedTab > 0
-              ? PreferredSize(
-                  preferredSize: const Size.fromHeight(38),
-                  child: _buildBackButton(),
-                )
-              : null,
-        ),
-        backgroundColor: _kBackground,
-        body: _buildBody(),
+      backgroundColor: c.background,
+      body: SafeArea(
+        child: _buildBody(c, colorGreen, colorBurgundy, colorBrown, colorSlate),
       ),
     );
   }
 
-  Widget _buildBackButton() {
+  Widget _buildBackButton(AppThemeColors c) {
     return Container(
-      color: _kSurface,
+      color: c.surface,
       width: double.infinity,
       child: TextButton.icon(
-        icon: const Icon(
+        icon: Icon(
           Icons.arrow_back_ios_rounded,
           size: 14,
-          color: _kAccent,
+          color: c.accent,
         ),
-        label: const Text(
+        label: Text(
           'Ana Sayfa',
-          style: TextStyle(color: _kAccent, fontSize: 13),
+          style: TextStyle(color: c.accent, fontSize: 13),
         ),
         onPressed: () => setState(() => _selectedTab = 0),
       ),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(
+    AppThemeColors c,
+    Color colorGreen,
+    Color colorBurgundy,
+    Color colorBrown,
+    Color colorSlate,
+  ) {
     Widget content;
     switch (_selectedTab) {
       case 1:
@@ -123,7 +109,7 @@ class _QuranViewState extends State<QuranView>
         content = const _SayfaListBody();
         break;
       default:
-        content = _buildHomePage();
+        content = _buildHomePage(c, colorGreen, colorBurgundy, colorBrown, colorSlate);
     }
 
     return Stack(
@@ -141,24 +127,30 @@ class _QuranViewState extends State<QuranView>
     );
   }
 
-  Widget _buildHomePage() {
+  Widget _buildHomePage(
+    AppThemeColors c,
+    Color colorGreen,
+    Color colorBurgundy,
+    Color colorBrown,
+    Color colorSlate,
+  ) {
     return Stack(
       children: [
         // İçerik
         SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(12, 20, 12, 20),
+          padding: EdgeInsets.fromLTRB(12, 20, 12, 20),
           child: Column(
             children: [
               // Bismillah başlığı
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: _kSurface,
+                  color: c.surface,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: _kAccent.withValues(alpha: 0.4)),
+                  border: Border.all(color: c.accent.withValues(alpha: 0.4)),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
                     Text(
                       'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ',
@@ -167,7 +159,7 @@ class _QuranViewState extends State<QuranView>
                         fontFamily: 'Amiri',
                         fontSize: 26,
                         fontWeight: FontWeight.w400,
-                        color: _kText,
+                        color: c.onBackground,
                         height: 1.8,
                       ),
                     ),
@@ -176,7 +168,7 @@ class _QuranViewState extends State<QuranView>
                       'bismillâhirrahmânirrahîm',
                       style: TextStyle(
                         fontSize: 12,
-                        color: _kTextLight,
+                        color: c.textSecondary,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -196,7 +188,7 @@ class _QuranViewState extends State<QuranView>
                 childAspectRatio: 1.0,
                 children: [
                   _QuranTile(
-                    color: _colorGreen,
+                    color: colorGreen,
                     icon: Icons.menu_book_rounded,
                     label: 'Kur\'an-ı Kerîm',
                     subtitle: 'Mushaf Okuma',
@@ -204,21 +196,21 @@ class _QuranViewState extends State<QuranView>
                         context.router.push(MushafPageRoute(pageNumber: 1)),
                   ),
                   _QuranTile(
-                    color: _colorBurgundy,
+                    color: colorBurgundy,
                     icon: Icons.format_list_bulleted_rounded,
                     label: 'Sûreler',
                     subtitle: '114 Sure',
                     onTap: () => setState(() => _selectedTab = 1),
                   ),
                   _QuranTile(
-                    color: _colorBrown,
+                    color: colorBrown,
                     icon: Icons.collections_bookmark_rounded,
                     label: 'Cüzler',
                     subtitle: '30 Cüz',
                     onTap: () => setState(() => _selectedTab = 2),
                   ),
                   _QuranTile(
-                    color: _colorSlate,
+                    color: colorSlate,
                     icon: Icons.article_outlined,
                     label: 'Sayfalar',
                     subtitle: '604 Sayfa',
@@ -235,20 +227,20 @@ class _QuranViewState extends State<QuranView>
                 child: Row(
                   children: [
                     Expanded(
-                      child: Divider(color: _kAccent.withValues(alpha: 0.4)),
+                      child: Divider(color: AppColors.accent.withValues(alpha: 0.4)),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
                         '✦ ✦ ✦',
                         style: TextStyle(
-                          color: _kAccent.withValues(alpha: 0.6),
+                          color: c.accent.withValues(alpha: 0.6),
                           fontSize: 14,
                         ),
                       ),
                     ),
                     Expanded(
-                      child: Divider(color: _kAccent.withValues(alpha: 0.4)),
+                      child: Divider(color: AppColors.accent.withValues(alpha: 0.4)),
                     ),
                   ],
                 ),
@@ -347,18 +339,7 @@ class _SurahListBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // SurahListTab'ı krem teması içinde sarıyoruz
-    return Theme(
-      data: ThemeData.light().copyWith(
-        scaffoldBackgroundColor: _kBackground,
-        colorScheme: const ColorScheme.light(primary: _kAccent),
-        textTheme: ThemeData.light().textTheme.apply(
-          bodyColor: _kText,
-          displayColor: _kText,
-        ),
-      ),
-      child: _WrappedSurahList(key: _surahListKey),
-    );
+    return _WrappedSurahList(key: _surahListKey);
   }
 }
 
@@ -375,7 +356,6 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
 
   @override
   Widget build(BuildContext context) {
-    // Import inline list from surah_list_data
     final filtered = _getFiltered();
     return Column(
       children: [
@@ -384,15 +364,15 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           height: 36,
           decoration: BoxDecoration(
-            color: _kSurface,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: _kAccent.withValues(alpha: 0.3)),
+            border: Border.all(color: context.colors.accent.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
-              _tab('Kur\'ân', 0),
-              _tab('Alfabetik', 1),
-              _tab('Nüzul Sırası', 2),
+              _tab('Kur\'ân', 0, context),
+              _tab('Alfabetik', 1, context),
+              _tab('Nüzul Sırası', 2, context),
             ],
           ),
         ),
@@ -401,20 +381,20 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: TextField(
             onChanged: (v) => setState(() => _searchQuery = v),
-            style: const TextStyle(color: _kText),
+            style: TextStyle(color: context.colors.onBackground),
             decoration: InputDecoration(
               hintText: 'Sure Adı Ara...',
-              hintStyle: const TextStyle(color: _kTextLight),
-              prefixIcon: const Icon(Icons.search, color: _kTextLight),
+              hintStyle: TextStyle(color: context.colors.textSecondary),
+              prefixIcon: Icon(Icons.search, color: context.colors.textSecondary),
               filled: true,
-              fillColor: _kSurface,
+              fillColor: context.colors.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: _kAccent.withValues(alpha: 0.3)),
+                borderSide: BorderSide(color: context.colors.accent.withValues(alpha: 0.3)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: _kAccent.withValues(alpha: 0.3)),
+                borderSide: BorderSide(color: context.colors.accent.withValues(alpha: 0.3)),
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
             ),
@@ -430,12 +410,12 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
-                  color: _kSurface,
+                  color: context.colors.surface,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: _kAccent.withValues(alpha: 0.3)),
+                  border: Border.all(color: context.colors.accent.withValues(alpha: 0.3)),
                   boxShadow: [
                     BoxShadow(
-                      color: _kAccent.withValues(alpha: 0.15),
+                      color: context.colors.accent.withValues(alpha: 0.15),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -446,25 +426,25 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
                     horizontal: 16,
                     vertical: 4,
                   ),
-                  leading: _islamicStar(s.id),
+                  leading: _islamicStar(s.id, context),
                   title: Text(
                     s.turkishName,
-                    style: const TextStyle(
-                      color: _kText,
+                    style: TextStyle(
+                      color: context.colors.onBackground,
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
                   ),
                   subtitle: Text(
                     '${s.englishName.toUpperCase()}  •  ${s.ayahsCount} Ayet',
-                    style: const TextStyle(color: _kTextLight, fontSize: 11),
+                    style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
                   ),
                   trailing: Text(
                     s.arabicName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Amiri',
                       fontSize: 22,
-                      color: _kText,
+                      color: context.colors.onBackground,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -504,21 +484,21 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
     return filtered;
   }
 
-  Widget _tab(String title, int idx) {
+  Widget _tab(String title, int idx, BuildContext context) {
     final selected = _selectedIndex == idx;
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _selectedIndex = idx),
         child: Container(
           decoration: BoxDecoration(
-            color: selected ? _kAccent : Colors.transparent,
+            color: selected ? context.colors.accent : Colors.transparent,
             borderRadius: BorderRadius.circular(7),
           ),
           alignment: Alignment.center,
           child: Text(
             title,
             style: TextStyle(
-              color: selected ? Colors.white : _kTextLight,
+              color: selected ? Colors.white : context.colors.textSecondary,
               fontWeight: selected ? FontWeight.bold : FontWeight.w500,
               fontSize: 12,
             ),
@@ -528,7 +508,7 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
     );
   }
 
-  Widget _islamicStar(int n) {
+  Widget _islamicStar(int n, BuildContext context) {
     return SizedBox(
       width: 40,
       height: 40,
@@ -542,7 +522,7 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
               height: 28,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: _kAccent.withValues(alpha: 0.7),
+                  color: context.colors.accent.withValues(alpha: 0.7),
                   width: 1.2,
                 ),
                 borderRadius: BorderRadius.circular(3),
@@ -554,7 +534,7 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
             height: 28,
             decoration: BoxDecoration(
               border: Border.all(
-                color: _kAccent.withValues(alpha: 0.7),
+                color: context.colors.accent.withValues(alpha: 0.7),
                 width: 1.2,
               ),
               borderRadius: BorderRadius.circular(3),
@@ -562,10 +542,10 @@ class _WrappedSurahListState extends State<_WrappedSurahList> {
           ),
           Text(
             '$n',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
-              color: _kAccent,
+              color: context.colors.accent,
             ),
           ),
         ],
@@ -592,28 +572,28 @@ class _JuzListBody extends StatelessWidget {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: _kSurface,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: _kAccent.withValues(alpha: 0.3)),
+            border: Border.all(color: context.colors.accent.withValues(alpha: 0.3)),
             boxShadow: [
               BoxShadow(
-                color: _kAccent.withValues(alpha: 0.15),
+                color: context.colors.accent.withValues(alpha: 0.15),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
           child: ExpansionTile(
-            iconColor: _kAccent,
-            collapsedIconColor: _kAccent,
+            iconColor: context.colors.accent,
+            collapsedIconColor: context.colors.accent,
             title: Row(
               children: [
-                _islamicStar(juzNo),
+                _islamicStar(juzNo, context),
                 const SizedBox(width: 10),
                 Text(
                   '$juzNo. Cüz',
-                  style: const TextStyle(
-                    color: _kText,
+                  style: TextStyle(
+                    color: context.colors.onBackground,
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),
@@ -629,16 +609,16 @@ class _JuzListBody extends StatelessWidget {
                 leading: Icon(
                   Icons.star_half_rounded,
                   size: 18,
-                  color: _kAccent.withValues(alpha: 0.5),
+                  color: context.colors.accent.withValues(alpha: 0.5),
                 ),
                 title: Text(
                   'Sayfa $pageNo',
-                  style: const TextStyle(color: _kText, fontSize: 14),
+                  style: TextStyle(color: context.colors.onBackground, fontSize: 14),
                 ),
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.chevron_right,
                   size: 18,
-                  color: _kTextLight,
+                  color: context.colors.textSecondary,
                 ),
                 onTap: () =>
                     context.router.push(MushafPageRoute(pageNumber: pageNo)),
@@ -650,7 +630,7 @@ class _JuzListBody extends StatelessWidget {
     );
   }
 
-  Widget _islamicStar(int n) {
+  Widget _islamicStar(int n, BuildContext context) {
     return SizedBox(
       width: 36,
       height: 36,
@@ -664,7 +644,7 @@ class _JuzListBody extends StatelessWidget {
               height: 26,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: _kAccent.withValues(alpha: 0.7),
+                  color: context.colors.accent.withValues(alpha: 0.7),
                   width: 1.2,
                 ),
                 borderRadius: BorderRadius.circular(3),
@@ -676,7 +656,7 @@ class _JuzListBody extends StatelessWidget {
             height: 26,
             decoration: BoxDecoration(
               border: Border.all(
-                color: _kAccent.withValues(alpha: 0.7),
+                color: context.colors.accent.withValues(alpha: 0.7),
                 width: 1.2,
               ),
               borderRadius: BorderRadius.circular(3),
@@ -684,10 +664,10 @@ class _JuzListBody extends StatelessWidget {
           ),
           Text(
             '$n',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
-              color: _kAccent,
+              color: context.colors.accent,
             ),
           ),
         ],
@@ -717,12 +697,12 @@ class _SayfaListBody extends StatelessWidget {
           onTap: () => context.router.push(MushafPageRoute(pageNumber: pageNo)),
           child: Container(
             decoration: BoxDecoration(
-              color: _kSurface,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _kAccent.withValues(alpha: 0.3)),
+              border: Border.all(color: context.colors.accent.withValues(alpha: 0.3)),
               boxShadow: [
                 BoxShadow(
-                  color: _kAccent.withValues(alpha: 0.2),
+                  color: context.colors.accent.withValues(alpha: 0.2),
                   blurRadius: 6,
                   offset: const Offset(0, 3),
                 ),
@@ -731,8 +711,8 @@ class _SayfaListBody extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               '$pageNo',
-              style: const TextStyle(
-                color: _kText,
+              style: TextStyle(
+                color: context.colors.onBackground,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),

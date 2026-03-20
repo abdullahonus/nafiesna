@@ -1,8 +1,9 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
+
 import '../../../feature/content/widgets/islamic_info_page.dart';
 import '../../constants/app_spacing.dart';
-import '../../init/theme/app_colors.dart';
 import '../../init/theme/app_text_styles.dart';
 
 class SohbetPopup extends StatelessWidget {
@@ -12,13 +13,15 @@ class SohbetPopup extends StatelessWidget {
   final IslamicInfoItem item;
 
   static void show(BuildContext context) {
+    final islamicInfos = IslamicInfoPage.getIslamicInfos(context);
     if (islamicInfos.isEmpty) return;
-    
+
     final random = Random();
     final randomInfo = islamicInfos[random.nextInt(islamicInfos.length)];
     if (randomInfo.items.isEmpty) return;
-    
-    final randomItem = randomInfo.items[random.nextInt(randomInfo.items.length)];
+
+    final randomItem =
+        randomInfo.items[random.nextInt(randomInfo.items.length)];
 
     showGeneralDialog(
       context: context,
@@ -32,10 +35,7 @@ class SohbetPopup extends StatelessWidget {
       transitionBuilder: (context, anim1, anim2, child) {
         return Transform.scale(
           scale: Curves.easeInOutBack.transform(anim1.value),
-          child: FadeTransition(
-            opacity: anim1,
-            child: child,
-          ),
+          child: FadeTransition(opacity: anim1, child: child),
         );
       },
     );
@@ -52,7 +52,7 @@ class SohbetPopup extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
           boxShadow: [
             BoxShadow(
@@ -92,14 +92,14 @@ class SohbetPopup extends StatelessWidget {
                         children: [
                           Text(
                             info.title,
-                            style: AppTextStyles.labelSmall.copyWith(
+                            style: context.textTheme.labelSmall?.copyWith(
                               color: info.color,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
                             item.title,
-                            style: AppTextStyles.headlineSmall.copyWith(
+                            style: context.textTheme.headlineSmall?.copyWith(
                               fontSize: 18,
                             ),
                           ),
@@ -131,7 +131,7 @@ class SohbetPopup extends StatelessWidget {
                         ),
                         child: Text(
                           item.count!,
-                          style: AppTextStyles.labelSmall.copyWith(
+                          style: context.textTheme.labelSmall?.copyWith(
                             color: info.color,
                             fontWeight: FontWeight.bold,
                           ),
@@ -142,9 +142,11 @@ class SohbetPopup extends StatelessWidget {
                     Text(
                       item.content,
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium.copyWith(
+                      style: context.textTheme.bodyMedium?.copyWith(
                         height: 1.6,
-                        color: AppColors.onBackground.withValues(alpha: 0.8),
+                        color: context.colors.onBackground.withValues(
+                          alpha: 0.8,
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xl),

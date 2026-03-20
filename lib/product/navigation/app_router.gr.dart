@@ -12,34 +12,70 @@ part of 'app_router.dart';
 
 /// generated route for
 /// [ContentView]
-class ContentRoute extends PageRouteInfo<void> {
-  const ContentRoute({List<PageRouteInfo>? children})
-    : super(ContentRoute.name, initialChildren: children);
+class ContentRoute extends PageRouteInfo<ContentRouteArgs> {
+  ContentRoute({Key? key, List<PageRouteInfo>? children})
+    : super(
+        ContentRoute.name,
+        args: ContentRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'ContentRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const ContentView();
+      final args = data.argsAs<ContentRouteArgs>(
+        orElse: () => const ContentRouteArgs(),
+      );
+      return ContentView(key: args.key);
     },
   );
 }
 
+class ContentRouteArgs {
+  const ContentRouteArgs({this.key});
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'ContentRouteArgs{key: $key}';
+  }
+}
+
 /// generated route for
 /// [DreamView]
-class DreamRoute extends PageRouteInfo<void> {
-  const DreamRoute({List<PageRouteInfo>? children})
-    : super(DreamRoute.name, initialChildren: children);
+class DreamRoute extends PageRouteInfo<DreamRouteArgs> {
+  DreamRoute({Key? key, List<PageRouteInfo>? children})
+    : super(
+        DreamRoute.name,
+        args: DreamRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'DreamRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const DreamView();
+      final args = data.argsAs<DreamRouteArgs>(
+        orElse: () => const DreamRouteArgs(),
+      );
+      return DreamView(key: args.key);
     },
   );
+}
+
+class DreamRouteArgs {
+  const DreamRouteArgs({this.key});
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'DreamRouteArgs{key: $key}';
+  }
 }
 
 /// generated route for
@@ -113,18 +149,36 @@ class MushafPageRouteArgs {
 
 /// generated route for
 /// [PdfView]
-class PdfRoute extends PageRouteInfo<void> {
-  const PdfRoute({List<PageRouteInfo>? children})
-    : super(PdfRoute.name, initialChildren: children);
+class PdfRoute extends PageRouteInfo<PdfRouteArgs> {
+  PdfRoute({Key? key, List<PageRouteInfo>? children})
+    : super(
+        PdfRoute.name,
+        args: PdfRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'PdfRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const PdfView();
+      final args = data.argsAs<PdfRouteArgs>(
+        orElse: () => const PdfRouteArgs(),
+      );
+      return PdfView(key: args.key);
     },
   );
+}
+
+class PdfRouteArgs {
+  const PdfRouteArgs({this.key});
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'PdfRouteArgs{key: $key}';
+  }
 }
 
 /// generated route for

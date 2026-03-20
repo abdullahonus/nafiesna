@@ -13,7 +13,7 @@ import '../../init/theme/app_colors.dart';
 /// ])
 /// ```
 class FloatingParticlesBackground extends StatefulWidget {
-  const FloatingParticlesBackground({super.key});
+  FloatingParticlesBackground({super.key});
 
   @override
   State<FloatingParticlesBackground> createState() =>
@@ -23,17 +23,8 @@ class FloatingParticlesBackground extends StatefulWidget {
 class _FloatingParticlesBackgroundState
     extends State<FloatingParticlesBackground>
     with SingleTickerProviderStateMixin {
-  static const int _count = 28;
-
-  // Uygulama renk paletine uygun: teal tonu + gold tonu
-  static const List<Color> _palette = [
-    AppColors.primary,
-    AppColors.primaryLight, // #4DB6AC açık teal
-    Color(0xFF26A69A),      // orta teal
-    AppColors.accent,       // #D4AF37 gold
-    AppColors.accentLight,  // #FFD700 parlak gold
-    Color(0xFF4DB6AC),      // teal highlight
-  ];
+  // _palette artık statik değil, tema değişimine göre güncellenecek
+  List<Color> _palette = [];
 
   late final Ticker _ticker;
   final List<_Particle> _particles = [];
@@ -54,17 +45,33 @@ class _FloatingParticlesBackgroundState
     })..start();
   }
 
+  void _updatePalette(AppThemeColors c) {
+    _palette = [
+      c.primary,
+      c.primaryLight,
+      c.accent,
+      c.accentLight,
+      c.primary.withValues(alpha: 0.7),
+      c.accent.withValues(alpha: 0.7),
+    ];
+
+    // Eğer partiküller zaten varsa, renklerini güncelle (opsiyonel ama şık durur)
+    if (_particles.isNotEmpty) {
+      for (final p in _particles) {
+        p.updateColor(_palette[_rng.nextInt(_palette.length)]);
+      }
+    }
+  }
+
   void _initParticles(Size size) {
-    for (int i = 0; i < _count; i++) {
+    if (_palette.isEmpty) return;
+    for (int i = 0; i < 28; i++) {
       _particles.add(_Particle(
         x: _rng.nextDouble() * size.width,
         y: _rng.nextDouble() * size.height,
-        // Yavaş, sakin hareket
         vx: (_rng.nextDouble() * 0.5 - 0.25),
         vy: (_rng.nextDouble() * 0.5 - 0.25),
-        // Çok küçük boyutlar — tıpkı React versiyonu gibi
         radius: _rng.nextDouble() * 1.8 + 0.4,
-        // Hafif şeffaflık: %10–%40
         opacity: _rng.nextDouble() * 0.30 + 0.10,
         color: _palette[_rng.nextInt(_palette.length)],
       ));
@@ -80,6 +87,11 @@ class _FloatingParticlesBackgroundState
 
   @override
   Widget build(BuildContext context) {
+    final c = AppThemeColors.of(context);
+    
+    // Tema değiştiyse paleti güncelle
+    _updatePalette(c);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final newSize = constraints.biggest;
@@ -91,6 +103,7 @@ class _FloatingParticlesBackgroundState
           size: _size,
           painter: _ParticlesPainter(
             particles: _particles,
+            backgroundColor: c.background,
             repaint: _repaintNotifier,
           ),
         );
@@ -117,7 +130,11 @@ class _Particle {
   double _vx, _vy;
   final double radius;
   final double opacity;
-  final Color color;
+  Color color;
+
+  void updateColor(Color newColor) {
+    color = newColor;
+  }
 
   void update(Size bounds) {
     x += _vx;
@@ -146,17 +163,19 @@ class _Particle {
 class _ParticlesPainter extends CustomPainter {
   const _ParticlesPainter({
     required this.particles,
+    required this.backgroundColor,
     required super.repaint,
   });
 
   final List<_Particle> particles;
+  final Color backgroundColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     // Arka plan rengi (Scaffold transparent olduğu için burada çiziyoruz)
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = AppColors.background,
+      Paint()..color = backgroundColor,
     );
 
     for (final p in particles) {
@@ -192,7 +211,10 @@ class _ParticlesPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_ParticlesPainter old) => false; // repaint notifier yönetiyor
+  bool shouldRepaint(_ParticlesPainter old) {
+    // Arka plan rengi değiştiyse mutlaka yeniden çizilmeli
+    return old.backgroundColor != backgroundColor;
+  }
 }
 
 // ── Repaint notifier ───────────────────────────────────────────────────────

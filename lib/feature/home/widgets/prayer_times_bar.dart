@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../prayer_times/notifier/prayer_times_notifier.dart';
 import '../../prayer_times/provider/prayer_times_provider.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/widget/common/permission_warnings.dart';
@@ -94,7 +93,7 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
     );
 
     if (isLoading || prayers.isEmpty) {
-      return _buildSkeleton();
+      return _buildSkeleton(context);
     }
 
     if (_countdownTimer == null || !_countdownTimer!.isActive) {
@@ -120,20 +119,20 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        color: AppColors.surface,
+        color: context.colors.surface,
         border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.15),
+          color: context.colors.accent.withValues(alpha: 0.15),
           width: 0.6,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.12),
+            color: context.colors.primary.withValues(alpha: 0.12),
             blurRadius: 24,
             spreadRadius: 2,
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.15),
+            color: context.colors.accent.withValues(alpha: 0.15),
             blurRadius: 10,
             spreadRadius: 1,
             offset: const Offset(0, 4),
@@ -142,13 +141,13 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
       ),
       child: Column(
         children: [
-          _buildNextPrayerHeader(nextName),
+          _buildNextPrayerHeader(context, nextName),
           const SizedBox(height: AppSpacing.xl),
-          _buildCountdown(),
+          _buildCountdown(context),
           const SizedBox(height: AppSpacing.xl),
-          _buildDateRow(dateLabel, hijriDate),
+          _buildDateRow(context, dateLabel, hijriDate),
           const SizedBox(height: AppSpacing.lg),
-          const Divider(color: AppColors.divider, height: 1),
+          Divider(color: context.colors.divider, height: 1),
           const SizedBox(height: AppSpacing.lg),
           _buildTimesRow(prayers, currentIndex),
         ],
@@ -156,7 +155,7 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
     );
   }
 
-  Widget _buildNextPrayerHeader(String nextName) {
+  Widget _buildNextPrayerHeader(BuildContext context, String nextName) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -169,8 +168,8 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
             children: [
               Text(
                 nextName,
-                style: AppTextStyles.headlineLarge.copyWith(
-                  color: AppColors.onBackground,
+                style: context.textTheme.headlineLarge?.copyWith(
+                  color: context.colors.onBackground,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.5,
                 ),
@@ -178,8 +177,8 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'Vaktin Çıkmasına',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: context.colors.textSecondary,
                   letterSpacing: 0.3,
                 ),
               ),
@@ -190,7 +189,7 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
     );
   }
 
-  Widget _buildCountdown() {
+  Widget _buildCountdown(BuildContext context) {
     final hours = _remaining.inHours;
     final minutes = _remaining.inMinutes.remainder(60);
     final seconds = _remaining.inSeconds.remainder(60);
@@ -199,24 +198,24 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
     final String minutesStr = minutes.toString().padLeft(2, '0');
     final String secondsStr = seconds.toString().padLeft(2, '0');
 
-    const TextStyle largeDigit = TextStyle(
+    TextStyle largeDigit = TextStyle(
       fontSize: 52,
       fontWeight: FontWeight.w700,
-      color: AppColors.onBackground,
+      color: context.colors.onBackground,
       height: 1,
     );
 
-    const TextStyle colonStyle = TextStyle(
+    TextStyle colonStyle = TextStyle(
       fontSize: 44,
       fontWeight: FontWeight.w300,
-      color: AppColors.textSecondary,
+      color: context.colors.textSecondary,
       height: 1,
     );
 
-    const TextStyle secondsStyle = TextStyle(
+    TextStyle secondsStyle = TextStyle(
       fontSize: 28,
       fontWeight: FontWeight.w500,
-      color: AppColors.textSecondary,
+      color: context.colors.textSecondary,
       height: 1,
     );
 
@@ -231,8 +230,8 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
           child: Text(':', style: colonStyle),
         ),
         Text(
@@ -254,7 +253,7 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
     );
   }
 
-  Widget _buildDateRow(String dateLabel, String hijriDate) {
+  Widget _buildDateRow(BuildContext context, String dateLabel, String hijriDate) {
     final String miladiShort = _extractShortDate(dateLabel);
 
     return Row(
@@ -262,8 +261,8 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
       children: [
         Text(
           miladiShort,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+          style: context.textTheme.bodySmall?.copyWith(
+            color: context.colors.textSecondary,
           ),
         ),
         if (hijriDate.isNotEmpty) ...[
@@ -272,13 +271,13 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
             child: Container(
               width: 1,
               height: 14,
-              color: AppColors.divider,
+              color: context.colors.divider,
             ),
           ),
           Text(
             hijriDate,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.accent,
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.colors.accent,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -313,22 +312,22 @@ class _PrayerTimesBarState extends ConsumerState<PrayerTimesBar> {
     );
   }
 
-  Widget _buildSkeleton() {
+  Widget _buildSkeleton(BuildContext context) {
     return Container(
       height: 220,
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.border, width: 0.5),
+        color: context.colors.surface,
+        border: Border.all(color: context.colors.border, width: 0.5),
       ),
-      child: const Center(
+      child: Center(
         child: SizedBox(
           width: 24,
           height: 24,
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            color: AppColors.primary,
+            color: context.colors.primary,
           ),
         ),
       ),
@@ -356,16 +355,16 @@ class _PrayerTimeCell extends StatelessWidget {
     final FontWeight timeWeight;
 
     if (isNext) {
-      nameColor = AppColors.accent;
-      timeColor = AppColors.accent;
+      nameColor = context.colors.accent;
+      timeColor = context.colors.accent;
       timeWeight = FontWeight.w700;
     } else if (isActive) {
-      nameColor = AppColors.primary;
-      timeColor = AppColors.primary;
+      nameColor = context.colors.primary;
+      timeColor = context.colors.primary;
       timeWeight = FontWeight.w700;
     } else {
-      nameColor = AppColors.textSecondary;
-      timeColor = AppColors.onBackground;
+      nameColor = context.colors.textSecondary;
+      timeColor = context.colors.onBackground;
       timeWeight = FontWeight.w400;
     }
 

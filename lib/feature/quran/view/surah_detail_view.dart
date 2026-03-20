@@ -5,13 +5,13 @@ import '../provider/quran_provider.dart';
 import '../model/quran_verse_model.dart';
 
 // ── Aynı krem tema ───────────────────────────────────────────────────────────
-const _kBg = Color(0xFFE4D5B7);
-const _kPaper = Color(0xFFEBE0C5);
-const _kText = Color(0xFF2B1E0E);
-const _kAccent = Color(0xFFB8860B);
-const _kVerseNum = Color(0xFFCC6666);   // pembe-kırmızı (resimdeki gibi)
-const _kSurahHeader = Color(0xFF8B4513);
-const _kMuted = Color(0xFF7A6040);
+final Color _kBg = Color(0xFFE4D5B7);
+final Color _kPaper = Color(0xFFEBE0C5);
+final Color _kText = Color(0xFF2B1E0E);
+final Color _kAccent = Color(0xFFB8860B);
+final Color _kVerseNum = Color(0xFFCC6666);   // pembe-kırmızı (resimdeki gibi)
+final Color _kSurahHeader = Color(0xFF8B4513);
+final Color _kMuted = Color(0xFF7A6040);
 
 @RoutePage()
 class SurahDetailView extends ConsumerWidget {
@@ -19,7 +19,7 @@ class SurahDetailView extends ConsumerWidget {
   final String surahName;
   final String arabicName;
 
-  const SurahDetailView({
+  SurahDetailView({
     super.key,
     required this.surahId,
     required this.surahName,
@@ -81,7 +81,7 @@ class SurahDetailView extends ConsumerWidget {
                 ref.read(quranPreferencesProvider.notifier).toggleTransliteration();
               },
             ),
-            const SizedBox(width: 4),
+            SizedBox(width: 4),
           ],
         ),
         body: asyncVerses.when(
@@ -94,7 +94,7 @@ class SurahDetailView extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.wifi_off_rounded, color: _kAccent, size: 48),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Text('Sure yüklenemedi.', style: TextStyle(color: _kText)),
               ],
             ),
@@ -106,7 +106,7 @@ class SurahDetailView extends ConsumerWidget {
 
   Widget _buildContent(List<QuranVerse> verses, bool showTranslit) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 32),
+      padding: EdgeInsets.fromLTRB(12, 12, 12, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -115,7 +115,7 @@ class SurahDetailView extends ConsumerWidget {
             child: _buildArabicBlock(verses),
           ),
 
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
 
           // ── BLOK 2: Türkçe okunuş (gizlenebilir) ───────────────────────
           if (showTranslit) ...[
@@ -123,7 +123,7 @@ class SurahDetailView extends ConsumerWidget {
               label: 'Okunuş',
               child: _buildTransliterationBlock(verses),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
           ],
 
           // ── BLOK 3: Türkçe meal ─────────────────────────────────────────
@@ -147,12 +147,12 @@ class SurahDetailView extends ConsumerWidget {
           BoxShadow(
             color: Colors.brown.withValues(alpha: 0.08),
             blurRadius: 6,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+        padding: EdgeInsets.fromLTRB(14, 12, 14, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -198,8 +198,8 @@ class SurahDetailView extends ConsumerWidget {
       spans.add(WidgetSpan(
         alignment: PlaceholderAlignment.middle,
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          padding: const EdgeInsets.all(5),
+          margin: EdgeInsets.symmetric(horizontal: 3),
+          padding: EdgeInsets.all(5),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: _kVerseNum, width: 1.2),
@@ -216,7 +216,7 @@ class SurahDetailView extends ConsumerWidget {
           ),
         ),
       ));
-      spans.add(const TextSpan(text: '  '));
+      spans.add(TextSpan(text: '  '));
     }
 
     return RichText(
@@ -261,8 +261,8 @@ class SurahDetailView extends ConsumerWidget {
       spans.add(WidgetSpan(
         alignment: PlaceholderAlignment.middle,
         child: Container(
-          margin: const EdgeInsets.only(right: 6, bottom: 2),
-          padding: const EdgeInsets.all(4),
+          margin: EdgeInsets.only(right: 6, bottom: 2),
+          padding: EdgeInsets.all(4),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: _kVerseNum, width: 1.2),

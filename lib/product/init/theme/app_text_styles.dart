@@ -1,77 +1,79 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
+/// AppTextStyles — static getter'lar, AppColors.light const değerlerini kullanır.
+/// Widget tree içinde doğru rengi almak için `Theme.of(context).textTheme` kullanın.
+/// Bu class geriye dönük uyumluluk içindir.
 abstract class AppTextStyles {
-  static const TextStyle displayLarge = TextStyle(
+  static TextStyle get displayLarge => const TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    color: AppColors.onBackground,
     letterSpacing: -0.5,
   );
 
-  static const TextStyle displayMedium = TextStyle(
+  static TextStyle get displayMedium => const TextStyle(
     fontSize: 26,
     fontWeight: FontWeight.w600,
-    color: AppColors.onBackground,
   );
 
-  static const TextStyle headlineLarge = TextStyle(
+  static TextStyle get headlineLarge => const TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w600,
-    color: AppColors.onBackground,
   );
 
-  static const TextStyle headlineMedium = TextStyle(
+  static TextStyle get headlineMedium => const TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
-    color: AppColors.onBackground,
   );
 
-  static const TextStyle headlineSmall = TextStyle(
+  static TextStyle get headlineSmall => const TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    color: AppColors.onBackground,
   );
 
-  static const TextStyle bodyLarge = TextStyle(
+  static TextStyle get bodyLarge => const TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    color: AppColors.onBackground,
     height: 1.5,
   );
 
-  static const TextStyle bodyMedium = TextStyle(
+  static TextStyle get bodyMedium => const TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    color: AppColors.onBackground,
     height: 1.5,
   );
 
-  static const TextStyle bodySmall = TextStyle(
+  static TextStyle get bodySmall => const TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
     height: 1.4,
   );
 
-  static const TextStyle labelLarge = TextStyle(
+  static TextStyle get labelLarge => const TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w500,
-    color: AppColors.onBackground,
     letterSpacing: 0.1,
   );
 
-  static const TextStyle labelSmall = TextStyle(
+  static TextStyle get labelSmall => const TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w500,
-    color: AppColors.textSecondary,
     letterSpacing: 0.5,
   );
 
-  static const TextStyle accent = TextStyle(
+  static TextStyle get accent => const TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.accent,
     letterSpacing: 0.2,
   );
+}
+
+/// BuildContext üzerinden tema renkleri ve text stilleri için kolaylık extension'ı.
+/// Yeni kod için bu yöntemi kullanın — tema değişimine tam reaktif.
+extension AppThemeContext on BuildContext {
+  TextTheme get textTheme => Theme.of(this).textTheme;
+  AppThemeColors get colors => AppThemeColors.of(this);
+  ColorScheme get colorScheme => Theme.of(this).colorScheme;
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
 }

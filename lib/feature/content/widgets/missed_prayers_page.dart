@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../service/missed_prayer_service.dart';
@@ -59,13 +58,16 @@ class _MissedPrayersPageState extends ConsumerState<MissedPrayersPage> {
     final lastUpdatedAsync = ref.watch(_lastUpdatedProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.colors.surface,
         elevation: 0,
         title: Text(
           'Kazalar',
-          style: AppTextStyles.headlineSmall.copyWith(color: AppColors.accent),
+          style: context.textTheme.headlineSmall?.copyWith(
+            color: context.colors.accent,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -82,8 +84,8 @@ class _MissedPrayersPageState extends ConsumerState<MissedPrayersPage> {
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                      color: AppColors.surface,
-                      border: Border.all(color: AppColors.border, width: 0.5),
+                      color: context.colors.surface,
+                      border: Border.all(color: context.colors.border, width: 0.5),
                     ),
                     child: Column(
                       children: [
@@ -92,7 +94,7 @@ class _MissedPrayersPageState extends ConsumerState<MissedPrayersPage> {
                             i++) ...[
                           if (i > 0)
                             Divider(
-                              color: AppColors.border.withValues(alpha: 0.5),
+                              color: context.colors.border.withValues(alpha: 0.5),
                               height: 1,
                             ),
                           _CounterRow(
@@ -112,8 +114,8 @@ class _MissedPrayersPageState extends ConsumerState<MissedPrayersPage> {
                   const SizedBox(height: AppSpacing.lg),
                   Text(
                     'Toplu kaza girişi için rakamların üzerine dokununuz.',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: context.colors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -126,8 +128,8 @@ class _MissedPrayersPageState extends ConsumerState<MissedPrayersPage> {
                           DateFormat('dd.MM.yyyy HH:mm', 'tr_TR').format(parsed);
                       return Text(
                         '(*) Son Kayıt Tarihi: $formatted',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary.withValues(alpha: 0.7),
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: context.colors.textSecondary.withValues(alpha: 0.7),
                           fontSize: 11,
                         ),
                       );
@@ -194,7 +196,7 @@ class _CounterRow extends StatelessWidget {
           Text(icon, style: const TextStyle(fontSize: 20)),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Text(label, style: AppTextStyles.bodyLarge),
+            child: Text(label, style: context.textTheme.bodyLarge),
           ),
           GestureDetector(
             onTap: () => _showEditDialog(context),
@@ -202,7 +204,7 @@ class _CounterRow extends StatelessWidget {
               width: 48,
               child: Text(
                 '$count',
-                style: AppTextStyles.headlineMedium.copyWith(
+                style: context.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
                 textAlign: TextAlign.center,
@@ -210,15 +212,15 @@ class _CounterRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          _buildButton(Icons.remove, onDecrement, count <= 0),
+          _buildButton(context, Icons.remove, onDecrement, count <= 0),
           const SizedBox(width: AppSpacing.xs),
-          _buildButton(Icons.add, onIncrement, false),
+          _buildButton(context, Icons.add, onIncrement, false),
         ],
       ),
     );
   }
 
-  Widget _buildButton(IconData icon, VoidCallback onTap, bool disabled) {
+  Widget _buildButton(BuildContext context, IconData icon, VoidCallback onTap, bool disabled) {
     return GestureDetector(
       onTap: disabled ? null : onTap,
       child: Container(
@@ -227,18 +229,18 @@ class _CounterRow extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           color: disabled
-              ? AppColors.surfaceVariant.withValues(alpha: 0.3)
-              : AppColors.surfaceVariant,
+              ? context.colors.textDisabled.withValues(alpha: 0.1)
+              : context.colors.surface,
           border: Border.all(
             color: disabled
-                ? AppColors.border.withValues(alpha: 0.3)
-                : AppColors.border,
+                ? context.colors.border.withValues(alpha: 0.3)
+                : context.colors.border,
             width: 0.5,
           ),
         ),
         child: Icon(
           icon,
-          color: disabled ? AppColors.textDisabled : AppColors.onBackground,
+          color: disabled ? context.colors.textDisabled : context.colors.onBackground,
           size: 18,
         ),
       ),
@@ -253,26 +255,26 @@ class _CounterRow extends StatelessWidget {
       context: context,
       builder: (BuildContext ctx) {
         return AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.colors.surface,
           title: Text(
             '${MissedPrayerService.prayerLabels[prayerKey]} Kaza Sayısı',
-            style: AppTextStyles.headlineSmall,
+            style: context.textTheme.headlineSmall,
           ),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
             autofocus: true,
-            style: AppTextStyles.headlineMedium,
+            style: context.textTheme.headlineMedium,
             decoration: InputDecoration(
               hintText: 'Sayı girin',
-              hintStyle: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textHint,
+              hintStyle: context.textTheme.bodyMedium?.copyWith(
+                color: context.colors.textHint,
               ),
-              enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.border),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: context.colors.border),
               ),
-              focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.accent),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: context.colors.accent),
               ),
             ),
           ),
@@ -281,8 +283,8 @@ class _CounterRow extends StatelessWidget {
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text(
                 'İptal',
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.textSecondary,
+                style: context.textTheme.labelLarge?.copyWith(
+                  color: context.colors.textSecondary,
                 ),
               ),
             ),
@@ -296,8 +298,8 @@ class _CounterRow extends StatelessWidget {
               },
               child: Text(
                 'Kaydet',
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.accent,
+                style: context.textTheme.labelLarge?.copyWith(
+                  color: context.colors.accent,
                 ),
               ),
             ),

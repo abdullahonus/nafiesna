@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../product/constants/app_spacing.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/state/auth/auth_provider.dart';
 import '../../../product/state/auth/model/user_role.dart';
@@ -37,7 +36,7 @@ final _dreamsProvider = FutureProvider.autoDispose<List<DreamEntry>>((
 // ── Ana Sayfa ────────────────────────────────────────────────────────────────
 @RoutePage()
 class DreamView extends ConsumerWidget {
-  const DreamView({super.key});
+  DreamView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,16 +61,16 @@ class DreamView extends ConsumerWidget {
                   title: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.nights_stay_rounded,
-                        color: AppColors.accent,
+                        color: context.colors.accent,
                         size: 18,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Rüya Defterim',
-                        style: AppTextStyles.headlineSmall.copyWith(
-                          color: AppColors.accent,
+                        style: context.textTheme.headlineSmall?.copyWith(
+                          color: context.colors.accent,
                           fontWeight: FontWeight.w600,
                           fontSize: 17,
                           letterSpacing: 0.3,
@@ -83,15 +82,15 @@ class DreamView extends ConsumerWidget {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   child: dreamsAsync.when(
                     data: (List<DreamEntry> dreams) => dreams.isEmpty
                         ? _buildEmpty(context, ref)
                         : _buildDreamList(context, ref, dreams),
-                    loading: () => const Padding(
-                      padding: EdgeInsets.only(top: 100),
+                    loading: () => Padding(
+                      padding: const EdgeInsets.only(top: 100),
                       child: Center(
-                        child: CircularProgressIndicator(color: AppColors.accent),
+                        child: CircularProgressIndicator(color: context.colors.accent),
                       ),
                     ),
                     error: (_, __) => Padding(
@@ -99,8 +98,8 @@ class DreamView extends ConsumerWidget {
                       child: Center(
                         child: Text(
                           'Rüyalar yüklenirken hata oluştu.',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ),
@@ -115,8 +114,8 @@ class DreamView extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openEditor(context, ref),
-        backgroundColor: AppColors.accent,
-        child: const Icon(Icons.add_rounded, color: Colors.black, size: 26),
+        backgroundColor: context.colors.accent,
+        child: Icon(Icons.add_rounded, color: context.colors.onPrimary, size: 26),
       ),
     );
   }
@@ -133,13 +132,13 @@ class DreamView extends ConsumerWidget {
             SizedBox(
               width: 120,
               height: 120,
-              child: CustomPaint(painter: _CrescentStarsPainter()),
+              child: CustomPaint(painter: _CrescentStarsPainter(color: context.colors.accent)),
             ),
             const SizedBox(height: AppSpacing.xl),
             Text(
               'Henüz bir rüya yazmadınız',
-              style: AppTextStyles.headlineMedium.copyWith(
-                color: AppColors.onBackground,
+              style: context.textTheme.headlineMedium?.copyWith(
+                color: context.colors.onBackground,
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -148,8 +147,8 @@ class DreamView extends ConsumerWidget {
             Text(
               'Gördüğünüz rüyaları kaydederek\nhuzurlu bir günlük tutmaya başlayın.',
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: context.colors.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -223,7 +222,7 @@ class DreamView extends ConsumerWidget {
               await service.delete(dream.id);
               ref.invalidate(_dreamsProvider);
             },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: context.colors.error),
             child: const Text('Sil'),
           ),
         ],
@@ -248,10 +247,10 @@ class _DreamCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      color: AppColors.surface,
+      color: context.colors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        side: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
+        side: BorderSide(color: context.colors.border.withValues(alpha: 0.8)),
       ),
       child: InkWell(
         onTap: onTap,
@@ -267,9 +266,9 @@ class _DreamCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       dream.title,
-                      style: AppTextStyles.headlineSmall.copyWith(
+                      style: context.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -277,10 +276,10 @@ class _DreamCard extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: onDelete,
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.delete_outline_rounded,
                       size: 20,
-                      color: AppColors.error,
+                      color: context.colors.error,
                     ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -290,16 +289,16 @@ class _DreamCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 DateFormat('dd MMMM yyyy, EEEE', 'tr_TR').format(dream.createdAt),
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textSecondary,
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: context.colors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 dream.content,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.onBackground,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colors.onBackground,
                   height: 1.4,
                 ),
                 maxLines: 3,
@@ -310,8 +309,8 @@ class _DreamCard extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: Text(
                   'Devamını oku...',
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.accent,
+                  style: context.textTheme.labelLarge?.copyWith(
+                    color: context.colors.accent,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -360,9 +359,9 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      decoration: BoxDecoration(
+        color: context.colors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -374,13 +373,13 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
             children: [
               Icon(
                 _isEditing ? Icons.edit_note_rounded : Icons.auto_stories_rounded,
-                color: AppColors.accent,
+                color: context.colors.accent,
               ),
               const SizedBox(width: 8),
               Text(
                 _isEditing ? 'Rüyayı Düzenle' : 'Yeni Rüya Yaz',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  color: AppColors.accent,
+                style: context.textTheme.headlineSmall?.copyWith(
+                  color: context.colors.accent,
                 ),
               ),
             ],
@@ -394,18 +393,18 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
             TextButton(
               onPressed: _saving ? null : _save,
               child: _saving
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 1.5,
-                        color: AppColors.accent,
+                        color: context.colors.accent,
                       ),
                     )
                   : Text(
                       'Kaydet',
-                      style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.accent,
+                      style: context.textTheme.labelLarge?.copyWith(
+                        color: context.colors.accent,
                       ),
                     ),
             ),
@@ -421,7 +420,7 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
                 child: SizedBox(
                   width: 180,
                   height: 180,
-                  child: CustomPaint(painter: _CrescentStarsPainter()),
+                  child: CustomPaint(painter: _CrescentStarsPainter(color: context.colors.accent)),
                 ),
               ),
             ),
@@ -431,10 +430,10 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: context.colors.surface,
                       borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                       border: Border.all(
-                        color: AppColors.border.withValues(alpha: 0.5),
+                        color: context.colors.border.withValues(alpha: 0.5),
                       ),
                     ),
                     padding: const EdgeInsets.symmetric(
@@ -444,14 +443,14 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
                       children: [
                         TextField(
                           controller: _titleController,
-                          style: AppTextStyles.headlineMedium.copyWith(
+                          style: context.textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: context.colors.primary,
                           ),
                           decoration: InputDecoration(
                             hintText: 'Rüya Başlığı',
-                            hintStyle: AppTextStyles.headlineMedium.copyWith(
-                              color: AppColors.textHint,
+                            hintStyle: context.textTheme.headlineMedium?.copyWith(
+                              color: context.colors.textHint,
                             ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
@@ -461,17 +460,17 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
                           textCapitalization: TextCapitalization.words,
                         ),
                         Divider(
-                          color: AppColors.border.withValues(alpha: 0.3),
+                          color: context.colors.border.withValues(alpha: 0.3),
                           height: 1,
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         TextField(
                           controller: _contentController,
-                          style: AppTextStyles.bodyLarge.copyWith(height: 1.8),
+                          style: context.textTheme.bodyLarge?.copyWith(height: 1.8),
                           decoration: InputDecoration(
-                            hintText: 'Rüyanızı anlatın...',
-                            hintStyle: AppTextStyles.bodyLarge.copyWith(
-                              color: AppColors.textHint,
+                            hintText: 'Rüyanı anlatın...',
+                            hintStyle: context.textTheme.bodyLarge?.copyWith(
+                              color: context.colors.textHint,
                             ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
@@ -489,8 +488,8 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
                   if (_isEditing)
                     Text(
                       'Son düzenleme: ${DateFormat('dd MMM yyyy, HH:mm', 'tr_TR').format(widget.existingDream!.updatedAt)}',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary.withValues(alpha: 0.5),
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.colors.textSecondary.withValues(alpha: 0.5),
                         fontSize: 11,
                       ),
                     ),
@@ -542,7 +541,7 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
             content: Text('Kayıt hatası: $e'),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 5),
-            backgroundColor: AppColors.error.withValues(alpha: 0.9),
+            backgroundColor: context.colors.error.withValues(alpha: 0.9),
           ),
         );
         setState(() => _saving = false);
@@ -553,11 +552,14 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
 
 // ── Painter ──────────────────────────────────────────────────────────────────
 class _CrescentStarsPainter extends CustomPainter {
+  final Color color;
+  _CrescentStarsPainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint =
         Paint()
-          ..color = AppColors.accent
+          ..color = color
           ..style = PaintingStyle.fill;
 
     // Hilal

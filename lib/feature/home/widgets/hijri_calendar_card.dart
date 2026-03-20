@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../product/constants/app_spacing.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../service/islamic_calendar_service.dart';
 import '../../prayer_times/provider/prayer_times_provider.dart';
@@ -28,10 +27,8 @@ class HijriCalendarCard extends ConsumerWidget {
 
     if (isLoading) return const SizedBox.shrink();
 
-    final now = DateTime.now();
-    final hour = now.hour;
-    // Gündüz vakti
-    final bool isDay = hour >= 5 && hour < 19;
+    // Gündüz/Gece görseli uygulama temasıyla senkronize çalışmalı
+    final bool isDay = !context.isDark;
 
     return Container(
       width: double.infinity,
@@ -50,18 +47,18 @@ class HijriCalendarCard extends ConsumerWidget {
             : null,
         color: !isDay ? const Color(0xFF151520) : null,
         border: Border.all(
-          color: AppColors.border.withValues(alpha: 0.5),
+          color: context.colors.border.withValues(alpha: 0.5),
           width: 0.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.15),
+            color: context.colors.primary.withValues(alpha: 0.15),
             blurRadius: 16,
             spreadRadius: 2,
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.15),
+            color: context.colors.accent.withValues(alpha: 0.15),
             blurRadius: 8,
             spreadRadius: 0,
             offset: const Offset(0, 4),
@@ -76,14 +73,14 @@ class HijriCalendarCard extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               children: [
-                _buildHeader(hijriDate, isDay),
+                _buildHeader(context, hijriDate, isDay),
                 const SizedBox(height: AppSpacing.lg),
                 if (isDay) const _GlowingSun(),
                 if (!isDay) const _CrescentMoon(),
                 const SizedBox(height: AppSpacing.xl),
                 nextEventAsync.when(
                   data: (event) => event != null
-                      ? _buildEventInfo(event)
+                      ? _buildEventInfo(context, event)
                       : const SizedBox.shrink(),
                   loading: () => SizedBox(
                     height: 40,
@@ -94,12 +91,12 @@ class HijriCalendarCard extends ConsumerWidget {
                         child: CircularProgressIndicator(
                           strokeWidth: 1.5,
                           // Mavi üzerinde iyi durması için gündüz beyaz
-                          color: isDay ? Colors.white : AppColors.accent,
+                          color: isDay ? Colors.white : context.colors.accent,
                         ),
                       ),
                     ),
                   ),
-                  error: (_, __) => _buildFallbackEvent(),
+                  error: (_, __) => _buildFallbackEvent(context),
                 ),
               ],
             ),
@@ -109,7 +106,7 @@ class HijriCalendarCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(String hijriDate, bool isDay) {
+  Widget _buildHeader(BuildContext context, String hijriDate, bool isDay) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -119,7 +116,7 @@ class HijriCalendarCard extends ConsumerWidget {
             children: [
               Text(
                 'Hicri Takvim',
-                style: AppTextStyles.headlineSmall.copyWith(
+                style: context.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
@@ -128,10 +125,10 @@ class HijriCalendarCard extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   hijriDate,
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: context.textTheme.bodySmall?.copyWith(
                     color: isDay
                         ? Colors.white.withValues(alpha: 0.9)
-                        : AppColors.accent,
+                        : context.colors.accent,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -141,14 +138,14 @@ class HijriCalendarCard extends ConsumerWidget {
         ),
         Icon(
           Icons.diamond_rounded,
-          color: isDay ? Colors.white : AppColors.accent,
+          color: isDay ? Colors.white : context.colors.accent,
           size: 18,
         ),
       ],
     );
   }
 
-  Widget _buildEventInfo(IslamicEvent event) {
+  Widget _buildEventInfo(BuildContext context, IslamicEvent event) {
     final String dateFormatted = DateFormat(
       'd MMMM, EEEE',
       'tr_TR',
@@ -168,7 +165,7 @@ class HijriCalendarCard extends ConsumerWidget {
       children: [
         Text(
           '${event.name}: $dateFormatted',
-          style: AppTextStyles.bodyMedium.copyWith(
+          style: context.textTheme.bodyMedium?.copyWith(
             color: Colors.white.withValues(alpha: 0.9),
             fontWeight: FontWeight.w500,
           ),
@@ -186,9 +183,8 @@ class HijriCalendarCard extends ConsumerWidget {
           ),
           child: Text(
             countdownText,
-            style: AppTextStyles.labelLarge.copyWith(
-              color: Colors
-                  .white, // Gece için AppColors.accent kullanıyorduk ama beyaz ikisine de çok şık olur.
+            style: context.textTheme.labelLarge?.copyWith(
+              color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -197,7 +193,7 @@ class HijriCalendarCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildFallbackEvent() {
+  Widget _buildFallbackEvent(BuildContext context) {
     final fallback = IslamicCalendarService.getFallback2026();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -209,7 +205,7 @@ class HijriCalendarCard extends ConsumerWidget {
         event.date.day,
       );
       if (!eventDay.isBefore(today)) {
-        return _buildEventInfo(event);
+        return _buildEventInfo(context, event);
       }
     }
     return const SizedBox.shrink();

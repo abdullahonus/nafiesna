@@ -101,7 +101,7 @@ class _NotificationWarningWidgetState extends ConsumerState<NotificationWarningW
         ),
         child: Row(
           children: [
-            const Icon(Icons.notifications_off_rounded, color: AppColors.error, size: 20),
+            Icon(Icons.notifications_off_rounded, color: AppColors.error, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -110,7 +110,7 @@ class _NotificationWarningWidgetState extends ConsumerState<NotificationWarningW
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.error, size: 20),
+            Icon(Icons.chevron_right_rounded, color: AppColors.error, size: 20),
           ],
         ),
       ),
@@ -161,7 +161,7 @@ class _LocationInfoWarningButtonState extends State<LocationInfoWarningButton> w
 
     return IconButton(
       tooltip: 'Konum İzni Gerekli',
-      icon: const Icon(Icons.info_outline_rounded, color: AppColors.warning, size: 22),
+      icon: Icon(Icons.info_outline_rounded, color: AppColors.warning, size: 22),
       onPressed: () async {
         final current = await Permission.locationWhenInUse.status;
         if (!context.mounted) return;
@@ -189,4 +189,3 @@ class _LocationInfoWarningButtonState extends State<LocationInfoWarningButton> w
     );
   }
 }
-

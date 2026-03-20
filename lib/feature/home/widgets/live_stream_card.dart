@@ -4,7 +4,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/app_init.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 
 class LiveStreamCard extends StatelessWidget {
@@ -53,17 +52,17 @@ class LiveStreamCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.border, width: 0.5),
+        color: context.colors.surface,
+        border: Border.all(color: context.colors.border, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.12),
+            color: context.colors.primary.withValues(alpha: 0.12),
             blurRadius: 16,
             spreadRadius: 2,
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.1),
+            color: context.colors.accent.withValues(alpha: 0.1),
             blurRadius: 8,
             spreadRadius: 0,
             offset: const Offset(0, 4),
@@ -185,12 +184,12 @@ class LiveStreamCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('NafiEsna', style: AppTextStyles.labelLarge),
-                Text('Canlı Yayın & Sohbet', style: AppTextStyles.bodySmall),
+                Text('NafiEsna', style: context.textTheme.labelLarge),
+                Text('Canlı Yayın & Sohbet', style: context.textTheme.bodySmall),
               ],
             ),
           ),
@@ -202,7 +201,7 @@ class LiveStreamCard extends StatelessWidget {
                 vertical: AppSpacing.xs,
               ),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: context.colors.primary,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
               child: const Text(

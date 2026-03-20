@@ -26,12 +26,13 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(prayerTimesProvider);
+    final c = AppThemeColors.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Namaz Vakitleri'),
-        backgroundColor: AppColors.surface,
+        backgroundColor: c.surface,
         elevation: 0,
         actions: [
           if (state.locationStatus == LocationStatus.permitted)
@@ -40,17 +41,17 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
                   ? null
                   : () => ref.read(prayerTimesProvider.notifier).refresh(),
               icon: state.isLocationLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppColors.accent,
+                        color: c.accent,
                       ),
                     )
-                  : const Icon(
+                  : Icon(
                       Icons.my_location_rounded,
-                      color: AppColors.accent,
+                      color: c.accent,
                     ),
               tooltip: 'Konumu yenile',
             ),
@@ -95,6 +96,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
   // ── Tarih başlığı ─────────────────────────────────────────────────────────
 
   Widget _buildDateHeader(PrayerTimesState state) {
+    final c = AppThemeColors.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -104,12 +106,12 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primary.withValues(alpha: 0.15),
-            AppColors.primary.withValues(alpha: 0.05),
+            c.primary.withValues(alpha: 0.15),
+            c.primary.withValues(alpha: 0.05),
           ],
         ),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
+          color: c.primary.withValues(alpha: 0.3),
           width: 0.8,
         ),
       ),
@@ -119,7 +121,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
           if (state.hijriDate.isNotEmpty)
             Text(
               state.hijriDate,
-              style: AppTextStyles.labelLarge.copyWith(color: AppColors.accent),
+              style: AppTextStyles.labelLarge.copyWith(color: c.accent),
             ),
           if (state.hijriDate.isNotEmpty) const SizedBox(height: AppSpacing.xs),
           Text(state.dateLabel, style: AppTextStyles.headlineSmall),
@@ -162,13 +164,14 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
           .requestLocationPermission();
     }
 
+    final c = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        color: AppColors.accent.withValues(alpha: 0.07),
+        color: c.accent.withValues(alpha: 0.07),
         border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.3),
+          color: c.accent.withValues(alpha: 0.3),
           width: 0.8,
         ),
       ),
@@ -178,7 +181,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
             isServiceOff
                 ? Icons.location_off_rounded
                 : Icons.location_on_rounded,
-            color: AppColors.accent,
+            color: c.accent,
             size: 22,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -189,14 +192,14 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
                 Text(
                   title,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.accent,
+                    color: c.accent,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: c.textSecondary,
                     height: 1.4,
                   ),
                 ),
@@ -206,9 +209,9 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
                   child: Text(
                     buttonLabel,
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.primary,
+                      color: c.primary,
                       decoration: TextDecoration.underline,
-                      decorationColor: AppColors.primary,
+                      decorationColor: c.primary,
                     ),
                   ),
                 ),
@@ -233,6 +236,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
   }
 
   Widget _buildPrayerRow(PrayerTime prayer, bool isActive) {
+    final c = AppThemeColors.of(context);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -243,10 +247,10 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         color: isActive
-            ? AppColors.primary.withValues(alpha: 0.15)
-            : AppColors.surface,
+            ? c.primary.withValues(alpha: 0.15)
+            : c.surface,
         border: Border.all(
-          color: isActive ? AppColors.primary : AppColors.border,
+          color: isActive ? c.primary : c.border,
           width: isActive ? 1 : 0.5,
         ),
       ),
@@ -259,7 +263,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
               prayer.name,
               style: isActive
                   ? AppTextStyles.headlineSmall
-                      .copyWith(color: AppColors.primary)
+                      .copyWith(color: c.primary)
                   : AppTextStyles.bodyLarge,
             ),
           ),
@@ -267,7 +271,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
             prayer.time,
             style: isActive
                 ? AppTextStyles.headlineMedium.copyWith(
-                    color: AppColors.accent,
+                    color: c.accent,
                     fontWeight: FontWeight.w700,
                   )
                 : AppTextStyles.headlineSmall,
@@ -280,7 +284,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
                 vertical: 2,
               ),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: c.primary,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
               child: const Text(
@@ -302,6 +306,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
   // ── Konum notu ────────────────────────────────────────────────────────────
 
   Widget _buildLocationNote(PrayerTimesState state) {
+    final c = AppThemeColors.of(context);
     final locationText = state.locationName.isNotEmpty
         ? state.locationName
         : 'İstanbul — Diyanet İşleri Başkanlığı';
@@ -315,7 +320,7 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
           isGpsActive
               ? Icons.my_location_rounded
               : Icons.location_on_outlined,
-          color: isGpsActive ? AppColors.accent : AppColors.textSecondary,
+          color: isGpsActive ? c.accent : c.textSecondary,
           size: 14,
         ),
         const SizedBox(width: 4),
@@ -324,8 +329,8 @@ class _PrayerTimesViewState extends ConsumerState<PrayerTimesView> {
             locationText,
             style: AppTextStyles.bodySmall.copyWith(
               color: isGpsActive
-                  ? AppColors.accent.withValues(alpha: 0.8)
-                  : AppColors.textSecondary,
+                  ? c.accent.withValues(alpha: 0.8)
+                  : c.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../notifier/home_notifier.dart';
-import '../../../product/init/theme/app_colors.dart';
-import '../../../product/init/theme/app_text_styles.dart';
+
 import '../../../product/constants/app_spacing.dart';
+import '../../../product/init/theme/app_text_styles.dart';
+import '../notifier/home_notifier.dart';
 
 class HadithCard extends StatelessWidget {
   const HadithCard({super.key, required this.hadith});
@@ -16,20 +16,20 @@ class HadithCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        color: AppColors.surface,
+        color: context.colors.surface,
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
+          color: context.colors.primary.withValues(alpha: 0.3),
           width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.12),
+            color: context.colors.primary.withValues(alpha: 0.12),
             blurRadius: 12,
             spreadRadius: 2,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.1),
+            color: context.colors.accent.withValues(alpha: 0.1),
             blurRadius: 6,
             spreadRadius: 0,
             offset: const Offset(0, 3),
@@ -44,20 +44,21 @@ class HadithCard extends StatelessWidget {
             children: [
               Icon(
                 Icons.format_quote_rounded,
-                color: AppColors.accent.withValues(alpha: 0.7),
+                color: context.colors.accent.withValues(alpha: 0.7),
                 size: 28,
               ),
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
                   'Günün Hadisi',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.textSecondary,
+                  style: context.textTheme.labelSmall?.copyWith(
+                    color: context.colors.textSecondary,
                     letterSpacing: 0.8,
                   ),
                 ),
               ),
-              if (hadith.grade.isNotEmpty) _GradeBadge(grade: hadith.grade),
+              if (hadith.grade.isNotEmpty)
+                _GradeBadge(grade: hadith.grade),
             ],
           ),
 
@@ -69,46 +70,47 @@ class HadithCard extends StatelessWidget {
               textDirection: TextDirection.rtl,
               child: Text(
                 hadith.arabicText,
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: context.textTheme.bodyLarge?.copyWith(
                   fontFamily: 'serif',
                   fontSize: 17,
                   height: 1.9,
-                  color: AppColors.accent.withValues(alpha: 0.9),
+                  color: context.colors.accent.withValues(alpha: 0.9),
                 ),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            const Divider(color: AppColors.border, thickness: 0.5),
+            Divider(color: context.colors.border, thickness: 0.5),
             const SizedBox(height: AppSpacing.sm),
           ],
 
           // Türkçe metin
           Text(
             hadith.text,
-            style: AppTextStyles.bodyLarge.copyWith(
+            style: context.textTheme.bodyLarge?.copyWith(
               fontStyle: FontStyle.italic,
               height: 1.7,
+              color: context.colors.onBackground,
             ),
           ),
 
           const SizedBox(height: AppSpacing.md),
-          const Divider(color: AppColors.border, thickness: 0.5),
+          Divider(color: context.colors.border, thickness: 0.5),
           const SizedBox(height: AppSpacing.sm),
 
           // Kaynak bilgisi
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.menu_book_rounded,
                 size: 14,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
                   hadith.attribution,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.accent,
+                  style: context.textTheme.labelSmall?.copyWith(
+                    color: context.colors.accent,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -135,17 +137,17 @@ class _GradeBadge extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.12),
+        color: context.colors.accent.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.3),
+          color: context.colors.accent.withValues(alpha: 0.3),
           width: 0.5,
         ),
       ),
       child: Text(
         grade,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.accent,
+        style: context.textTheme.labelSmall?.copyWith(
+          color: context.colors.accent,
           fontSize: 10,
         ),
       ),

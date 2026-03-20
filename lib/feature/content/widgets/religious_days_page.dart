@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../service/islamic_calendar_service.dart';
@@ -17,14 +16,15 @@ class ReligiousDaysPage extends ConsumerWidget {
     final eventsAsync = ref.watch(_eventsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.colors.surface,
         elevation: 0,
         title: Text(
           'Dini Günler ${DateTime.now().year}',
-          style: AppTextStyles.headlineSmall.copyWith(
-            color: AppColors.onBackground,
+          style: context.textTheme.headlineSmall?.copyWith(
+            color: context.colors.onBackground,
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
@@ -35,17 +35,17 @@ class ReligiousDaysPage extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.calendar_month_rounded,
-                color: AppColors.accent, size: 22),
+            icon: Icon(Icons.calendar_month_rounded,
+                color: context.colors.accent, size: 22),
           ),
         ],
       ),
       body: eventsAsync.when(
         data: (List<IslamicEvent> events) => events.isEmpty
-            ? _buildEmpty()
+            ? _buildEmpty(context)
             : _buildGroupedList(events),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.accent),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: context.colors.accent),
         ),
         error: (_, __) =>
             _buildGroupedList(IslamicCalendarService.getFallback2026()),
@@ -53,11 +53,11 @@ class ReligiousDaysPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmpty() {
-    return const Center(
+  Widget _buildEmpty(BuildContext context) {
+    return Center(
       child: Text(
         'Yaklaşan dini gün bulunamadı.',
-        style: AppTextStyles.bodyMedium,
+        style: context.textTheme.bodyMedium,
       ),
     );
   }
@@ -122,8 +122,8 @@ class _MonthSection extends StatelessWidget {
           ),
           child: Text(
             monthTitle,
-            style: AppTextStyles.headlineLarge.copyWith(
-              color: AppColors.onBackground,
+            style: context.textTheme.headlineLarge?.copyWith(
+              color: context.colors.onBackground,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -180,30 +180,30 @@ class _TimelineEventCard extends StatelessWidget {
                     children: [
                       Text(
                         '${event.date.day}',
-                        style: AppTextStyles.displayLarge.copyWith(
+                        style: context.textTheme.displayLarge?.copyWith(
                           fontSize: 36,
                           fontWeight: FontWeight.w800,
                           color: isToday
-                              ? AppColors.accent
+                              ? context.colors.accent
                               : isSoon
-                                  ? AppColors.primary
-                                  : AppColors.onBackground,
+                                  ? context.colors.primary
+                                  : context.colors.onBackground,
                           height: 1.1,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         _months[event.date.month - 1],
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: context.colors.textSecondary,
                           fontWeight: FontWeight.w500,
                           fontSize: 13,
                         ),
                       ),
                       Text(
                         _weekdays[event.date.weekday - 1],
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary.withValues(alpha: 0.7),
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: context.colors.textSecondary.withValues(alpha: 0.7),
                           fontSize: 11,
                         ),
                       ),
@@ -216,7 +216,7 @@ class _TimelineEventCard extends StatelessWidget {
                     child: Center(
                       child: Container(
                         width: 1,
-                        color: AppColors.border.withValues(alpha: 0.5),
+                        color: context.colors.border.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -234,13 +234,13 @@ class _TimelineEventCard extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                color: AppColors.surface,
+                color: context.colors.surface,
                 border: Border.all(
                   color: isToday
-                      ? AppColors.accent.withValues(alpha: 0.4)
+                      ? context.colors.accent.withValues(alpha: 0.4)
                       : isSoon
-                          ? AppColors.primary.withValues(alpha: 0.3)
-                          : AppColors.border.withValues(alpha: 0.5),
+                          ? context.colors.primary.withValues(alpha: 0.3)
+                          : context.colors.border.withValues(alpha: 0.5),
                   width: isToday ? 1 : 0.5,
                 ),
               ),
@@ -253,12 +253,12 @@ class _TimelineEventCard extends StatelessWidget {
                         // Etkinlik adı
                         Text(
                           event.name,
-                          style: AppTextStyles.headlineSmall.copyWith(
+                          style: context.textTheme.headlineSmall?.copyWith(
                             color: isToday
-                                ? AppColors.accent
+                                ? context.colors.accent
                                 : isSoon
-                                    ? AppColors.primary
-                                    : AppColors.primaryLight,
+                                    ? context.colors.primary
+                                    : context.colors.primaryLight,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -266,22 +266,22 @@ class _TimelineEventCard extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             event.hijriDate,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                            style: context.textTheme.bodySmall?.copyWith(
+                              color: context.colors.textSecondary,
                               fontSize: 13,
                             ),
                           ),
                         ],
                         const SizedBox(height: 6),
                         // Geri sayım
-                        _buildCountdown(days, isToday, isTomorrow),
+                        _buildCountdown(context, days, isToday, isTomorrow),
                       ],
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Icon(
                     Icons.chevron_right_rounded,
-                    color: AppColors.textSecondary.withValues(alpha: 0.4),
+                    color: context.colors.textSecondary.withValues(alpha: 0.4),
                     size: 22,
                   ),
                 ],
@@ -293,26 +293,26 @@ class _TimelineEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCountdown(int days, bool isToday, bool isTomorrow) {
+  Widget _buildCountdown(BuildContext context, int days, bool isToday, bool isTomorrow) {
     final String text;
     final Color color;
 
     if (isToday) {
       text = 'Bugün';
-      color = AppColors.accent;
+      color = context.colors.accent;
     } else if (isTomorrow) {
       text = 'Yarın';
-      color = AppColors.primary;
+      color = context.colors.primary;
     } else if (days < 30) {
       text = '$days Gün Kaldı';
-      color = AppColors.textSecondary;
+      color = context.colors.textSecondary;
     } else {
       final int months = days ~/ 30;
       final int remainingDays = days % 30;
       text = remainingDays > 0
           ? '$months Ay $remainingDays Gün Kaldı'
           : '$months Ay Kaldı';
-      color = AppColors.textSecondary;
+      color = context.colors.textSecondary;
     }
 
     return Row(
@@ -322,13 +322,13 @@ class _TimelineEventCard extends StatelessWidget {
           height: 6,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isToday ? AppColors.accent : AppColors.primary,
+            color: isToday ? context.colors.accent : context.colors.primary,
           ),
         ),
         const SizedBox(width: 6),
         Text(
           text,
-          style: AppTextStyles.bodySmall.copyWith(
+          style: context.textTheme.bodySmall?.copyWith(
             color: color,
             fontWeight: isToday || isTomorrow ? FontWeight.w600 : FontWeight.w400,
             fontSize: 12,

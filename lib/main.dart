@@ -7,6 +7,7 @@ import 'product/init/app_init.dart';
 import 'product/init/theme/app_theme.dart';
 import 'product/navigation/app_router_provider.dart';
 import 'product/state/auth/auth_provider.dart';
+import 'product/state/theme_provider.dart'; // Import persistent theme provider
 
 void main() async {
   await AppInit.make();
@@ -17,17 +18,21 @@ void main() async {
   );
 }
 
+
 class NafiesnaApp extends ConsumerWidget {
   const NafiesnaApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(themeProvider);
 
     return MaterialApp.router(
       title: 'NafieSna',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode,
       routerConfig: router.config(
         reevaluateListenable: ReevaluateListenable.stream(
           ref.watch(authProvider.notifier).stream,

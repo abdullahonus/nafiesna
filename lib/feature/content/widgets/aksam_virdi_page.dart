@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 
@@ -69,14 +68,14 @@ class _AksamVirdiPageState extends State<AksamVirdiPage> {
     return GestureDetector(
       onTap: _focusNode.unfocus,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.colors.background,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.colors.surface,
           elevation: 0,
           title: Text(
             'Akşam Namazı Virdi',
-            style: AppTextStyles.headlineSmall.copyWith(
-              color: AppColors.accent,
+            style: context.textTheme.headlineSmall?.copyWith(
+              color: context.colors.accent,
             ),
           ),
           centerTitle: true,
@@ -105,8 +104,8 @@ class _AksamVirdiPageState extends State<AksamVirdiPage> {
                   children: [
                     Text(
                       '${filtered.length} sonuç',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.textDisabled,
+                      style: context.textTheme.labelSmall?.copyWith(
+                        color: context.colors.textDisabled,
                         fontSize: 11,
                       ),
                     ),
@@ -178,30 +177,30 @@ class _SearchField extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          border: Border.all(color: AppColors.border, width: 0.5),
+          border: Border.all(color: context.colors.border, width: 0.5),
         ),
         child: TextField(
           controller: controller,
           focusNode: focusNode,
           onChanged: onChanged,
-          style: AppTextStyles.bodyMedium,
+          style: context.textTheme.bodyMedium,
           decoration: InputDecoration(
             hintText: 'Zikir, sure veya açıklama ara…',
-            hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textHint,
+            hintStyle: context.textTheme.bodyMedium?.copyWith(
+              color: context.colors.textHint,
             ),
-            prefixIcon: const Icon(
+            prefixIcon: Icon(
               Icons.search_rounded,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               size: 20,
             ),
             suffixIcon: controller.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.close_rounded,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 18,
                     ),
                     onPressed: onClear,
@@ -232,16 +231,16 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.search_off_rounded,
               size: 52,
-              color: AppColors.textDisabled,
+              color: context.colors.textDisabled,
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
               '"$query" için sonuç bulunamadı',
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textSecondary,
+              style: context.textTheme.bodyLarge?.copyWith(
+                color: context.colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -399,11 +398,11 @@ class _DhikrRow extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        color: AppColors.surface,
+        color: context.colors.surface,
         border: Border.all(
           color: _isSurah
-              ? AppColors.primary.withValues(alpha: 0.25)
-              : AppColors.border,
+              ? context.colors.primary.withValues(alpha: 0.25)
+              : context.colors.border,
           width: 0.5,
         ),
       ),
@@ -417,20 +416,20 @@ class _DhikrRow extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _isSurah
-                  ? AppColors.primary.withValues(alpha: 0.15)
-                  : AppColors.accent.withValues(alpha: 0.12),
+                  ? context.colors.primary.withValues(alpha: 0.15)
+                  : context.colors.accent.withValues(alpha: 0.12),
               border: Border.all(
                 color: _isSurah
-                    ? AppColors.primary.withValues(alpha: 0.35)
-                    : AppColors.accent.withValues(alpha: 0.3),
+                    ? context.colors.primary.withValues(alpha: 0.35)
+                    : context.colors.accent.withValues(alpha: 0.3),
                 width: 0.8,
               ),
             ),
             child: Center(
               child: Text(
                 '${step.count}×',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: _isSurah ? AppColors.primary : AppColors.accent,
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: _isSurah ? context.colors.primary : context.colors.accent,
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
                 ),
@@ -445,12 +444,10 @@ class _DhikrRow extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 step.text,
-                style: AppTextStyles.bodyMedium.copyWith(
+                style: context.textTheme.bodyMedium?.copyWith(
                   height: 1.55,
                   fontStyle: _isSurah ? FontStyle.normal : FontStyle.italic,
-                  color: _isSurah
-                      ? AppColors.onBackground
-                      : AppColors.onBackground,
+                  color: context.colors.onBackground,
                 ),
               ),
             ),
@@ -472,23 +469,23 @@ class _DividerRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       child: Row(
         children: [
-          const Expanded(
-            child: Divider(color: AppColors.primary, thickness: 0.6),
+          Expanded(
+            child: Divider(color: context.colors.primary, thickness: 0.6),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.pan_tool_alt_outlined,
                   size: 14,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   label,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.primary,
+                  style: context.textTheme.labelSmall?.copyWith(
+                    color: context.colors.primary,
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w700,
                   ),
@@ -496,8 +493,8 @@ class _DividerRow extends StatelessWidget {
               ],
             ),
           ),
-          const Expanded(
-            child: Divider(color: AppColors.primary, thickness: 0.6),
+          Expanded(
+            child: Divider(color: context.colors.primary, thickness: 0.6),
           ),
         ],
       ),
@@ -517,25 +514,25 @@ class _NoteCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        color: AppColors.accent.withValues(alpha: 0.07),
+        color: context.colors.accent.withValues(alpha: 0.07),
         border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.25),
+          color: context.colors.accent.withValues(alpha: 0.25),
           width: 0.5,
         ),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline_rounded,
             size: 16,
-            color: AppColors.accent,
+            color: context.colors.accent,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               text,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.accent,
+              style: context.textTheme.bodySmall?.copyWith(
+                color: context.colors.accent,
                 height: 1.5,
               ),
             ),

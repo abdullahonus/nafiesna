@@ -85,7 +85,7 @@ class MissedPrayerService {
         }
       }
     } catch (e) {
-      print('MissedPrayer Firestore sync error: $e');
+      // log: MissedPrayer Firestore sync error: $e
     }
     return getAll();
   }
@@ -111,7 +111,7 @@ class MissedPrayerService {
           'last_updated': now,
         }, SetOptions(merge: true));
       } catch (e) {
-        print('MissedPrayer increment Firestore error: $e');
+        // log: MissedPrayer increment Firestore error: $e
       }
     }
   }
@@ -133,7 +133,7 @@ class MissedPrayerService {
             'last_updated': now,
           }, SetOptions(merge: true));
         } catch (e) {
-          print('MissedPrayer decrement Firestore error: $e');
+          // log: MissedPrayer decrement Firestore error: $e
         }
       }
     }
@@ -154,7 +154,7 @@ class MissedPrayerService {
           'last_updated': now,
         }, SetOptions(merge: true));
       } catch (e) {
-        print('MissedPrayer set Firestore error: $e');
+        // log: MissedPrayer set Firestore error: $e
       }
     }
   }

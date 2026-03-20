@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../service/nearby_mosques_service.dart';
@@ -87,13 +86,16 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.colors.surface,
         elevation: 0,
         title: Text(
           'Yakın Camiler',
-          style: AppTextStyles.headlineSmall.copyWith(color: AppColors.accent),
+          style: context.textTheme.headlineSmall?.copyWith(
+            color: context.colors.accent,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -101,24 +103,24 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
         ),
         actions: [
-          const LocationInfoWarningButton(),
+          LocationInfoWarningButton(),
           IconButton(
             onPressed: _isLoading ? null : _loadMosques,
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.accent),
+            icon: Icon(Icons.refresh_rounded, color: context.colors.accent),
             tooltip: 'Yenile',
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: AppColors.accent),
-                  SizedBox(height: AppSpacing.lg),
+                  CircularProgressIndicator(color: context.colors.accent),
+                  const SizedBox(height: AppSpacing.lg),
                   Text(
                     'Yakındaki camiler aranıyor...',
-                    style: AppTextStyles.bodyMedium,
+                    style: context.textTheme.bodyMedium,
                   ),
                 ],
               ),
@@ -136,15 +138,15 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.location_off_rounded,
-              color: AppColors.error,
+              color: context.colors.error,
               size: 56,
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
               _error!,
-              style: AppTextStyles.bodyMedium,
+              style: context.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -153,7 +155,7 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Tekrar Dene'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: context.colors.primary,
                 foregroundColor: Colors.white,
               ),
             ),
@@ -171,13 +173,13 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
           children: [
             Icon(
               Icons.mosque_outlined,
-              color: AppColors.textSecondary.withValues(alpha: 0.4),
+              color: context.colors.textSecondary.withValues(alpha: 0.4),
               size: 64,
             ),
             const SizedBox(height: AppSpacing.lg),
-            const Text(
+            Text(
               '3 km içinde cami bulunamadı.',
-              style: AppTextStyles.bodyMedium,
+              style: context.textTheme.bodyMedium,
             ),
           ],
         ),
@@ -207,8 +209,8 @@ class _MosqueCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.border, width: 0.5),
+        color: context.colors.surface,
+        border: Border.all(color: context.colors.border, width: 0.5),
       ),
       child: Row(
         children: [
@@ -217,11 +219,11 @@ class _MosqueCard extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.15),
+              color: context.colors.primary.withValues(alpha: 0.15),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.mosque_rounded,
-              color: AppColors.primary,
+              color: context.colors.primary,
               size: 22,
             ),
           ),
@@ -232,23 +234,23 @@ class _MosqueCard extends StatelessWidget {
               children: [
                 Text(
                   mosque.name,
-                  style: AppTextStyles.headlineSmall,
+                  style: context.textTheme.headlineSmall,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.directions_walk_rounded,
-                      color: AppColors.accent,
+                      color: context.colors.accent,
                       size: 14,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       mosque.formattedDistance,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.accent,
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.colors.accent,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -257,7 +259,7 @@ class _MosqueCard extends StatelessWidget {
                       Flexible(
                         child: Text(
                           mosque.address!,
-                          style: AppTextStyles.bodySmall,
+                          style: context.textTheme.bodySmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -276,14 +278,14 @@ class _MosqueCard extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.15),
+                color: context.colors.primary.withValues(alpha: 0.15),
                 border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.4),
+                  color: context.colors.primary.withValues(alpha: 0.4),
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.directions_rounded,
-                color: AppColors.primary,
+                color: context.colors.primary,
                 size: 18,
               ),
             ),

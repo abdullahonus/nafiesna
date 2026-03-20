@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../product/constants/app_spacing.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/state/auth/auth_provider.dart';
 import '../../../product/widget/common/watermark_overlay.dart';
@@ -39,10 +38,10 @@ class ContentView extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [
-                            AppColors.primaryLight,
-                            AppColors.primaryDark,
+                            context.colors.primary.withValues(alpha: 0.8),
+                            context.colors.primary,
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -52,7 +51,7 @@ class ContentView extends ConsumerWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
+                            color: context.colors.primary.withValues(alpha: 0.3),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -79,7 +78,7 @@ class ContentView extends ConsumerWidget {
                               children: [
                                 Text(
                                   'Sohbet Notları ve İslami Bilgiler, Dualar',
-                                  style: AppTextStyles.headlineSmall.copyWith(
+                                  style: context.textTheme.headlineSmall?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -100,7 +99,7 @@ class ContentView extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xl),
                   Text(
                     'Diğer İçerikler',
-                    style: AppTextStyles.headlineSmall.copyWith(fontSize: 15),
+                    style: context.textTheme.headlineSmall?.copyWith(fontSize: 15),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   GridView.count(
@@ -110,24 +109,24 @@ class ContentView extends ConsumerWidget {
                     mainAxisSpacing: AppSpacing.md,
                     crossAxisSpacing: AppSpacing.md,
                     childAspectRatio: 0.9,
-                    children: const [
+                    children: [
                       _MenuCard(
                         icon: Icons.calendar_month_rounded,
                         label: 'Dini Günler',
-                        color: AppColors.accent,
-                        page: ReligiousDaysPage(),
+                        color: context.colors.accent,
+                        page: const ReligiousDaysPage(),
                       ),
                       _MenuCard(
                         icon: Icons.mosque_rounded,
                         label: 'Yakın Camiler',
-                        color: AppColors.info,
-                        page: NearbyMosquesPage(),
+                        color: context.colors.info,
+                        page: const NearbyMosquesPage(),
                       ),
                       _MenuCard(
                         icon: Icons.replay_rounded,
                         label: 'Kazalar',
-                        color: AppColors.success,
-                        page: MissedPrayersPage(),
+                        color: context.colors.success,
+                        page: const MissedPrayersPage(),
                       ),
                     ],
                   ),
@@ -145,12 +144,12 @@ class ContentView extends ConsumerWidget {
                         vertical: AppSpacing.lg,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
+                        color: context.colors.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(
                           AppSpacing.radiusLg,
                         ),
                         border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.4),
+                          color: context.colors.primary.withValues(alpha: 0.4),
                           width: 1,
                         ),
                       ),
@@ -158,8 +157,8 @@ class ContentView extends ConsumerWidget {
                         children: [
                           Text(
                             'SİLSİLE-İ TARÎK-İ ‘UŞŞÂKİYYE',
-                            style: AppTextStyles.headlineSmall.copyWith(
-                              color: AppColors.accent,
+                            style: context.textTheme.headlineSmall?.copyWith(
+                              color: context.colors.accent,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.1,
                               fontSize: 16,
@@ -169,8 +168,8 @@ class ContentView extends ConsumerWidget {
                           const SizedBox(height: AppSpacing.xs),
                           Text(
                             'Bismillahirrahmanirrahim',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.onBackground.withValues(
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              color: context.colors.onBackground.withValues(
                                 alpha: 0.8,
                               ),
                               fontStyle: FontStyle.italic,
@@ -186,13 +185,13 @@ class ContentView extends ConsumerWidget {
                               scrollDirection: Axis.horizontal,
                               itemCount: SilsileData.list.length,
                               separatorBuilder: (context, index) =>
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: AppSpacing.xs,
                                     ),
                                     child: Icon(
                                       Icons.arrow_forward_ios_rounded,
-                                      color: AppColors.primary,
+                                      color: context.colors.primary,
                                       size: 16,
                                     ),
                                   ),
@@ -201,12 +200,12 @@ class ContentView extends ConsumerWidget {
                                   width: 140,
                                   padding: const EdgeInsets.all(AppSpacing.sm),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surface,
+                                    color: context.colors.surface,
                                     borderRadius: BorderRadius.circular(
                                       AppSpacing.radiusMd,
                                     ),
                                     border: Border.all(
-                                      color: AppColors.border.withValues(
+                                      color: context.colors.border.withValues(
                                         alpha: 0.5,
                                       ),
                                     ),
@@ -225,7 +224,7 @@ class ContentView extends ConsumerWidget {
                                     children: [
                                       CircleAvatar(
                                         radius: 12,
-                                        backgroundColor: AppColors.primary,
+                                        backgroundColor: context.colors.primary,
                                         child: Text(
                                           '${index + 1}',
                                           style: const TextStyle(
@@ -241,10 +240,9 @@ class ContentView extends ConsumerWidget {
                                           child: Text(
                                             SilsileData.list[index],
                                             textAlign: TextAlign.center,
-                                            style: AppTextStyles.bodySmall
-                                                .copyWith(
+                                            style: context.textTheme.bodySmall?.copyWith(
                                                   fontSize: 11,
-                                                  color: AppColors.onBackground,
+                                                  color: context.colors.onBackground,
                                                   fontWeight: FontWeight.w500,
                                                   height: 1.2,
                                                 ),
@@ -266,8 +264,8 @@ class ContentView extends ConsumerWidget {
                             ),
                             child: Text(
                               '“Allahümme salli alâ seyyidinâ Muhammedin\nve alâ âli seyyidinâ Muhammed”',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.accent,
+                              style: context.textTheme.bodySmall?.copyWith(
+                                color: context.colors.accent,
                                 fontStyle: FontStyle.italic,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -299,13 +297,13 @@ class ContentView extends ConsumerWidget {
       child: ElevatedButton.icon(
         onPressed: () => _showLogoutDialog(context, ref),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.error.withValues(alpha: 0.1),
-          foregroundColor: AppColors.error,
+          backgroundColor: context.colors.error.withValues(alpha: 0.1),
+          foregroundColor: context.colors.error,
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            side: const BorderSide(color: AppColors.error, width: 0.5),
+            side: BorderSide(color: context.colors.error, width: 0.5),
           ),
         ),
         icon: const Icon(Icons.logout_rounded, size: 20),
@@ -335,7 +333,7 @@ class ContentView extends ConsumerWidget {
               Navigator.pop(context);
               ref.read(authProvider.notifier).logout();
             },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: context.colors.error),
             child: const Text('Çıkış Yap'),
           ),
         ],
@@ -366,9 +364,9 @@ class _MenuCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          color: AppColors.surface,
+          color: context.colors.surface,
           border: Border.all(
-            color: AppColors.border.withValues(alpha: 0.6),
+            color: context.colors.border.withValues(alpha: 0.6),
             width: 0.5,
           ),
         ),
@@ -387,7 +385,7 @@ class _MenuCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Text(
               label,
-              style: AppTextStyles.labelLarge.copyWith(
+              style: context.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w500,
                 fontSize: 12,
               ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../product/constants/app_spacing.dart';
-import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
 
 class SilsileData {
@@ -77,11 +76,11 @@ class SilsilePage extends StatelessWidget {
         centerTitle: true,
       ),
       extendBodyBehindAppBar: false,
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.background, AppColors.surfaceVariant],
+            colors: [context.colors.background, context.colors.surfaceVariant],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -101,15 +100,15 @@ class SilsilePage extends StatelessWidget {
                     children: [
                       Text(
                         'Bismillahirrahmanirrahim',
-                        style: AppTextStyles.headlineMedium.copyWith(
-                          color: AppColors.accent,
+                        style: context.textTheme.headlineMedium?.copyWith(
+                          color: context.colors.accent,
                           fontStyle: FontStyle.italic,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      const Divider(
-                        color: AppColors.accentLight,
+                      Divider(
+                        color: context.colors.accentLight,
                         indent: 40,
                         endIndent: 40,
                         thickness: 0.5,
@@ -126,8 +125,8 @@ class SilsilePage extends StatelessWidget {
                   ),
                   child: Text(
                     '“Allahümme salli alâ seyyidinâ Muhammedin\nve alâ âli seyyidinâ Muhammed”',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.accent,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: context.colors.accent,
                       fontStyle: FontStyle.italic,
                       fontWeight: FontWeight.w600,
                     ),
@@ -146,19 +145,19 @@ class SilsilePage extends StatelessWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
+                        color: context.colors.primary.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.primary,
+                          color: context.colors.primary,
                           width: 1.5,
                         ),
                       ),
                       alignment: Alignment.center,
                       child: Text(
                         '${realIndex + 1}',
-                        style: AppTextStyles.bodyMedium.copyWith(
+                        style: context.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primaryLight,
+                          color: context.colors.primaryLight,
                         ),
                       ),
                     ),
@@ -167,18 +166,18 @@ class SilsilePage extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: context.colors.surface,
                           borderRadius: BorderRadius.circular(
                             AppSpacing.radiusMd,
                           ),
                           border: Border.all(
-                            color: AppColors.border.withValues(alpha: 0.5),
+                            color: context.colors.border.withValues(alpha: 0.5),
                           ),
                         ),
                         child: Text(
                           SilsileData.list[realIndex],
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.onBackground,
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: context.colors.onBackground,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.2,
                           ),

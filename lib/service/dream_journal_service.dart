@@ -64,7 +64,7 @@ class DreamJournalService {
         return firestoreEntries..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       }
     } catch (e) {
-      print('Firestore sync error: $e');
+      // log: Firestore sync error: $e
     }
     return getAll();
   }
@@ -91,7 +91,7 @@ class DreamJournalService {
       try {
         await _userDreamsCollection?.doc(id.toString()).set(entry.toJson());
       } catch (e) {
-        print('Firestore insert error: $e');
+        // log: Firestore insert error: $e
       }
     }
 
@@ -119,7 +119,7 @@ class DreamJournalService {
       try {
         await _userDreamsCollection?.doc(id.toString()).set(updatedEntry.toJson());
       } catch (e) {
-        print('Firestore update error: $e');
+        // log: Firestore update error: $e
       }
     }
   }
@@ -134,7 +134,7 @@ class DreamJournalService {
       try {
         await _userDreamsCollection?.doc(id.toString()).delete();
       } catch (e) {
-        print('Firestore delete error: $e');
+        // log: Firestore delete error: $e
       }
     }
   }

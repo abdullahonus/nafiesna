@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../product/constants/app_spacing.dart';
-import '../../../product/init/theme/app_colors.dart';
-import '../../../product/init/theme/app_text_styles.dart';
+import '../../../product/init/theme/app_text_styles.dart'; // BuildContext extensions
 import '../../../product/widget/common/permission_warnings.dart';
 import '../../../product/widget/common/app_error_state.dart';
 import '../../../product/widget/common/app_loading_indicator.dart';
@@ -18,7 +17,8 @@ import '../widgets/prayer_times_bar.dart';
 import '../../../product/widget/common/sohbet_popup.dart';
 import '../../../product/state/auth/auth_provider.dart';
 import '../../../product/state/auth/model/user_role.dart';
-import '../../../product/widget/common/watermark_overlay.dart'; // Added import
+import '../../../product/widget/common/watermark_overlay.dart';
+import '../../../product/state/theme_provider.dart'; // import persistent provider
 
 @RoutePage()
 class HomeView extends ConsumerStatefulWidget {
@@ -51,10 +51,25 @@ class _HomeViewState extends ConsumerState<HomeView> {
         children: [
           CustomScrollView(
             slivers: [
-          const SliverAppBar(
+          SliverAppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
             automaticallyImplyLeading: true,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  ref.watch(themeProvider) == ThemeMode.dark
+                      ? Icons.light_mode_rounded
+                      : Icons.dark_mode_rounded,
+                  color: context.colors.onBackground,
+                  size: 26,
+                ),
+                onPressed: () {
+                  ref.read(themeProvider.notifier).toggleTheme();
+                },
+              ),
+              const SizedBox(width: AppSpacing.sm),
+            ],
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -94,12 +109,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
               width: 3,
               height: 20,
               decoration: BoxDecoration(
-                color: AppColors.accent,
+                color: context.colors.accent,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
-            const Text('Günün Hadisi', style: AppTextStyles.headlineSmall),
+            Text('Günün Hadisi', style: context.textTheme.headlineSmall),
           ],
         ),
         const SizedBox(height: AppSpacing.md),

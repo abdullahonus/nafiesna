@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../product/init/theme/app_colors.dart';
-import '../../../product/init/theme/app_text_styles.dart';
+
 import '../../../product/constants/app_spacing.dart';
+import '../../../product/init/theme/app_text_styles.dart';
 
 // ── Veri Modeli ────────────────────────────────────────────────────────────
 
@@ -89,8 +89,7 @@ class _AliImranPageState extends State<AliImranPage> {
     if (q.isEmpty) return _items;
     final nq = _normalize(q);
     return _items.where((item) {
-      final searchable =
-          _normalize('${item.title} ${item.description}');
+      final searchable = _normalize('${item.title} ${item.description}');
       return searchable.contains(nq);
     }).toList();
   }
@@ -122,14 +121,15 @@ class _AliImranPageState extends State<AliImranPage> {
     return GestureDetector(
       onTap: _focusNode.unfocus,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.colors.background,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.colors.surface,
           elevation: 0,
           title: Text(
             'Âl-i İmrân 18–27',
-            style:
-                AppTextStyles.headlineSmall.copyWith(color: AppColors.accent),
+            style: context.textTheme.headlineSmall?.copyWith(
+              color: context.colors.accent,
+            ),
           ),
           centerTitle: true,
           leading: IconButton(
@@ -154,10 +154,7 @@ class _AliImranPageState extends State<AliImranPage> {
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 250),
                 child: filtered.isEmpty
-                    ? _EmptyState(
-                        query: _query,
-                        key: const ValueKey('empty'),
-                      )
+                    ? _EmptyState(query: _query, key: const ValueKey('empty'))
                     : ListView.builder(
                         key: const ValueKey('list'),
                         padding: const EdgeInsets.fromLTRB(
@@ -210,30 +207,30 @@ class _SearchField extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          border: Border.all(color: AppColors.border, width: 0.5),
+          border: Border.all(color: context.colors.border, width: 0.5),
         ),
         child: TextField(
           controller: controller,
           focusNode: focusNode,
           onChanged: onChanged,
-          style: AppTextStyles.bodyMedium,
+          style: context.textTheme.bodyMedium,
           decoration: InputDecoration(
             hintText: 'Başlık veya açıklama ara…',
-            hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textHint,
+            hintStyle: context.textTheme.bodyMedium?.copyWith(
+              color: context.colors.textHint,
             ),
-            prefixIcon: const Icon(
+            prefixIcon: Icon(
               Icons.search_rounded,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               size: 20,
             ),
             suffixIcon: controller.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.close_rounded,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 18,
                     ),
                     onPressed: onClear,
@@ -270,8 +267,8 @@ class _ResultCounter extends StatelessWidget {
         children: [
           Text(
             isFiltered ? '$shown sonuç (toplam $total)' : '$total madde',
-            style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textDisabled,
+            style: context.textTheme.labelSmall?.copyWith(
+              color: context.colors.textDisabled,
               fontSize: 11,
             ),
           ),
@@ -284,10 +281,7 @@ class _ResultCounter extends StatelessWidget {
 // ── Item Card (expandable, Islamic Info tarzı) ──────────────────────────────
 
 class _ItemCard extends StatefulWidget {
-  const _ItemCard({
-    required this.item,
-    required this.searchQuery,
-  });
+  const _ItemCard({required this.item, required this.searchQuery});
 
   final _AliImranItem item;
   final String searchQuery;
@@ -307,11 +301,11 @@ class _ItemCardState extends State<_ItemCard> {
         duration: const Duration(milliseconds: 220),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          color: AppColors.surface,
+          color: context.colors.surface,
           border: Border.all(
             color: _expanded
-                ? AppColors.primary.withValues(alpha: 0.4)
-                : AppColors.border,
+                ? context.colors.primary.withValues(alpha: 0.4)
+                : context.colors.border,
             width: _expanded ? 0.8 : 0.5,
           ),
         ),
@@ -327,8 +321,8 @@ class _ItemCardState extends State<_ItemCard> {
                 margin: const EdgeInsets.only(left: 1),
                 decoration: BoxDecoration(
                   color: _expanded
-                      ? AppColors.primary
-                      : AppColors.primary.withValues(alpha: 0.45),
+                      ? context.colors.primary
+                      : context.colors.primary.withValues(alpha: 0.45),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -349,13 +343,14 @@ class _ItemCardState extends State<_ItemCard> {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusSm),
-                          color: AppColors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
+                          color: context.colors.primary.withValues(alpha: 0.12),
                         ),
                         child: Icon(
                           widget.item.icon,
-                          color: AppColors.primary,
+                          color: context.colors.primary,
                           size: 18,
                         ),
                       ),
@@ -364,8 +359,10 @@ class _ItemCardState extends State<_ItemCard> {
                         child: _HighlightText(
                           text: widget.item.title,
                           query: widget.searchQuery,
-                          style: AppTextStyles.headlineSmall,
-                          highlightColor: AppColors.primary,
+                          style:
+                              context.textTheme.headlineSmall ??
+                              const TextStyle(),
+                          highlightColor: context.colors.primary,
                         ),
                       ),
                       AnimatedRotation(
@@ -374,8 +371,8 @@ class _ItemCardState extends State<_ItemCard> {
                         child: Icon(
                           Icons.keyboard_arrow_down_rounded,
                           color: _expanded
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
+                              ? context.colors.primary
+                              : context.colors.textSecondary,
                           size: 20,
                         ),
                       ),
@@ -390,17 +387,20 @@ class _ItemCardState extends State<_ItemCard> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Divider(
-                                  color: AppColors.divider,
+                                Divider(
+                                  color: context.colors.divider,
                                   thickness: 0.5,
                                   height: AppSpacing.md,
                                 ),
                                 _HighlightText(
                                   text: widget.item.description,
                                   query: widget.searchQuery,
-                                  style: AppTextStyles.bodyMedium
-                                      .copyWith(height: 1.65),
-                                  highlightColor: AppColors.primary,
+                                  style:
+                                      context.textTheme.bodyMedium?.copyWith(
+                                        height: 1.65,
+                                      ) ??
+                                      const TextStyle(),
+                                  highlightColor: context.colors.primary,
                                 ),
                               ],
                             ),
@@ -450,14 +450,16 @@ class _HighlightText extends StatelessWidget {
       if (idx > start) {
         spans.add(TextSpan(text: text.substring(start, idx)));
       }
-      spans.add(TextSpan(
-        text: text.substring(idx, idx + q.length),
-        style: TextStyle(
-          backgroundColor: highlightColor.withValues(alpha: 0.25),
-          color: highlightColor,
-          fontWeight: FontWeight.w600,
+      spans.add(
+        TextSpan(
+          text: text.substring(idx, idx + q.length),
+          style: TextStyle(
+            backgroundColor: highlightColor.withValues(alpha: 0.25),
+            color: highlightColor,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-      ));
+      );
       start = idx + q.length;
     }
 
@@ -482,23 +484,23 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.search_off_rounded,
               size: 52,
-              color: AppColors.textDisabled,
+              color: context.colors.textDisabled,
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
               '"$query" için sonuç bulunamadı',
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textSecondary,
+              style: context.textTheme.bodyLarge?.copyWith(
+                color: context.colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
-            const Text(
+            Text(
               'Farklı bir kelime deneyin.',
-              style: AppTextStyles.bodySmall,
+              style: context.textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
           ],
