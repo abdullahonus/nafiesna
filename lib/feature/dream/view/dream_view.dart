@@ -15,13 +15,16 @@ import '../../../service/dream_journal_service.dart';
 // ── Providers ────────────────────────────────────────────────────────────────
 final _dreamServiceProvider = Provider((ref) {
   final authState = ref.watch(authProvider);
-  final prefix = authState.role == UserRole.authorized && authState.userId != null
+  final prefix =
+      authState.role == UserRole.authorized && authState.userId != null
       ? 'auth_${authState.userId}'
       : 'guest';
   return DreamJournalService(prefix);
 });
 
-final _dreamsProvider = FutureProvider.autoDispose<List<DreamEntry>>((ref) async {
+final _dreamsProvider = FutureProvider.autoDispose<List<DreamEntry>>((
+  ref,
+) async {
   final authState = ref.watch(authProvider);
   final service = ref.watch(_dreamServiceProvider);
   // Sadece authorized + uid varsa Firestore sync yap.
@@ -668,7 +671,8 @@ class _DreamEditorPageState extends ConsumerState<_DreamEditorPage> {
 
     try {
       final authState = ref.read(authProvider);
-      final prefix = authState.role == UserRole.authorized && authState.userId != null
+      final prefix =
+          authState.role == UserRole.authorized && authState.userId != null
           ? 'auth_${authState.userId}'
           : 'guest';
       final service = DreamJournalService(prefix);

@@ -54,5 +54,10 @@
 	<string>Bulunduğunuz yere ait namaz vakitlerini Diyanet İşleri verisiyle göstermek için konumunuza ihtiyaç duyuyoruz.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Bulunduğunuz yere ait namaz vakitlerini Diyanet İşleri verisiyle göstermek için konumunuza ihtiyaç duyuyoruz.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
