@@ -103,7 +103,7 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
         ),
         actions: [
-          LocationInfoWarningButton(),
+          const LocationInfoWarningButton(),
           IconButton(
             onPressed: _isLoading ? null : _loadMosques,
             icon: Icon(Icons.refresh_rounded, color: context.colors.accent),

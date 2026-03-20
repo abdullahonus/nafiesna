@@ -1,5 +1,6 @@
-import 'dart:math' as Math;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// ── Quranic Colors ──────────────────────────────────────────────────────────
 const Color kQuranBg = Color(0xFFE4D5B7);
@@ -114,13 +115,13 @@ class VerseRosePainter extends CustomPainter {
 
     final path = Path();
     for (int i = 0; i < 8; i++) {
-      final angle = (i * 45) * (Math.pi / 180);
-      final x = center.dx + radius * Math.cos(angle);
-      final y = center.dy + radius * Math.sin(angle);
+      final angle = (i * 45) * (math.pi / 180);
+      final x = center.dx + radius * math.cos(angle);
+      final y = center.dy + radius * math.sin(angle);
 
-      final innerAngle = (i * 45 + 22.5) * (Math.pi / 180);
-      final ix = center.dx + radius * 0.5 * Math.cos(innerAngle);
-      final iy = center.dy + radius * 0.5 * Math.sin(innerAngle);
+      final innerAngle = (i * 45 + 22.5) * (math.pi / 180);
+      final ix = center.dx + radius * 0.5 * math.cos(innerAngle);
+      final iy = center.dy + radius * 0.5 * math.sin(innerAngle);
 
       if (i == 0) {
         path.moveTo(x, y);
@@ -150,13 +151,109 @@ class VerseRosePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     for (int i = 0; i < 8; i++) {
-      final angle = (i * 45) * (Math.pi / 180);
-      final x = center.dx + radius * 0.55 * Math.cos(angle);
-      final y = center.dy + radius * 0.55 * Math.sin(angle);
+      final angle = (i * 45) * (math.pi / 180);
+      final x = center.dx + radius * 0.55 * math.cos(angle);
+      final y = center.dy + radius * 0.55 * math.sin(angle);
       canvas.drawCircle(Offset(x, y), 0.8, dotPaint);
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// ── Scholarly Arabic Text with Search Highlight ────────────────────────────
+
+class ScholarlyArabicTextWithHighlight extends StatelessWidget {
+  const ScholarlyArabicTextWithHighlight({
+    super.key,
+    required this.text,
+    required this.query,
+    this.style,
+    this.highlightColor = const Color(0x33FFD700),
+  });
+
+  final String text;
+  final String query;
+  final TextStyle? style;
+  final Color highlightColor;
+
+  @override
+  Widget build(BuildContext context) {
+    if (query.isEmpty) {
+      return _buildScholarlyRichText(text);
+    }
+
+    final lowercaseText = text.toLowerCase();
+    final lowercaseQuery = query.toLowerCase();
+    final spans = <InlineSpan>[];
+    int start = 0;
+
+    while (true) {
+      final index = lowercaseText.indexOf(lowercaseQuery, start);
+      if (index == -1) {
+        spans.addAll(_processMixedText(text.substring(start)));
+        break;
+      }
+
+      if (index > start) {
+        spans.addAll(_processMixedText(text.substring(start, index)));
+      }
+
+      spans.add(TextSpan(
+        text: text.substring(index, index + query.length),
+        style: (style ?? const TextStyle()).copyWith(
+          backgroundColor: highlightColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+
+      start = index + query.length;
+    }
+
+    return RichText(text: TextSpan(children: spans));
+  }
+
+  Widget _buildScholarlyRichText(String text) {
+    return RichText(
+      text: TextSpan(children: _processMixedText(text)),
+    );
+  }
+
+  /// Processes text that might contain Arabic script to apply scholarly styling.
+  List<InlineSpan> _processMixedText(String text) {
+    final spans = <InlineSpan>[];
+    // Regex for Arabic script blocks
+    final arabicRegex = RegExp(r'([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)');
+    
+    int start = 0;
+    final matches = arabicRegex.allMatches(text);
+
+    if (matches.isEmpty) {
+      spans.add(TextSpan(text: text, style: style));
+      return spans;
+    }
+
+    for (final match in matches) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start), style: style));
+      }
+
+      final arabicTextPart = match.group(0)!;
+      final arabicStyle = GoogleFonts.scheherazadeNew(
+        textStyle: style,
+        fontSize: (style?.fontSize ?? 14) * 1.4,
+        height: 1.5,
+      );
+
+      spans.addAll(processArabicText(arabicTextPart, arabicStyle));
+      start = match.end;
+    }
+
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start), style: style));
+    }
+
+    return spans;
+  }
 }

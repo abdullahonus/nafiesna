@@ -57,7 +57,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
           ),
 
           // Animasyonlu partiküller (TabView'daki gibi)
-          RepaintBoundary(child: FloatingParticlesBackground()),
+          const RepaintBoundary(child: FloatingParticlesBackground()),
 
           SafeArea(
             child: Stack(

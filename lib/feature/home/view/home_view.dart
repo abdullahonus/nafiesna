@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -54,7 +55,24 @@ class _HomeViewState extends ConsumerState<HomeView> {
           SliverAppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            automaticallyImplyLeading: true,
+            floating: true,
+            pinned: false,
+            centerTitle: true,
+            leading: IconButton(
+              icon: Icon(
+                Icons.logout_rounded,
+                color: context.colors.onBackground,
+              ),
+              onPressed: () => _showLogoutDialog(context, ref),
+            ),
+            title: Text(
+              FirebaseAuth.instance.currentUser?.displayName ?? 
+              (ref.watch(authProvider).role == UserRole.guest ? 'Misafir Kullanıcı' : 'Kullanıcı'),
+              style: context.textTheme.titleMedium?.copyWith(
+                color: context.colors.onBackground,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             actions: [
               IconButton(
                 icon: Icon(
@@ -94,6 +112,32 @@ class _HomeViewState extends ConsumerState<HomeView> {
           ),
           // Tüm sayfanın (ve butonların) üzerine binen ama tıklanmayı engellemeyen filigran
           const WatermarkOverlay(),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Çıkış Yap'),
+        content: const Text(
+          'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ref.read(authProvider.notifier).logout();
+            },
+            style: TextButton.styleFrom(foregroundColor: context.colors.error),
+            child: const Text('Çıkış Yap'),
+          ),
         ],
       ),
     );

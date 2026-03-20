@@ -138,13 +138,13 @@ class _QuranViewState extends State<QuranView>
       children: [
         // İçerik
         SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(12, 20, 12, 20),
+          padding: const EdgeInsets.fromLTRB(12, 20, 12, 20),
           child: Column(
             children: [
               // Bismillah başlığı
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: c.surface,
                   borderRadius: BorderRadius.circular(10),
@@ -163,7 +163,7 @@ class _QuranViewState extends State<QuranView>
                         height: 1.8,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'bismillâhirrahmânirrahîm',
                       style: TextStyle(

@@ -57,13 +57,13 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           foregroundColor: _kText,
           elevation: 0.5,
           shadowColor: _kAccent.withValues(alpha: 0.3),
-          titleTextStyle: TextStyle(
+          titleTextStyle: const TextStyle(
             fontFamily: 'Amiri',
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: _kText,
           ),
-          iconTheme: IconThemeData(color: _kText),
+          iconTheme: const IconThemeData(color: _kText),
         ),
       ),
       child: Scaffold(
@@ -73,7 +73,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
             children: [
               Text(
                 _currentSurahName.isNotEmpty ? _currentSurahName : '─',
-                style: TextStyle(
+                style: const TextStyle(
                   fontFamily: 'Amiri',
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -82,7 +82,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
               ),
               Text(
                 'Sayfa $_currentPage',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 11,
                   color: _kAccent,
                   letterSpacing: 0.5,
@@ -92,13 +92,13 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           ),
           backgroundColor: _kPaper,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_rounded, color: _kText),
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: _kText),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
             TextButton(
               onPressed: _goToPage,
-              child: Text(
+              child: const Text(
                 'Git',
                 style: TextStyle(color: _kAccent, fontWeight: FontWeight.bold),
               ),
@@ -141,10 +141,10 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
             children: [
               // Önceki sayfa (sol < )
               IconButton(
-                icon: Icon(Icons.chevron_left_rounded, color: _kText),
+                icon: const Icon(Icons.chevron_left_rounded, color: _kText),
                 onPressed: _currentPage > 1
                     ? () => _pageController.previousPage(
-                          duration: Duration(milliseconds: 350),
+                          duration: const Duration(milliseconds: 350),
                           curve: Curves.easeInOut,
                         )
                     : null,
@@ -152,26 +152,26 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
               // İslami süsleme + sayfa no
               Row(
                 children: [
-                  Text('❖', style: TextStyle(color: _kAccent, fontSize: 14)),
-                  SizedBox(width: 8),
+                  const Text('❖', style: TextStyle(color: _kAccent, fontSize: 14)),
+                  const SizedBox(width: 8),
                   Text(
                     '$_currentPage / 604',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: _kText,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Text('❖', style: TextStyle(color: _kAccent, fontSize: 14)),
+                  const SizedBox(width: 8),
+                  const Text('❖', style: TextStyle(color: _kAccent, fontSize: 14)),
                 ],
               ),
               // Sonraki sayfa ( > sağ)
               IconButton(
-                icon: Icon(Icons.chevron_right_rounded, color: _kText),
+                icon: const Icon(Icons.chevron_right_rounded, color: _kText),
                 onPressed: _currentPage < 604
                     ? () => _pageController.nextPage(
-                          duration: Duration(milliseconds: 350),
+                          duration: const Duration(milliseconds: 350),
                           curve: Curves.easeInOut,
                         )
                     : null,
@@ -190,19 +190,19 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
         final ctrl = TextEditingController();
         return AlertDialog(
           backgroundColor: _kPaper,
-          title: Text('Sayfaya Git', style: TextStyle(color: _kText, fontSize: 16)),
+          title: const Text('Sayfaya Git', style: TextStyle(color: _kText, fontSize: 16)),
           content: TextField(
             controller: ctrl,
             keyboardType: TextInputType.number,
             autofocus: true,
-            style: TextStyle(color: _kText),
+            style: const TextStyle(color: _kText),
             decoration: InputDecoration(
               hintText: '1 - 604',
               hintStyle: TextStyle(color: _kAccent.withValues(alpha: 0.6)),
-              enabledBorder: UnderlineInputBorder(
+              enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: _kAccent),
               ),
-              focusedBorder: UnderlineInputBorder(
+              focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: _kAccent, width: 2),
               ),
             ),
@@ -210,7 +210,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('İptal', style: TextStyle(color: _kText)),
+              child: const Text('İptal', style: TextStyle(color: _kText)),
             ),
             TextButton(
               onPressed: () {
@@ -220,7 +220,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                   Navigator.pop(ctx);
                 }
               },
-              child: Text('Git', style: TextStyle(color: _kAccent, fontWeight: FontWeight.bold)),
+              child: const Text('Git', style: TextStyle(color: _kAccent, fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -234,7 +234,7 @@ class _MushafSinglePage extends ConsumerWidget {
   final int pageNumber;
   final ValueChanged<String> onSurahNameChanged;
 
-  _MushafSinglePage({
+  const _MushafSinglePage({
     required this.pageNumber,
     required this.onSurahNameChanged,
   });
@@ -260,31 +260,31 @@ class _MushafSinglePage extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: _kAccent, strokeWidth: 2),
-              SizedBox(height: 16),
+              const CircularProgressIndicator(color: _kAccent, strokeWidth: 2),
+              const SizedBox(height: 16),
               Text('Sayfa $pageNumber yükleniyor...',
-                  style: TextStyle(color: _kAccent, fontSize: 13)),
+                  style: const TextStyle(color: _kAccent, fontSize: 13)),
             ],
           ),
         ),
       ),
       error: (e, _) => Container(
         color: _kBg,
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.wifi_off_rounded, color: _kAccent, size: 48),
-            SizedBox(height: 16),
-            Text(
+            const Icon(Icons.wifi_off_rounded, color: _kAccent, size: 48),
+            const SizedBox(height: 16),
+            const Text(
               'Sayfa yüklenemedi.\nİnternet bağlantınızı kontrol edin.',
               textAlign: TextAlign.center,
               style: TextStyle(color: _kText),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextButton(
               onPressed: () => ref.invalidate(pageDetailProvider(pageNumber)),
-              child: Text('Tekrar Dene', style: TextStyle(color: _kAccent)),
+              child: const Text('Tekrar Dene', style: TextStyle(color: _kAccent)),
             ),
           ],
         ),
@@ -295,7 +295,7 @@ class _MushafSinglePage extends ConsumerWidget {
   Widget _emptyPage() {
     return Container(
       color: _kBg,
-      child: Center(
+      child: const Center(
         child: Text('Bu sayfada içerik bulunamadı.',
             style: TextStyle(color: _kText)),
       ),
@@ -312,7 +312,7 @@ class _MushafSinglePage extends ConsumerWidget {
       if (spans.isNotEmpty) {
         children.add(
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: RichText(
               textAlign: TextAlign.justify,
               textDirection: TextDirection.rtl,
@@ -339,8 +339,8 @@ class _MushafSinglePage extends ConsumerWidget {
         children.add(
           Container(
             width: double.infinity,
-            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             decoration: BoxDecoration(
               color: _kAccent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(4),
@@ -351,18 +351,18 @@ class _MushafSinglePage extends ConsumerWidget {
                 Text(
                   'سُورَةُ $surahName',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'Amiri',
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
                     color: _kSurahHeader,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   surahMetadata.turkishName,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: _kAccent,
@@ -397,7 +397,7 @@ class _MushafSinglePage extends ConsumerWidget {
         ),
       );
 
-      spans.add(TextSpan(text: ' '));
+      spans.add(const TextSpan(text: ' '));
     }
 
     flush();
@@ -408,7 +408,7 @@ class _MushafSinglePage extends ConsumerWidget {
     return Container(
       color: _kBg,
       child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(12, 8, 12, 20),
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
         child: Column(
           children: [
             DecoratedBox(
@@ -421,12 +421,12 @@ class _MushafSinglePage extends ConsumerWidget {
                   BoxShadow(
                     color: Colors.brown.withValues(alpha: 0.1),
                     blurRadius: 6,
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, 20),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: children,
@@ -435,10 +435,10 @@ class _MushafSinglePage extends ConsumerWidget {
             ),
 
             // Latince okunuş bloğu
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Container(
               width: double.infinity,
-              padding: EdgeInsets.fromLTRB(12, 10, 12, 12),
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
               decoration: BoxDecoration(
                 color: _kPaper,
                 borderRadius: BorderRadius.circular(4),
@@ -447,7 +447,7 @@ class _MushafSinglePage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     children: [
                       Text('❖ ', style: TextStyle(color: _kAccent, fontSize: 12)),
                       Text(
@@ -461,7 +461,7 @@ class _MushafSinglePage extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   transliBlock,
                 ],
               ),
@@ -477,7 +477,7 @@ class _MushafSinglePage extends ConsumerWidget {
     for (final v in verses) {
       spans.add(TextSpan(
         text: '${v.numberInSurah} ',
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.bold,
           color: _kVerseNum,
@@ -485,7 +485,7 @@ class _MushafSinglePage extends ConsumerWidget {
       ));
       spans.add(TextSpan(
         text: '${v.transliterationText}  ',
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w400,
           height: 1.85,
@@ -507,10 +507,10 @@ class _MushafSinglePage extends ConsumerWidget {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, 32),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
         decoration: BoxDecoration(
           color: _kPaper,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           border: Border(top: BorderSide(color: _kAccent.withValues(alpha: 0.5), width: 1)),
         ),
         child: Column(
@@ -520,20 +520,20 @@ class _MushafSinglePage extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('❖ ', style: TextStyle(color: _kAccent, fontSize: 14)),
+                const Text('❖ ', style: TextStyle(color: _kAccent, fontSize: 14)),
                 Text(
                   '$surahDisplay — ${verse.numberInSurah}. Ayet',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: _kSurahHeader,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     fontFamily: 'Amiri',
                   ),
                 ),
-                Text(' ❖', style: TextStyle(color: _kAccent, fontSize: 14)),
+                const Text(' ❖', style: TextStyle(color: _kAccent, fontSize: 14)),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             // Arapça + Vurgu
             RichText(
               textAlign: TextAlign.center,

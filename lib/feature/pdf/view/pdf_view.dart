@@ -12,7 +12,7 @@ import '../../../product/widget/common/watermark_overlay.dart';
 
 @RoutePage()
 class PdfView extends ConsumerWidget {
-  PdfView({super.key});
+  const PdfView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

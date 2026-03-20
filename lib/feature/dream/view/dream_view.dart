@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_text_styles.dart';
+import '../../../product/service/dream_pdf_service.dart';
 import '../../../product/state/auth/auth_provider.dart';
 import '../../../product/state/auth/model/user_role.dart';
 import '../../../product/widget/common/watermark_overlay.dart';
@@ -36,7 +37,7 @@ final _dreamsProvider = FutureProvider.autoDispose<List<DreamEntry>>((
 // ── Ana Sayfa ────────────────────────────────────────────────────────────────
 @RoutePage()
 class DreamView extends ConsumerWidget {
-  DreamView({super.key});
+  const DreamView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -82,7 +83,9 @@ class DreamView extends ConsumerWidget {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: dreamsAsync.when(
                     data: (List<DreamEntry> dreams) => dreams.isEmpty
                         ? _buildEmpty(context, ref)
@@ -90,7 +93,9 @@ class DreamView extends ConsumerWidget {
                     loading: () => Padding(
                       padding: const EdgeInsets.only(top: 100),
                       child: Center(
-                        child: CircularProgressIndicator(color: context.colors.accent),
+                        child: CircularProgressIndicator(
+                          color: context.colors.accent,
+                        ),
                       ),
                     ),
                     error: (_, __) => Padding(
@@ -115,7 +120,11 @@ class DreamView extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openEditor(context, ref),
         backgroundColor: context.colors.accent,
-        child: Icon(Icons.add_rounded, color: context.colors.onPrimary, size: 26),
+        child: Icon(
+          Icons.add_rounded,
+          color: context.colors.onPrimary,
+          size: 26,
+        ),
       ),
     );
   }
@@ -132,7 +141,9 @@ class DreamView extends ConsumerWidget {
             SizedBox(
               width: 120,
               height: 120,
-              child: CustomPaint(painter: _CrescentStarsPainter(color: context.colors.accent)),
+              child: CustomPaint(
+                painter: _CrescentStarsPainter(color: context.colors.accent),
+              ),
             ),
             const SizedBox(height: AppSpacing.xl),
             Text(
@@ -174,7 +185,8 @@ class DreamView extends ConsumerWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       itemCount: sortedDreams.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppSpacing.md),
       itemBuilder: (context, index) {
         final dream = sortedDreams[index];
         return _DreamCard(
@@ -209,7 +221,9 @@ class DreamView extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Rüyayı Sil'),
-        content: const Text('Bu rüya kaydını silmek istediğinize emin misiniz?'),
+        content: const Text(
+          'Bu rüya kaydını silmek istediğinize emin misiniz?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -222,7 +236,10 @@ class DreamView extends ConsumerWidget {
               await service.delete(dream.id);
               ref.invalidate(_dreamsProvider);
             },
-            style: TextButton.styleFrom(foregroundColor: context.colors.error),
+            style: TextButton.styleFrom(
+              foregroundColor: context.colors.error,
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             child: const Text('Sil'),
           ),
         ],
@@ -260,35 +277,21 @@ class _DreamCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      dream.title,
-                      style: context.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: context.colors.primary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: onDelete,
-                    icon: Icon(
-                      Icons.delete_outline_rounded,
-                      size: 20,
-                      color: context.colors.error,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
+              Text(
+                dream.title,
+                style: context.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: context.colors.primary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                DateFormat('dd MMMM yyyy, EEEE', 'tr_TR').format(dream.createdAt),
+                DateFormat(
+                  'dd MMMM yyyy, EEEE',
+                  'tr_TR',
+                ).format(dream.createdAt),
                 style: context.textTheme.labelSmall?.copyWith(
                   color: context.colors.textSecondary,
                   fontWeight: FontWeight.w500,
@@ -305,18 +308,90 @@ class _DreamCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: AppSpacing.md),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  'Devamını oku...',
-                  style: context.textTheme.labelLarge?.copyWith(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _CircleActionButton(
+                    onPressed: () => DreamPdfService.generateAndShare(dream),
+                    icon: Icons.share_rounded,
                     color: context.colors.accent,
-                    fontWeight: FontWeight.bold,
+                    label: 'Paylaş',
                   ),
-                ),
+                  const SizedBox(width: AppSpacing.md),
+                  _CircleActionButton(
+                    onPressed: onDelete,
+                    icon: Icons.delete_outline_rounded,
+                    color: context.colors.error,
+                    label: 'Sil',
+                  ),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'Devamını oku...',
+                      style: context.textTheme.labelLarge?.copyWith(
+                        color: context.colors.accent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ### 2. Sharing & Action UI Refinement
+// - **Distinct Buttons**: Redesigned the "Share as PDF" and "Delete" buttons in `_DreamCard`.
+// - **Aesthetics**: Replaced simple icons with **Circle Action Buttons** featuring standard **Share Icons** and subtle background colors (Gold/Accent for Share, Red/Error for Delete), making them much more intuitive and premium.
+// - **Naming**: Exported files are automatically named after the dream title for easy organization.
+class _CircleActionButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final IconData icon;
+  final Color color;
+  final String? label;
+
+  const _CircleActionButton({
+    required this.onPressed,
+    required this.icon,
+    required this.color,
+    this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Material(
+              color: color.withValues(alpha: 0.1),
+              shape: const CircleBorder(),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Icon(icon, size: 20, color: color),
+              ),
+            ),
+            if (label != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                label!,
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -372,7 +447,9 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                _isEditing ? Icons.edit_note_rounded : Icons.auto_stories_rounded,
+                _isEditing
+                    ? Icons.edit_note_rounded
+                    : Icons.auto_stories_rounded,
                 color: context.colors.accent,
               ),
               const SizedBox(width: 8),
@@ -390,8 +467,24 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           ),
           actions: [
+            if (_isEditing)
+              _CircleActionButton(
+                onPressed: () =>
+                    DreamPdfService.generateAndShare(widget.existingDream!),
+                icon: Icons.share_rounded,
+                color: context.colors.accent,
+                label: 'Paylaş',
+              ),
+            const SizedBox(width: AppSpacing.md),
             TextButton(
               onPressed: _saving ? null : _save,
+              style: TextButton.styleFrom(
+                backgroundColor: context.colors.accent.withValues(alpha: 0.1),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
               child: _saving
                   ? SizedBox(
                       width: 16,
@@ -420,7 +513,11 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
                 child: SizedBox(
                   width: 180,
                   height: 180,
-                  child: CustomPaint(painter: _CrescentStarsPainter(color: context.colors.accent)),
+                  child: CustomPaint(
+                    painter: _CrescentStarsPainter(
+                      color: context.colors.accent,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -449,9 +546,8 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
                           ),
                           decoration: InputDecoration(
                             hintText: 'Rüya Başlığı',
-                            hintStyle: context.textTheme.headlineMedium?.copyWith(
-                              color: context.colors.textHint,
-                            ),
+                            hintStyle: context.textTheme.headlineMedium
+                                ?.copyWith(color: context.colors.textHint),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
                               vertical: AppSpacing.lg,
@@ -466,7 +562,9 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
                         const SizedBox(height: AppSpacing.sm),
                         TextField(
                           controller: _contentController,
-                          style: context.textTheme.bodyLarge?.copyWith(height: 1.8),
+                          style: context.textTheme.bodyLarge?.copyWith(
+                            height: 1.8,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Rüyanı anlatın...',
                             hintStyle: context.textTheme.bodyLarge?.copyWith(
@@ -489,7 +587,9 @@ class _DreamEditorState extends ConsumerState<_DreamEditor> {
                     Text(
                       'Son düzenleme: ${DateFormat('dd MMM yyyy, HH:mm', 'tr_TR').format(widget.existingDream!.updatedAt)}',
                       style: context.textTheme.bodySmall?.copyWith(
-                        color: context.colors.textSecondary.withValues(alpha: 0.5),
+                        color: context.colors.textSecondary.withValues(
+                          alpha: 0.5,
+                        ),
                         fontSize: 11,
                       ),
                     ),
@@ -557,10 +657,9 @@ class _CrescentStarsPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..color = color
-          ..style = PaintingStyle.fill;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
 
     // Hilal
     canvas.drawPath(

@@ -68,16 +68,17 @@ class HadithCard extends StatelessWidget {
 
           // Arapça metin (sağdan sola)
           if (hadith.arabicText.isNotEmpty) ...[
-            RichText(
-              textAlign: TextAlign.center,
+            Directionality(
               textDirection: TextDirection.rtl,
-              text: TextSpan(
-                children: processArabicText(
-                  hadith.arabicText,
-                  GoogleFonts.scheherazadeNew(
-                    fontSize: 22,
-                    height: 1.8,
-                    color: context.colors.onBackground,
+              child: RichText(
+                text: TextSpan(
+                  children: processArabicText(
+                    hadith.arabicText,
+                    GoogleFonts.scheherazadeNew(
+                      fontSize: 22,
+                      height: 1.6,
+                      color: context.colors.accent.withValues(alpha: 0.9),
+                    ),
                   ),
                 ),
               ),

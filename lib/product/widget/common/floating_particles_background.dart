@@ -13,7 +13,7 @@ import '../../init/theme/app_colors.dart';
 /// ])
 /// ```
 class FloatingParticlesBackground extends StatefulWidget {
-  FloatingParticlesBackground({super.key});
+  const FloatingParticlesBackground({super.key});
 
   @override
   State<FloatingParticlesBackground> createState() =>

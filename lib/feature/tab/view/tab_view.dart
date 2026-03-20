@@ -27,7 +27,7 @@ class TabView extends ConsumerWidget {
       children: [
         // Animasyonlu arka plan — RepaintBoundary sayfa içeriğini yeniden
         // çizmeden bağımsız olarak çalışır (performans koruması)
-        RepaintBoundary(child: FloatingParticlesBackground()),
+        const RepaintBoundary(child: FloatingParticlesBackground()),
 
         AutoTabsScaffold(
           // Partiküllerin görünmesi için scaffold şeffaf

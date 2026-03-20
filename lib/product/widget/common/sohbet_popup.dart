@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../feature/content/widgets/islamic_info_page.dart';
 import '../../constants/app_spacing.dart';
 import '../../init/theme/app_text_styles.dart';
+import '../quran/quran_text_view.dart';
 
 class SohbetPopup extends StatelessWidget {
   const SohbetPopup({super.key, required this.info, required this.item});
@@ -139,9 +140,9 @@ class SohbetPopup extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.md),
                     ],
-                    Text(
-                      item.content,
-                      textAlign: TextAlign.center,
+                    ScholarlyArabicTextWithHighlight(
+                      text: item.content,
+                      query: '',
                       style: context.textTheme.bodyMedium?.copyWith(
                         height: 1.6,
                         color: context.colors.onBackground.withValues(
