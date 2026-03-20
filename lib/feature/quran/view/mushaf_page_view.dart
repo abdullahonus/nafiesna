@@ -1,18 +1,20 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../provider/quran_provider.dart';
 import '../model/quran_page_model.dart';
 import '../model/surah_list_data.dart';
+import '../../../product/widget/quran/quran_text_view.dart';
 
 // ── Mushaf Renk Teması ───────────────────────────────────────────────────────
-const _kBg = Color(0xFFE4D5B7);          // krem kağıt arka plan
-const _kPaper = Color(0xFFEBE0C5);       // sayfa rengi
-const _kText = Color(0xFF2B1E0E);        // koyu mürekkep
-const _kAccent = Color(0xFFB8860B);      // altın kenar
-const _kVerseNum = Color(0xFFCC6666);    // pembe-kırmızı (resimdeki gibi)
-const _kSurahHeader = Color(0xFF8B4513); // sure başlığı
+const _kBg = kQuranBg;          // krem kağıt arka plan
+const _kPaper = kQuranPaper;       // sayfa rengi
+const _kText = kQuranText;        // koyu mürekkep
+const _kAccent = kQuranAccent;      // altın kenar
+const _kVerseNum = kQuranVerseNum;    // pembe-kırmızı (resimdeki gibi)
+const _kSurahHeader = kQuranSurahHeader; // sure başlığı
 
 @RoutePage()
 class MushafPageView extends ConsumerStatefulWidget {
@@ -373,44 +375,24 @@ class _MushafSinglePage extends ConsumerWidget {
         );
       }
 
-      // Ayet metni
-      spans.add(
-        TextSpan(
-          text: '${v.arabicText} ',
-          style: TextStyle(
-            fontFamily: 'Amiri',
-            fontSize: 23,
-            fontWeight: FontWeight.w400,
-            height: 2.1,
-            color: _kText,
-          ),
-        ),
+      final verseStyle = GoogleFonts.scheherazadeNew(
+        fontSize: 24,
+        fontWeight: FontWeight.w500,
+        height: 2.2,
+        color: _kText,
       );
 
-      // Ayet numarası (resimdeki gibi pembe daire)
+      // Ayet metni + Vurgu
+      spans.addAll(processArabicText(v.arabicText, verseStyle));
+      spans.add(const TextSpan(text: ' '));
+
+      // Ayet numarası (Ayet Gülü)
       spans.add(
         WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: GestureDetector(
             onTap: () => _showTranslation(context, v),
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 3),
-              padding: EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: _kVerseNum, width: 1.2),
-                color: _kVerseNum.withValues(alpha: 0.1),
-              ),
-              child: Text(
-                _toArabicNumeral(v.numberInSurah),
-                style: TextStyle(
-                  fontSize: 10,
-                  color: _kVerseNum,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Amiri',
-                ),
-              ),
-            ),
+            child: VerseRose(number: v.numberInSurah, size: 28),
           ),
         ),
       );
@@ -517,11 +499,6 @@ class _MushafSinglePage extends ConsumerWidget {
     );
   }
 
-  // Ayet numarasını Arapça rakama çevir
-  String _toArabicNumeral(int n) {
-    final arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    return n.toString().split('').map((d) => arabicDigits[int.parse(d)]).join();
-  }
 
   void _showTranslation(BuildContext context, QuranPageVerse verse) {
     final surahDisplay = verse.surahName.replaceAll('سُورَةُ', '').trim();
@@ -557,17 +534,20 @@ class _MushafSinglePage extends ConsumerWidget {
               ],
             ),
             SizedBox(height: 12),
-            // Arapça
-            Text(
-              verse.arabicText,
-              textAlign: TextAlign.right,
+            // Arapça + Vurgu
+            RichText(
+              textAlign: TextAlign.center,
               textDirection: TextDirection.rtl,
-              style: TextStyle(
-                fontFamily: 'Amiri',
-                fontSize: 22,
-                fontWeight: FontWeight.w400,
-                height: 1.8,
-                color: _kText,
+              text: TextSpan(
+                children: processArabicText(
+                  verse.arabicText,
+                  GoogleFonts.scheherazadeNew(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                    height: 1.8,
+                    color: _kText,
+                  ),
+                ),
               ),
             ),
             Divider(color: _kAccent.withValues(alpha: 0.3), height: 24),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_text_styles.dart';
+import '../../../product/widget/quran/quran_text_view.dart';
 
 // ── Veri Modeli ────────────────────────────────────────────────────────────
 
@@ -835,9 +837,61 @@ class _HighlightText extends StatelessWidget {
   final TextStyle? style;
   final Color highlightColor;
 
+  bool _isArabic(String text) {
+    if (text.isEmpty) return false;
+    // Arapça karakter aralığı (yaygın kullanılanlar)
+    final arabicRegExp = RegExp(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]');
+    return arabicRegExp.hasMatch(text);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (query.isEmpty) return Text(text, style: style);
+    // 1. Yazıyı satırlara veya bölümlere ayırabiliriz.
+    // Ancak daha basiti: Eğer satır tamamen Arapça ise veya Arapça baskınsa o kısmı özel işle.
+    // IslamicInfo içindeki içerikler genellikle: [Arapça] \n\n [Okunuşu] \n\n [Meali] şeklinde.
+    
+    final lines = text.split('\n');
+    final allSpans = <InlineSpan>[];
+
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      if (line.trim().isEmpty) {
+        allSpans.add(const TextSpan(text: '\n'));
+        continue;
+      }
+
+      if (_isArabic(line)) {
+        // Arapça Satırı - Scholarly Style
+        final arabicStyle = GoogleFonts.scheherazadeNew(
+          fontSize: (style?.fontSize ?? 14) * 1.5,
+          height: 1.8,
+          color: style?.color ?? context.colors.onBackground,
+        );
+        allSpans.addAll(processArabicText(line, arabicStyle));
+      } else {
+        // Normal Satır - Highlight Logic
+        allSpans.addAll(_getHighlightedSpans(line, query, style, highlightColor));
+      }
+
+      if (i < lines.length - 1) {
+        allSpans.add(const TextSpan(text: '\n'));
+      }
+    }
+
+    return RichText(
+      textAlign: _isArabic(text) ? TextAlign.right : TextAlign.left,
+      textDirection: _isArabic(text) ? TextDirection.rtl : TextDirection.ltr,
+      text: TextSpan(children: allSpans, style: style),
+    );
+  }
+
+  List<TextSpan> _getHighlightedSpans(
+    String text,
+    String query,
+    TextStyle? style,
+    Color highlightColor,
+  ) {
+    if (query.isEmpty) return [TextSpan(text: text, style: style)];
 
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
@@ -847,23 +901,22 @@ class _HighlightText extends StatelessWidget {
     while (true) {
       final index = lowerText.indexOf(lowerQuery, start);
       if (index == -1) {
-        spans.add(TextSpan(text: text.substring(start)));
+        spans.add(TextSpan(text: text.substring(start), style: style));
         break;
       }
 
       if (index > start) {
-        spans.add(TextSpan(text: text.substring(start, index)));
+        spans.add(TextSpan(text: text.substring(start, index), style: style));
       }
 
       spans.add(TextSpan(
         text: text.substring(index, index + query.length),
-        style: TextStyle(backgroundColor: highlightColor),
+        style: (style ?? const TextStyle()).copyWith(backgroundColor: highlightColor),
       ));
 
       start = index + query.length;
     }
-
-    return RichText(text: TextSpan(children: spans, style: style));
+    return spans;
   }
 }
 

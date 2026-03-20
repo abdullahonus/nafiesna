@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_text_styles.dart';
+import '../../../product/widget/quran/quran_text_view.dart';
 import '../notifier/home_notifier.dart';
 
 class HadithCard extends StatelessWidget {
@@ -66,15 +68,17 @@ class HadithCard extends StatelessWidget {
 
           // Arapça metin (sağdan sola)
           if (hadith.arabicText.isNotEmpty) ...[
-            Directionality(
+            RichText(
+              textAlign: TextAlign.center,
               textDirection: TextDirection.rtl,
-              child: Text(
-                hadith.arabicText,
-                style: context.textTheme.bodyLarge?.copyWith(
-                  fontFamily: 'serif',
-                  fontSize: 17,
-                  height: 1.9,
-                  color: context.colors.accent.withValues(alpha: 0.9),
+              text: TextSpan(
+                children: processArabicText(
+                  hadith.arabicText,
+                  GoogleFonts.scheherazadeNew(
+                    fontSize: 22,
+                    height: 1.8,
+                    color: context.colors.onBackground,
+                  ),
                 ),
               ),
             ),
