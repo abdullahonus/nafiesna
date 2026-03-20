@@ -75,6 +75,43 @@ class LoginRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [MushafPageView]
+class MushafPageRoute extends PageRouteInfo<MushafPageRouteArgs> {
+  MushafPageRoute({
+    Key? key,
+    required int pageNumber,
+    List<PageRouteInfo>? children,
+  }) : super(
+         MushafPageRoute.name,
+         args: MushafPageRouteArgs(key: key, pageNumber: pageNumber),
+         initialChildren: children,
+       );
+
+  static const String name = 'MushafPageRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<MushafPageRouteArgs>();
+      return MushafPageView(key: args.key, pageNumber: args.pageNumber);
+    },
+  );
+}
+
+class MushafPageRouteArgs {
+  const MushafPageRouteArgs({this.key, required this.pageNumber});
+
+  final Key? key;
+
+  final int pageNumber;
+
+  @override
+  String toString() {
+    return 'MushafPageRouteArgs{key: $key, pageNumber: $pageNumber}';
+  }
+}
+
+/// generated route for
 /// [PdfView]
 class PdfRoute extends PageRouteInfo<void> {
   const PdfRoute({List<PageRouteInfo>? children})
@@ -88,6 +125,80 @@ class PdfRoute extends PageRouteInfo<void> {
       return const PdfView();
     },
   );
+}
+
+/// generated route for
+/// [QuranView]
+class QuranRoute extends PageRouteInfo<void> {
+  const QuranRoute({List<PageRouteInfo>? children})
+    : super(QuranRoute.name, initialChildren: children);
+
+  static const String name = 'QuranRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const QuranView();
+    },
+  );
+}
+
+/// generated route for
+/// [SurahDetailView]
+class SurahDetailRoute extends PageRouteInfo<SurahDetailRouteArgs> {
+  SurahDetailRoute({
+    Key? key,
+    required int surahId,
+    required String surahName,
+    required String arabicName,
+    List<PageRouteInfo>? children,
+  }) : super(
+         SurahDetailRoute.name,
+         args: SurahDetailRouteArgs(
+           key: key,
+           surahId: surahId,
+           surahName: surahName,
+           arabicName: arabicName,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'SurahDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<SurahDetailRouteArgs>();
+      return SurahDetailView(
+        key: args.key,
+        surahId: args.surahId,
+        surahName: args.surahName,
+        arabicName: args.arabicName,
+      );
+    },
+  );
+}
+
+class SurahDetailRouteArgs {
+  const SurahDetailRouteArgs({
+    this.key,
+    required this.surahId,
+    required this.surahName,
+    required this.arabicName,
+  });
+
+  final Key? key;
+
+  final int surahId;
+
+  final String surahName;
+
+  final String arabicName;
+
+  @override
+  String toString() {
+    return 'SurahDetailRouteArgs{key: $key, surahId: $surahId, surahName: $surahName, arabicName: $arabicName}';
+  }
 }
 
 /// generated route for

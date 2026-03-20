@@ -30,7 +30,7 @@ class TabView extends ConsumerWidget {
         AutoTabsScaffold(
           // Partiküllerin görünmesi için scaffold şeffaf
           backgroundColor: Colors.transparent,
-          routes: const [HomeRoute(), DreamRoute(), PdfRoute(), ContentRoute()],
+          routes: const [HomeRoute(), DreamRoute(), PdfRoute(), ContentRoute(), QuranRoute()],
           bottomNavigationBuilder: (context, tabsRouter) {
             return Container(
               decoration: const BoxDecoration(
@@ -41,6 +41,7 @@ class TabView extends ConsumerWidget {
               child: BottomNavigationBar(
                 currentIndex: tabsRouter.activeIndex,
                 onTap: tabsRouter.setActiveIndex,
+                type: BottomNavigationBarType.fixed, // 5 item olunca düzgün görünmesi için
                 items: const [
                   BottomNavigationBarItem(
                     icon: Icon(Icons.home_outlined),
@@ -61,6 +62,11 @@ class TabView extends ConsumerWidget {
                     icon: Icon(Icons.mosque_outlined),
                     activeIcon: Icon(Icons.mosque_rounded),
                     label: 'Bilgi',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.chrome_reader_mode_outlined),
+                    activeIcon: Icon(Icons.chrome_reader_mode_rounded),
+                    label: 'Kuran',
                   ),
                 ],
               ),
