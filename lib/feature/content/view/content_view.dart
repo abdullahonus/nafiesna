@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nafiesna/product/widget/common/username_badge.dart';
 
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_text_styles.dart';
@@ -20,7 +21,11 @@ class ContentView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: const [UsernameBadge(), SizedBox(width: 8)],
+      ),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -51,7 +56,9 @@ class ContentView extends ConsumerWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: context.colors.primary.withValues(alpha: 0.3),
+                            color: context.colors.primary.withValues(
+                              alpha: 0.3,
+                            ),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -78,12 +85,13 @@ class ContentView extends ConsumerWidget {
                               children: [
                                 Text(
                                   'Sohbet Notları ve İslami Bilgiler, Dualar',
-                                  style: context.textTheme.headlineSmall?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    height: 1.3,
-                                  ),
+                                  style: context.textTheme.headlineSmall
+                                      ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        height: 1.3,
+                                      ),
                                 ),
                               ],
                             ),
@@ -99,7 +107,9 @@ class ContentView extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xl),
                   Text(
                     'Diğer İçerikler',
-                    style: context.textTheme.headlineSmall?.copyWith(fontSize: 15),
+                    style: context.textTheme.headlineSmall?.copyWith(
+                      fontSize: 15,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   GridView.count(
@@ -184,17 +194,16 @@ class ContentView extends ConsumerWidget {
                               ),
                               scrollDirection: Axis.horizontal,
                               itemCount: SilsileData.list.length,
-                              separatorBuilder: (context, index) =>
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.xs,
-                                    ),
-                                    child: Icon(
-                                      Icons.arrow_forward_ios_rounded,
-                                      color: context.colors.primary,
-                                      size: 16,
-                                    ),
-                                  ),
+                              separatorBuilder: (context, index) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.xs,
+                                ),
+                                child: Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: context.colors.primary,
+                                  size: 16,
+                                ),
+                              ),
                               itemBuilder: (context, index) {
                                 return Container(
                                   width: 140,
@@ -240,9 +249,12 @@ class ContentView extends ConsumerWidget {
                                           child: Text(
                                             SilsileData.list[index],
                                             textAlign: TextAlign.center,
-                                            style: context.textTheme.bodySmall?.copyWith(
+                                            style: context.textTheme.bodySmall
+                                                ?.copyWith(
                                                   fontSize: 11,
-                                                  color: context.colors.onBackground,
+                                                  color: context
+                                                      .colors
+                                                      .onBackground,
                                                   fontWeight: FontWeight.w500,
                                                   height: 1.2,
                                                 ),

@@ -5,9 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_text_styles.dart'; // BuildContext extensions
-import '../../../product/widget/common/permission_warnings.dart';
+import '../../../product/state/auth/auth_provider.dart';
+import '../../../product/state/auth/model/user_role.dart';
+import '../../../product/state/theme_provider.dart';
 import '../../../product/widget/common/app_error_state.dart';
 import '../../../product/widget/common/app_loading_indicator.dart';
+import '../../../product/widget/common/permission_warnings.dart';
+import '../../../product/widget/common/sohbet_popup.dart';
+import '../../../product/widget/common/watermark_overlay.dart';
 import '../../prayer_times/provider/prayer_times_provider.dart';
 import '../notifier/home_notifier.dart';
 import '../provider/home_provider.dart';
@@ -15,11 +20,6 @@ import '../widgets/hadith_card.dart';
 import '../widgets/hijri_calendar_card.dart';
 import '../widgets/live_stream_card.dart';
 import '../widgets/prayer_times_bar.dart';
-import '../../../product/widget/common/sohbet_popup.dart';
-import '../../../product/state/auth/auth_provider.dart';
-import '../../../product/state/auth/model/user_role.dart';
-import '../../../product/widget/common/watermark_overlay.dart';
-import '../../../product/state/theme_provider.dart'; // import persistent provider
 
 @RoutePage()
 class HomeView extends ConsumerStatefulWidget {
@@ -36,7 +36,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(homeProvider.notifier).init();
       ref.read(prayerTimesProvider.notifier).init();
-      
+
       // Random Sohbet Popup
       SohbetPopup.show(context);
     });
@@ -52,62 +52,61 @@ class _HomeViewState extends ConsumerState<HomeView> {
         children: [
           CustomScrollView(
             slivers: [
-          SliverAppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            floating: true,
-            pinned: false,
-            centerTitle: true,
-            leading: IconButton(
-              icon: Icon(
-                Icons.logout_rounded,
-                color: context.colors.onBackground,
-              ),
-              onPressed: () => _showLogoutDialog(context, ref),
-            ),
-            title: Text(
-              FirebaseAuth.instance.currentUser?.displayName ?? 
-              (ref.watch(authProvider).role == UserRole.guest ? 'Misafir Kullanıcı' : 'Kullanıcı'),
-              style: context.textTheme.titleMedium?.copyWith(
-                color: context.colors.onBackground,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  ref.watch(themeProvider) == ThemeMode.dark
-                      ? Icons.light_mode_rounded
-                      : Icons.dark_mode_rounded,
-                  color: context.colors.onBackground,
-                  size: 26,
+              SliverAppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                floating: true,
+                pinned: false,
+                centerTitle: true,
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.logout_rounded,
+                    color: context.colors.onBackground,
+                  ),
+                  onPressed: () => _showLogoutDialog(context, ref),
                 ),
-                onPressed: () {
-                  ref.read(themeProvider.notifier).toggleTheme();
-                },
-              ),
-              const SizedBox(width: AppSpacing.sm),
-            ],
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const NotificationWarningWidget(),
-                  if (ref.watch(authProvider).role == UserRole.authorized)
-                    const LiveStreamCard(),
-                  const SizedBox(height: AppSpacing.md),
-                  const PrayerTimesBar(),
-                  const SizedBox(height: AppSpacing.md),
-                  const HijriCalendarCard(),
-                  const SizedBox(height: AppSpacing.xl),
-                  _buildHadithSection(state),
+                title: Text(
+                  _resolveUsername(ref),
+                  style: context.textTheme.titleMedium?.copyWith(
+                    color: context.colors.onBackground,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                actions: [
+                  IconButton(
+                    icon: Icon(
+                      ref.watch(themeProvider) == ThemeMode.dark
+                          ? Icons.light_mode_rounded
+                          : Icons.dark_mode_rounded,
+                      color: context.colors.onBackground,
+                      size: 26,
+                    ),
+                    onPressed: () {
+                      ref.read(themeProvider.notifier).toggleTheme();
+                    },
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
                 ],
               ),
-            ),
-          ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const NotificationWarningWidget(),
+                      if (ref.watch(authProvider).role == UserRole.authorized)
+                        const LiveStreamCard(),
+                      const SizedBox(height: AppSpacing.md),
+                      const PrayerTimesBar(),
+                      const SizedBox(height: AppSpacing.md),
+                      const HijriCalendarCard(),
+                      const SizedBox(height: AppSpacing.xl),
+                      _buildHadithSection(state),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
           // Tüm sayfanın (ve butonların) üzerine binen ama tıklanmayı engellemeyen filigran
@@ -115,6 +114,18 @@ class _HomeViewState extends ConsumerState<HomeView> {
         ],
       ),
     );
+  }
+
+  /// E-posta adresinden @ öncesi kısmı döndürür.
+  /// Ör: nafiesna@nafiesna.com → nafiesna
+  /// Misafir kullanıcı için 'Misafir' döner.
+  String _resolveUsername(WidgetRef ref) {
+    final String? email = FirebaseAuth.instance.currentUser?.email;
+    if (email != null && email.contains('@')) {
+      return email.split('@').first;
+    }
+    final UserRole role = ref.watch(authProvider.select((s) => s.role));
+    return role == UserRole.guest ? 'Misafir' : 'Kullanıcı';
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {

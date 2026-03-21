@@ -373,31 +373,49 @@ class _MushafSinglePage extends ConsumerWidget {
             ),
           ),
         );
+
+        // Surah başlangıcında Besmele ekle (Fatiha ve Tevbe hariç)
+        if (v.surahId != 1 && v.surahId != 9) {
+          children.add(const BasmalaView());
+        }
       }
 
-      final verseStyle = GoogleFonts.scheherazadeNew(
-        fontSize: 25,
-        height: 2.5,
-        wordSpacing: 3,
-        color: _kText,
-      );
+      String verseText = v.arabicText;
+      const String basmalaText = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 
-      // Ayet metni + Vurgu
-      spans.addAll(processArabicText(v.arabicText, verseStyle));
-      spans.add(const TextSpan(text: ' '));
+      // Eğer ayet Besmele ile başlıyorsa (Fatiha hariç) ve surah başındaysak, Besmeleyi ayet metninden çıkar
+      if (v.surahId != 1 && v.surahId != 9 && verseText.startsWith(basmalaText)) {
+        verseText = verseText.replaceFirst(basmalaText, "").trim();
+      }
 
-      // Ayet numarası (Ayet Gülü)
-      spans.add(
-        WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: GestureDetector(
-            onTap: () => _showTranslation(context, v),
-            child: VerseRose(number: v.numberInSurah, size: 28),
+      if (verseText.isEmpty) {
+        // Eğer ayet sadece Besmele idi ise (bazı API'larda 0. ayet gibi gelebilir veya 1. ayete dahil olabilir)
+        // Boşsa geçiyoruz çünkü yukarıda zaten BasmalaView ekledik.
+      } else {
+        final verseStyle = GoogleFonts.scheherazadeNew(
+          fontSize: 25,
+          height: 2.5,
+          wordSpacing: 3,
+          color: _kText,
+        );
+
+        // Ayet metni + Vurgu
+        spans.addAll(processArabicText(verseText, verseStyle));
+        spans.add(const TextSpan(text: ' '));
+
+        // Ayet numarası (Ayet Gülü)
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: GestureDetector(
+              onTap: () => _showTranslation(context, v),
+              child: VerseRose(number: v.numberInSurah, size: 28),
+            ),
           ),
-        ),
-      );
+        );
 
-      spans.add(const TextSpan(text: ' '));
+        spans.add(const TextSpan(text: ' '));
+      }
     }
 
     flush();

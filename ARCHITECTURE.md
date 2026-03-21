@@ -130,7 +130,7 @@ Auth sistemi aktif — Misafir girişi (yerel kayıt) ve Yetkili girişi (Fireba
 | Rüya Defteri (dream) | ✅ Aktif | SharedPreferences CRUD, hilal-yıldız temalı UI, tab olarak erişim |
 | Namaz Vakitleri (prayer_times) | ⚠️ Sadece veri | Tab kaldırıldı; notifier/provider ana sayfada PrayerTimesBar için kullanılıyor |
 | Kaside PDF (pdf) | ✅ Aktif | `syncfusion_flutter_pdfviewer`, continuous scroll |
-| Menü (content) | ✅ Aktif | Grid menü: Dini Günler, Yakın Camiler, Kazalar, İslami Bilgiler |
+| Menü (content) | ✅ Aktif | Grid menü: Dini Günler, Yakın Camiler & Türbeler, Kazalar, İslami Bilgiler |
 
 > Yeni feature eklendiğinde bu tabloya satır ekle ve durumu güncelle.
 
@@ -747,6 +747,9 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-20 | Firebase Auth Entegrasyonu | `firebase_auth` eklendi, yetkili giriş akışı Firebase'e bağlandı |
 | 2026-03-20 | Cloud Firestore Entegrasyonu | `cloud_firestore` eklendi; rüyalar ve kaza sayıları kullanıcı bazlı buluta senkronize |
 | 2026-03-20 | AuthGuard logout navigasyon düzeltildi | `router.replaceAll` → `router.root.replaceAll` (nested router sorunu) |
+| 2026-03-21 | Yakın Camiler & Türbeler — TabBar UI | `NearbyMosquesPage` → `DefaultTabController` ile Camiler / Türbeler sekmeleri; `NearbyMosquesService.getNearbyTurbes()` eklendi (OSM `tomb=turbe`, `tomb=mausoleum`); `Mosque` → `NearbyPlace` ortak model; `PlaceType` enum |
+| 2026-03-21 | Türbeler — Harita & Türkiye Geneli | `flutter_map` + `latlong2` eklendi; `getTurkeyTurbes()` Türkiye bbox sorgusu (max 500); Türbeler sekmesi → `_TurbeView` (Liste\|Harita sub-TabBar); `_TurbeMapTab` OSM tiles + gold pin + dokunma modal; `_TurbeListTab` arama kutusu + sayı göstergesi |
+| 2026-03-21 | `UsernameBadge` global widget | `product/widget/common/username_badge.dart` oluşturuldu; email @ öncesi parse ederek tüm AppBar'larda gösterir; HomeView + ContentView + DreamView + PdfView AppBar'larına eklendi |
 
 ---
 

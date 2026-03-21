@@ -1,12 +1,13 @@
 import 'dart:math';
 import 'package:dio/dio.dart';
 
-/// Overpass API (OpenStreetMap) ile yakındaki camileri bulur.
+/// Mekân türü — cami veya türbe.
+enum PlaceType { mosque, turbe }
+
+/// Overpass API (OpenStreetMap) ile yakındaki cami ve türbeleri bulur.
 ///
-/// Akış:
-///   1. GPS'ten kullanıcı koordinatlarını al
-///   2. Overpass API'ye amenity=place_of_worship + religion=muslim sorgusu gönder
-///   3. Sonuçları mesafeye göre sırala
+/// Cami sorgusu  : amenity=place_of_worship + religion=muslim
+/// Türbe sorgusu : historic=tomb (tomb=turbe veya tomb=mausoleum önce, fallback generic)
 class NearbyMosquesService {
   NearbyMosquesService()
       : _dio = Dio(BaseOptions(
@@ -17,8 +18,10 @@ class NearbyMosquesService {
 
   final Dio _dio;
 
+  // ── Camiler ─────────────────────────────────────────────────────────────────
+
   /// Yakınlardaki camileri döndürür (max [radiusMeters] metre içinde).
-  Future<List<Mosque>> getNearbyMosques({
+  Future<List<NearbyPlace>> getNearbyMosques({
     required double latitude,
     required double longitude,
     int radiusMeters = 3000,
@@ -31,7 +34,85 @@ class NearbyMosquesService {
 );
 out center;
 ''';
+    return _fetch(
+      query: query,
+      latitude: latitude,
+      longitude: longitude,
+      type: PlaceType.mosque,
+      defaultName: 'Cami',
+    );
+  }
 
+  // ── Türbeler ─────────────────────────────────────────────────────────────────
+
+  /// Yakınlardaki türbeleri döndürür (max [radiusMeters] metre içinde).
+  /// OSM tag'leri: tomb=turbe (Osmanlı türbesi), tomb=mausoleum, ya da genel historic=tomb.
+  Future<List<NearbyPlace>> getNearbyTurbes({
+    required double latitude,
+    required double longitude,
+    int radiusMeters = 5000,
+  }) async {
+    final String query = '''
+[out:json][timeout:10];
+(
+  node["historic"="tomb"]["tomb"="turbe"](around:$radiusMeters,$latitude,$longitude);
+  way["historic"="tomb"]["tomb"="turbe"](around:$radiusMeters,$latitude,$longitude);
+  node["historic"="tomb"]["tomb"="mausoleum"](around:$radiusMeters,$latitude,$longitude);
+  way["historic"="tomb"]["tomb"="mausoleum"](around:$radiusMeters,$latitude,$longitude);
+  node["historic"="tomb"](around:$radiusMeters,$latitude,$longitude);
+  way["historic"="tomb"](around:$radiusMeters,$latitude,$longitude);
+);
+out center;
+''';
+    return _fetch(
+      query: query,
+      latitude: latitude,
+      longitude: longitude,
+      type: PlaceType.turbe,
+      defaultName: 'Türbe',
+    );
+  }
+
+  // ── Türkiye Geneli Türbeler ───────────────────────────────────────────────────
+
+  /// Türkiye sınırları içindeki **tüm** türbeleri döndürür.
+  ///
+  /// Bounding box: (36.0, 26.0, 42.5, 45.0) — güney-batı / kuzey-doğu
+  /// Sonuç sayısı sınırsız olabilir; [maxResults] ile kırpılır.
+  Future<List<NearbyPlace>> getTurkeyTurbes({
+    int maxResults = 500,
+  }) async {
+    const String bbox = '36.0,26.0,42.5,45.0';
+    const String query = '''
+[out:json][timeout:60];
+(
+  node["historic"="tomb"]["tomb"="turbe"]($bbox);
+  way["historic"="tomb"]["tomb"="turbe"]($bbox);
+  node["historic"="tomb"]["tomb"="mausoleum"]($bbox);
+  way["historic"="tomb"]["tomb"="mausoleum"]($bbox);
+  node["historic"="tomb"]($bbox);
+  way["historic"="tomb"]($bbox);
+);
+out center;
+''';
+    final List<NearbyPlace> all = await _fetch(
+      query: query,
+      latitude: 0,
+      longitude: 0,
+      type: PlaceType.turbe,
+      defaultName: 'Türbe',
+    );
+    // En fazla maxResults kadar al (koordinat unique zaten _fetch içinde)
+    return all.take(maxResults).toList();
+  }
+
+  Future<List<NearbyPlace>> _fetch({
+    required String query,
+    required double latitude,
+    required double longitude,
+    required PlaceType type,
+    required String defaultName,
+  }) async {
     try {
       final Response<Map<String, dynamic>> response =
           await _dio.get<Map<String, dynamic>>(
@@ -42,7 +123,7 @@ out center;
       final List<dynamic> elements =
           response.data?['elements'] as List<dynamic>? ?? [];
 
-      final List<Mosque> mosques = [];
+      final List<NearbyPlace> places = [];
 
       for (final dynamic element in elements) {
         final Map<String, dynamic> el = element as Map<String, dynamic>;
@@ -64,27 +145,39 @@ out center;
 
         if (lat == null || lng == null) continue;
 
-        final String name =
-            tags['name'] as String? ?? tags['name:tr'] as String? ?? 'Cami';
+        final String name = tags['name'] as String? ??
+            tags['name:tr'] as String? ??
+            defaultName;
 
         final double distance =
             _calculateDistance(latitude, longitude, lat, lng);
 
-        mosques.add(Mosque(
+        places.add(NearbyPlace(
           name: name,
           latitude: lat,
           longitude: lng,
           distanceMeters: distance,
           address: tags['addr:street'] as String?,
+          type: type,
         ));
       }
 
-      mosques.sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
-      return mosques;
+      // Mesafeye göre sırala + yineleri kaldır (aynı isim + koordinat)
+      final Set<String> seen = {};
+      final List<NearbyPlace> unique = places.where((p) {
+        final String key =
+            '${p.latitude.toStringAsFixed(5)}_${p.longitude.toStringAsFixed(5)}';
+        return seen.add(key);
+      }).toList()
+        ..sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
+
+      return unique;
     } catch (_) {
       return [];
     }
   }
+
+  // ── Yardımcı ─────────────────────────────────────────────────────────────────
 
   /// Haversine formülü ile iki koordinat arası mesafe (metre).
   double _calculateDistance(
@@ -110,12 +203,15 @@ out center;
   double _toRadians(double degree) => degree * (pi / 180);
 }
 
-class Mosque {
-  const Mosque({
+// ── Model ─────────────────────────────────────────────────────────────────────
+
+class NearbyPlace {
+  const NearbyPlace({
     required this.name,
     required this.latitude,
     required this.longitude,
     required this.distanceMeters,
+    required this.type,
     this.address,
   });
 
@@ -123,6 +219,7 @@ class Mosque {
   final double latitude;
   final double longitude;
   final double distanceMeters;
+  final PlaceType type;
   final String? address;
 
   String get formattedDistance {
@@ -132,3 +229,6 @@ class Mosque {
     return '${(distanceMeters / 1000).toStringAsFixed(1)} km';
   }
 }
+
+// Backward-compat alias — mevcut kodu kırmamak için.
+typedef Mosque = NearbyPlace;

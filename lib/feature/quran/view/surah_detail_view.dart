@@ -237,24 +237,7 @@ class SurahDetailView extends ConsumerWidget {
 
     return Column(
       children: [
-        if (basmala != null) ...[
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 24, top: 8),
-              child: Text(
-                basmala,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.scheherazadeNew(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: _kText,
-                ),
-              ),
-            ),
-          ),
-          Divider(color: _kAccent.withValues(alpha: 0.2), height: 1),
-          const SizedBox(height: 20),
-        ],
+        if (basmala != null) const BasmalaView(),
         RichText(
           textAlign: TextAlign.justify,
           textDirection: TextDirection.rtl,

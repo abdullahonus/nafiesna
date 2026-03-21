@@ -1,35 +1,642 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../product/init/theme/app_text_styles.dart';
+
 import '../../../product/constants/app_spacing.dart';
-import '../../../service/nearby_mosques_service.dart';
-import '../../../service/location_service.dart';
+import '../../../product/init/theme/app_text_styles.dart';
 import '../../../product/widget/common/permission_warnings.dart';
+import '../../../product/widget/common/username_badge.dart';
+import '../../../service/location_service.dart';
+import '../../../service/nearby_mosques_service.dart';
+
+// ── Providers ──────────────────────────────────────────────────────────────────
 
 final _mosqueServiceProvider = Provider((ref) => NearbyMosquesService());
 final _locationServiceProvider = Provider((ref) => LocationService());
 
-class NearbyMosquesPage extends ConsumerStatefulWidget {
+// ── Ana Sayfa ──────────────────────────────────────────────────────────────────
+
+class NearbyMosquesPage extends StatelessWidget {
   const NearbyMosquesPage({super.key});
 
   @override
-  ConsumerState<NearbyMosquesPage> createState() => _NearbyMosquesPageState();
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: context.colors.background,
+        appBar: _buildAppBar(context),
+        body: const TabBarView(
+          children: [
+            _PlacesListTab(type: PlaceType.mosque),
+            _TurbeView(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: context.colors.surface,
+      elevation: 0,
+      title: Text(
+        'Yakın İbadet Yerleri',
+        style: context.textTheme.headlineSmall?.copyWith(
+          color: context.colors.accent,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      centerTitle: true,
+      leading: IconButton(
+        onPressed: () => Navigator.of(context).pop(),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+      ),
+      actions: const [
+        LocationInfoWarningButton(),
+        UsernameBadge(),
+        SizedBox(width: 8),
+      ],
+      bottom: TabBar(
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicator: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          color: context.colors.accent.withValues(alpha: 0.15),
+        ),
+        labelColor: context.colors.accent,
+        unselectedLabelColor: context.colors.textSecondary,
+        labelStyle: context.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+        ),
+        unselectedLabelStyle: context.textTheme.bodyMedium?.copyWith(
+          fontSize: 13,
+        ),
+        dividerColor: context.colors.border,
+        tabs: const [
+          Tab(
+            icon: Icon(Icons.mosque_rounded, size: 20),
+            text: 'Camiler',
+            iconMargin: EdgeInsets.only(bottom: 2),
+          ),
+          Tab(
+            icon: Icon(Icons.account_balance_rounded, size: 20),
+            text: 'Türbeler',
+            iconMargin: EdgeInsets.only(bottom: 2),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
-  List<Mosque>? _mosques;
+// ── Türbeler Ana Widget (Liste | Harita sub-tab) ────────────────────────────────
+
+class _TurbeView extends ConsumerStatefulWidget {
+  const _TurbeView();
+
+  @override
+  ConsumerState<_TurbeView> createState() => _TurbeViewState();
+}
+
+class _TurbeViewState extends ConsumerState<_TurbeView>
+    with AutomaticKeepAliveClientMixin {
+  List<NearbyPlace>? _turbes;
   bool _isLoading = true;
   String? _error;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void initState() {
     super.initState();
-    _loadMosques();
+    _loadTurbes();
   }
 
-  Future<void> _loadMosques() async {
+  Future<void> _loadTurbes() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final List<NearbyPlace> result =
+          await ref.read(_mosqueServiceProvider).getTurkeyTurbes();
+      if (mounted) {
+        setState(() {
+        _turbes = result;
+        _isLoading = false;
+      });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+        _error = 'Türbeler yüklenirken hata oluştu.';
+        _isLoading = false;
+      });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: context.colors.accent),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Türkiye türbeleri yükleniyor…',
+              style: context.textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline_rounded,
+                  color: context.colors.error, size: 56),
+              const SizedBox(height: AppSpacing.lg),
+              Text(_error!, style: context.textTheme.bodyMedium,
+                  textAlign: TextAlign.center),
+              const SizedBox(height: AppSpacing.xl),
+              ElevatedButton.icon(
+                onPressed: _loadTurbes,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Tekrar Dene'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.colors.primary,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final List<NearbyPlace> turbes = _turbes ?? [];
+
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          // Sub-TabBar
+          Container(
+            color: context.colors.surface,
+            child: TabBar(
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: UnderlineTabIndicator(
+                borderSide: BorderSide(
+                  width: 2.5,
+                  color: context.colors.accent,
+                ),
+              ),
+              labelColor: context.colors.accent,
+              unselectedLabelColor: context.colors.textSecondary,
+              labelStyle: context.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+              tabs: const [
+                Tab(icon: Icon(Icons.list_rounded, size: 18), text: 'Liste'),
+                Tab(icon: Icon(Icons.map_rounded, size: 18), text: 'Harita'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _TurbeListTab(turbes: turbes, onRefresh: _loadTurbes),
+                _TurbeMapTab(turbes: turbes),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Türbe Liste Sekmesi ─────────────────────────────────────────────────────────
+
+class _TurbeListTab extends StatefulWidget {
+  const _TurbeListTab({required this.turbes, required this.onRefresh});
+
+  final List<NearbyPlace> turbes;
+  final VoidCallback onRefresh;
+
+  @override
+  State<_TurbeListTab> createState() => _TurbeListTabState();
+}
+
+class _TurbeListTabState extends State<_TurbeListTab>
+    with AutomaticKeepAliveClientMixin {
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  List<NearbyPlace> get _filtered {
+    if (_query.isEmpty) return widget.turbes;
+    final String q = _query.toLowerCase();
+    return widget.turbes.where((t) => t.name.toLowerCase().contains(q))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final List<NearbyPlace> filtered = _filtered;
+
+    return Column(
+      children: [
+        // Arama kutusu
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs,
+          ),
+          child: TextField(
+            controller: _searchCtrl,
+            onChanged: (v) => setState(() => _query = v),
+            style: context.textTheme.bodyMedium,
+            decoration: InputDecoration(
+              hintText: 'Türbe ara…',
+              hintStyle: context.textTheme.bodyMedium?.copyWith(
+                color: context.colors.textHint,
+              ),
+              prefixIcon: Icon(Icons.search_rounded,
+                  color: context.colors.accent, size: 20),
+              suffixIcon: _query.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(Icons.close_rounded,
+                          color: context.colors.textSecondary, size: 18),
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        setState(() => _query = '');
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: context.colors.surface,
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                borderSide: BorderSide(
+                  color: context.colors.border,
+                  width: 0.6,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                borderSide: BorderSide(
+                  color: context.colors.accent,
+                  width: 1.2,
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Sonuç sayısı
+        Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+          child: Row(
+            children: [
+              Text(
+                '${filtered.length} türbe',
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: context.colors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Liste
+        Expanded(
+          child: filtered.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.account_balance_outlined,
+                          color: context.colors.textSecondary
+                              .withValues(alpha: 0.35),
+                          size: 56),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        _query.isEmpty
+                            ? 'Türkiye genelinde türbe bulunamadı.'
+                            : '"$_query" için sonuç yok.',
+                        style: context.textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  color: context.colors.accent,
+                  onRefresh: () async => widget.onRefresh(),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg, AppSpacing.xs,
+                      AppSpacing.lg, AppSpacing.lg,
+                    ),
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(height: AppSpacing.sm),
+                    itemBuilder: (_, int i) =>
+                        _PlaceCard(place: filtered[i]),
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Türbe Harita Sekmesi ────────────────────────────────────────────────────────
+
+class _TurbeMapTab extends StatefulWidget {
+  const _TurbeMapTab({required this.turbes});
+
+  final List<NearbyPlace> turbes;
+
+  @override
+  State<_TurbeMapTab> createState() => _TurbeMapTabState();
+}
+
+class _TurbeMapTabState extends State<_TurbeMapTab>
+    with AutomaticKeepAliveClientMixin {
+  final MapController _mapCtrl = MapController();
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    final List<Marker> markers = widget.turbes.map((NearbyPlace t) {
+      return Marker(
+        point: LatLng(t.latitude, t.longitude),
+        width: 32,
+        height: 32,
+        child: GestureDetector(
+          onTap: () => _showDetail(context, t),
+          child: _TurbePin(color: context.colors.accent),
+        ),
+      );
+    }).toList();
+
+    return FlutterMap(
+      mapController: _mapCtrl,
+      options: const MapOptions(
+        initialCenter: LatLng(39.0, 35.0), // Türkiye merkezi
+        initialZoom: 5.5,
+        maxZoom: 18,
+        minZoom: 4,
+      ),
+      children: [
+        // OSM tile katmanı
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.artra.nafiesna',
+          maxZoom: 18,
+        ),
+        // Türbe pinleri
+        MarkerLayer(markers: markers),
+        // Sağ alt OSM atıf
+        const RichAttributionWidget(
+          attributions: [
+            TextSourceAttribution('OpenStreetMap katkıda bulunanlar'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showDetail(BuildContext context, NearbyPlace turbe) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _TurbeDetailSheet(turbe: turbe),
+    );
+  }
+}
+
+// ── Türbe pin ikonu ─────────────────────────────────────────────────────────────
+
+class _TurbePin extends StatelessWidget {
+  const _TurbePin({required this.color});
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Icon(Icons.location_on_rounded, color: color, size: 32),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Icon(
+            Icons.account_balance_rounded,
+            color: context.colors.surface,
+            size: 13,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Türbe detail modal ─────────────────────────────────────────────────────────
+
+class _TurbeDetailSheet extends StatelessWidget {
+  const _TurbeDetailSheet({required this.turbe});
+  final NearbyPlace turbe;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(
+          color: context.colors.accent.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sergiyi tut çubuğu
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: context.colors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          // İkon + isim
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: context.colors.accent.withValues(alpha: 0.12),
+                ),
+                child: Icon(
+                  Icons.account_balance_rounded,
+                  color: context.colors.accent,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  turbe.name,
+                  style: context.textTheme.headlineMedium?.copyWith(
+                    color: context.colors.onBackground,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          if (turbe.address != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Icon(Icons.location_on_outlined,
+                    size: 14, color: context.colors.textSecondary),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    turbe.address!,
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: context.colors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: AppSpacing.xl),
+          // Haritada Aç butonu
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _openInMaps(context),
+              icon: const Icon(Icons.directions_rounded, size: 18),
+              label: const Text('Google Maps\'ta Aç'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.colors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openInMaps(BuildContext context) async {
+    final Uri uri = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1'
+      '&destination=${turbe.latitude},${turbe.longitude}',
+    );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+    if (context.mounted) Navigator.of(context).pop();
+  }
+}
+
+// ── Cami ListeSekmesi (yakın camiler) ──────────────────────────────────────────
+
+class _PlacesListTab extends ConsumerStatefulWidget {
+  const _PlacesListTab({required this.type});
+
+  final PlaceType type;
+
+  @override
+  ConsumerState<_PlacesListTab> createState() => _PlacesListTabState();
+}
+
+class _PlacesListTabState extends ConsumerState<_PlacesListTab>
+    with AutomaticKeepAliveClientMixin {
+  List<NearbyPlace>? _places;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  bool get _isMosque => widget.type == PlaceType.mosque;
+
+  String get _emptyMessage => _isMosque
+      ? '3 km içinde cami bulunamadı.'
+      : '5 km içinde türbe bulunamadı.';
+
+  String get _loadingMessage => _isMosque
+      ? 'Yakındaki camiler aranıyor…'
+      : 'Yakındaki türbeler aranıyor…';
+
+  String get _errorMessage => _isMosque
+      ? 'Camiler yüklenirken hata oluştu.'
+      : 'Türbeler yüklenirken hata oluştu.';
+
+  Future<void> _load() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -42,10 +649,12 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
       final bool serviceEnabled =
           await locationService.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        setState(() {
+        if (mounted) {
+          setState(() {
           _error = 'Konum servisi kapalı. Lütfen açın.';
           _isLoading = false;
         });
+        }
         return;
       }
 
@@ -53,105 +662,81 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
           await locationService.checkAndRequestPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        setState(() {
+        if (mounted) {
+          setState(() {
           _error = 'Konum izni gerekli. Lütfen izin verin.';
           _isLoading = false;
         });
+        }
         return;
       }
 
       final Position position = await locationService.getCurrentPosition();
-      final List<Mosque> mosques =
-          await ref.read(_mosqueServiceProvider).getNearbyMosques(
-                latitude: position.latitude,
-                longitude: position.longitude,
-              );
+      final NearbyMosquesService service = ref.read(_mosqueServiceProvider);
+
+      final List<NearbyPlace> places = _isMosque
+          ? await service.getNearbyMosques(
+              latitude: position.latitude,
+              longitude: position.longitude,
+            )
+          : await service.getNearbyTurbes(
+              latitude: position.latitude,
+              longitude: position.longitude,
+            );
 
       if (mounted) {
         setState(() {
-          _mosques = mosques;
-          _isLoading = false;
-        });
+        _places = places;
+        _isLoading = false;
+      });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
-          _error = 'Camiler yüklenirken hata oluştu.';
-          _isLoading = false;
-        });
+        _error = _errorMessage;
+        _isLoading = false;
+      });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.colors.background,
-      appBar: AppBar(
-        backgroundColor: context.colors.surface,
-        elevation: 0,
-        title: Text(
-          'Yakın Camiler',
-          style: context.textTheme.headlineSmall?.copyWith(
-            color: context.colors.accent,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-        ),
-        actions: [
-          const LocationInfoWarningButton(),
-          IconButton(
-            onPressed: _isLoading ? null : _loadMosques,
-            icon: Icon(Icons.refresh_rounded, color: context.colors.accent),
-            tooltip: 'Yenile',
-          ),
+    super.build(context);
+
+    if (_isLoading) return _buildLoading(context);
+    if (_error != null) return _buildError(context);
+    return _buildList(context);
+  }
+
+  Widget _buildLoading(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(color: context.colors.accent),
+          const SizedBox(height: AppSpacing.lg),
+          Text(_loadingMessage, style: context.textTheme.bodyMedium),
         ],
       ),
-      body: _isLoading
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: context.colors.accent),
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(
-                    'Yakındaki camiler aranıyor...',
-                    style: context.textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            )
-          : _error != null
-              ? _buildError()
-              : _buildList(),
     );
   }
 
-  Widget _buildError() {
+  Widget _buildError(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.location_off_rounded,
-              color: context.colors.error,
-              size: 56,
-            ),
+            Icon(Icons.location_off_rounded,
+                color: context.colors.error, size: 56),
             const SizedBox(height: AppSpacing.lg),
-            Text(
-              _error!,
-              style: context.textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
+            Text(_error!, style: context.textTheme.bodyMedium,
+                textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.xl),
             ElevatedButton.icon(
-              onPressed: _loadMosques,
+              onPressed: _load,
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Tekrar Dene'),
               style: ElevatedButton.styleFrom(
@@ -165,46 +750,64 @@ class _NearbyMosquesPageState extends ConsumerState<NearbyMosquesPage> {
     );
   }
 
-  Widget _buildList() {
-    if (_mosques == null || _mosques!.isEmpty) {
+  Widget _buildList(BuildContext context) {
+    if (_places == null || _places!.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.mosque_outlined,
-              color: context.colors.textSecondary.withValues(alpha: 0.4),
+              _isMosque
+                  ? Icons.mosque_outlined
+                  : Icons.account_balance_outlined,
+              color: context.colors.textSecondary.withValues(alpha: 0.35),
               size: 64,
             ),
             const SizedBox(height: AppSpacing.lg),
-            Text(
-              '3 km içinde cami bulunamadı.',
-              style: context.textTheme.bodyMedium,
+            Text(_emptyMessage, style: context.textTheme.bodyMedium),
+            const SizedBox(height: AppSpacing.md),
+            TextButton.icon(
+              onPressed: _load,
+              icon: Icon(Icons.refresh_rounded,
+                  size: 16, color: context.colors.accent),
+              label: Text('Yenile',
+                  style: TextStyle(color: context.colors.accent)),
             ),
           ],
         ),
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      itemCount: _mosques!.length,
-      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-      itemBuilder: (_, int index) {
-        final Mosque mosque = _mosques![index];
-        return _MosqueCard(mosque: mosque);
-      },
+    return RefreshIndicator(
+      color: context.colors.accent,
+      onRefresh: _load,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg,
+        ),
+        itemCount: _places!.length,
+        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+        itemBuilder: (_, int index) => _PlaceCard(place: _places![index]),
+      ),
     );
   }
 }
 
-class _MosqueCard extends StatelessWidget {
-  const _MosqueCard({required this.mosque});
+// ── Ortak Yer Kartı ─────────────────────────────────────────────────────────────
 
-  final Mosque mosque;
+class _PlaceCard extends StatelessWidget {
+  const _PlaceCard({required this.place});
+  final NearbyPlace place;
+
+  bool get _isMosque => place.type == PlaceType.mosque;
 
   @override
   Widget build(BuildContext context) {
+    final Color iconColor =
+        _isMosque ? context.colors.primary : context.colors.accent;
+    final IconData placeIcon =
+        _isMosque ? Icons.mosque_rounded : Icons.account_balance_rounded;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -219,13 +822,9 @@ class _MosqueCard extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: context.colors.primary.withValues(alpha: 0.15),
+              color: iconColor.withValues(alpha: 0.12),
             ),
-            child: Icon(
-              Icons.mosque_rounded,
-              color: context.colors.primary,
-              size: 22,
-            ),
+            child: Icon(placeIcon, color: iconColor, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -233,32 +832,29 @@ class _MosqueCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  mosque.name,
+                  place.name,
                   style: context.textTheme.headlineSmall,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Row(
                   children: [
-                    Icon(
-                      Icons.directions_walk_rounded,
-                      color: context.colors.accent,
-                      size: 14,
-                    ),
+                    Icon(Icons.directions_walk_rounded,
+                        color: context.colors.accent, size: 14),
                     const SizedBox(width: 4),
                     Text(
-                      mosque.formattedDistance,
+                      place.formattedDistance,
                       style: context.textTheme.bodySmall?.copyWith(
                         color: context.colors.accent,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (mosque.address != null) ...[
+                    if (place.address != null) ...[
                       const SizedBox(width: AppSpacing.sm),
                       Flexible(
                         child: Text(
-                          mosque.address!,
+                          place.address!,
                           style: context.textTheme.bodySmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -278,16 +874,13 @@ class _MosqueCard extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: context.colors.primary.withValues(alpha: 0.15),
+                color: context.colors.primary.withValues(alpha: 0.12),
                 border: Border.all(
-                  color: context.colors.primary.withValues(alpha: 0.4),
+                  color: context.colors.primary.withValues(alpha: 0.35),
                 ),
               ),
-              child: Icon(
-                Icons.directions_rounded,
-                color: context.colors.primary,
-                size: 18,
-              ),
+              child: Icon(Icons.directions_rounded,
+                  color: context.colors.primary, size: 18),
             ),
           ),
         ],
@@ -298,9 +891,8 @@ class _MosqueCard extends StatelessWidget {
   Future<void> _openInMaps(BuildContext context) async {
     final Uri mapsUri = Uri.parse(
       'https://www.google.com/maps/dir/?api=1'
-      '&destination=${mosque.latitude},${mosque.longitude}',
+      '&destination=${place.latitude},${place.longitude}',
     );
-
     if (await canLaunchUrl(mapsUri)) {
       await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
     } else if (context.mounted) {

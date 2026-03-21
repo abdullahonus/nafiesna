@@ -258,3 +258,81 @@ class ScholarlyArabicTextWithHighlight extends StatelessWidget {
     return spans;
   }
 }
+
+/// ── Basmala View (Besmele) ──────────────────────────────────────────────────
+
+/// A beautiful, ornate widget to display the Basmala (Besmele) at the start
+/// of surahs, using scholarly typography and a decorative frame.
+class BasmalaView extends StatelessWidget {
+  const BasmalaView({super.key});
+
+  static const String text = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      decoration: BoxDecoration(
+        color: kQuranAccent.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: const Size(double.infinity, 32),
+            painter: BasmalaFramePainter(color: kQuranAccent.withValues(alpha: 0.4)),
+          ),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.scheherazadeNew(
+              fontSize: 28,
+              height: 1.5,
+              fontWeight: FontWeight.bold,
+              color: kQuranText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BasmalaFramePainter extends CustomPainter {
+  BasmalaFramePainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Ornate brackets/borders
+    final path = Path();
+    
+    // Left decorative element
+    path.moveTo(w * 0.15, 0);
+    path.quadraticBezierTo(0, h * 0.5, w * 0.15, h);
+    
+    // Right decorative element
+    path.moveTo(w * 0.85, 0);
+    path.quadraticBezierTo(w, h * 0.5, w * 0.85, h);
+
+    canvas.drawPath(path, paint);
+    
+    // Small dots/accents
+    canvas.drawCircle(Offset(w * 0.05, h * 0.5), 1.5, paint..style = PaintingStyle.fill);
+    canvas.drawCircle(Offset(w * 0.95, h * 0.5), 1.5, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
