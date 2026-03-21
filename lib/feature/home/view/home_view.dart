@@ -97,11 +97,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     children: [
                       const NotificationWarningWidget(),
                       const SizedBox(height: AppSpacing.md),
-                      _ChatRoomCard(onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const ChatView(),
-                        ),
-                      )),
+                      if (ref.watch(authProvider).role == UserRole.authorized) ...[
+                        _ChatRoomCard(onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const ChatView(),
+                          ),
+                        )),
+                      ],
                       if (ref.watch(authProvider).role == UserRole.authorized) ...[
                         const SizedBox(height: AppSpacing.md),
                         const LiveStreamCard(),

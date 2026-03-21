@@ -229,7 +229,11 @@ class _TurbeViewState extends ConsumerState<_TurbeView>
             child: TabBarView(
               children: [
                 _TurbeListTab(turbes: turbes, onRefresh: _loadTurbes),
-                _TurbeMapTab(turbes: turbes),
+                _PlacesMapTab(
+                  places: turbes,
+                  initialCenter: const LatLng(39.0, 35.0),
+                  initialZoom: 5.5,
+                ),
               ],
             ),
           ),
@@ -404,18 +408,24 @@ class _TurbeListTabState extends State<_TurbeListTab>
   }
 }
 
-// ── Türbe Harita Sekmesi ────────────────────────────────────────────────────────
+// ── Harita Sekmesi ────────────────────────────────────────────────────────
 
-class _TurbeMapTab extends StatefulWidget {
-  const _TurbeMapTab({required this.turbes});
+class _PlacesMapTab extends StatefulWidget {
+  const _PlacesMapTab({
+    required this.places,
+    required this.initialCenter,
+    required this.initialZoom,
+  });
 
-  final List<NearbyPlace> turbes;
+  final List<NearbyPlace> places;
+  final LatLng initialCenter;
+  final double initialZoom;
 
   @override
-  State<_TurbeMapTab> createState() => _TurbeMapTabState();
+  State<_PlacesMapTab> createState() => _PlacesMapTabState();
 }
 
-class _TurbeMapTabState extends State<_TurbeMapTab>
+class _PlacesMapTabState extends State<_PlacesMapTab>
     with AutomaticKeepAliveClientMixin {
   final MapController _mapCtrl = MapController();
 
@@ -426,23 +436,27 @@ class _TurbeMapTabState extends State<_TurbeMapTab>
   Widget build(BuildContext context) {
     super.build(context);
 
-    final List<Marker> markers = widget.turbes.map((NearbyPlace t) {
+    final List<Marker> markers = widget.places.map((NearbyPlace p) {
+      final Color pinColor = p.type == PlaceType.mosque
+          ? context.colors.primary
+          : context.colors.accent;
+          
       return Marker(
-        point: LatLng(t.latitude, t.longitude),
+        point: LatLng(p.latitude, p.longitude),
         width: 32,
         height: 32,
         child: GestureDetector(
-          onTap: () => _showDetail(context, t),
-          child: _TurbePin(color: context.colors.accent),
+          onTap: () => _showDetail(context, p),
+          child: _PlacePin(color: pinColor, type: p.type),
         ),
       );
     }).toList();
 
     return FlutterMap(
       mapController: _mapCtrl,
-      options: const MapOptions(
-        initialCenter: LatLng(39.0, 35.0), // Türkiye merkezi
-        initialZoom: 5.5,
+      options: MapOptions(
+        initialCenter: widget.initialCenter,
+        initialZoom: widget.initialZoom,
         maxZoom: 18,
         minZoom: 4,
       ),
@@ -453,7 +467,7 @@ class _TurbeMapTabState extends State<_TurbeMapTab>
           userAgentPackageName: 'com.artra.nafiesna',
           maxZoom: 18,
         ),
-        // Türbe pinleri
+        // Pinler
         MarkerLayer(markers: markers),
         // Sağ alt OSM atıf
         const RichAttributionWidget(
@@ -465,23 +479,28 @@ class _TurbeMapTabState extends State<_TurbeMapTab>
     );
   }
 
-  void _showDetail(BuildContext context, NearbyPlace turbe) {
+  void _showDetail(BuildContext context, NearbyPlace place) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => _TurbeDetailSheet(turbe: turbe),
+      builder: (_) => _PlaceDetailSheet(place: place),
     );
   }
 }
 
-// ── Türbe pin ikonu ─────────────────────────────────────────────────────────────
+// ── Pin ikonu ─────────────────────────────────────────────────────────────
 
-class _TurbePin extends StatelessWidget {
-  const _TurbePin({required this.color});
+class _PlacePin extends StatelessWidget {
+  const _PlacePin({required this.color, required this.type});
   final Color color;
+  final PlaceType type;
 
   @override
   Widget build(BuildContext context) {
+    final IconData icon = type == PlaceType.mosque
+        ? Icons.mosque_rounded
+        : Icons.account_balance_rounded;
+        
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -489,7 +508,7 @@ class _TurbePin extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Icon(
-            Icons.account_balance_rounded,
+            icon,
             color: context.colors.surface,
             size: 13,
           ),
@@ -499,21 +518,28 @@ class _TurbePin extends StatelessWidget {
   }
 }
 
-// ── Türbe detail modal ─────────────────────────────────────────────────────────
+// ── Detail modal ─────────────────────────────────────────────────────────
 
-class _TurbeDetailSheet extends StatelessWidget {
-  const _TurbeDetailSheet({required this.turbe});
-  final NearbyPlace turbe;
+class _PlaceDetailSheet extends StatelessWidget {
+  const _PlaceDetailSheet({required this.place});
+  final NearbyPlace place;
 
   @override
   Widget build(BuildContext context) {
+    final Color iconColor = place.type == PlaceType.mosque
+        ? context.colors.primary
+        : context.colors.accent;
+    final IconData placeIcon = place.type == PlaceType.mosque
+        ? Icons.mosque_rounded
+        : Icons.account_balance_rounded;
+        
     return Container(
       margin: const EdgeInsets.all(AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: context.colors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: context.colors.accent.withValues(alpha: 0.3)),
+        border: Border.all(color: iconColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -539,18 +565,18 @@ class _TurbeDetailSheet extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: context.colors.accent.withValues(alpha: 0.12),
+                  color: iconColor.withValues(alpha: 0.12),
                 ),
                 child: Icon(
-                  Icons.account_balance_rounded,
-                  color: context.colors.accent,
+                  placeIcon,
+                  color: iconColor,
                   size: 24,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
-                  turbe.name,
+                  place.name,
                   style: context.textTheme.headlineMedium?.copyWith(
                     color: context.colors.onBackground,
                     fontWeight: FontWeight.bold,
@@ -561,7 +587,7 @@ class _TurbeDetailSheet extends StatelessWidget {
               ),
             ],
           ),
-          if (turbe.address != null) ...[
+          if (place.address != null) ...[
             const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
@@ -573,7 +599,7 @@ class _TurbeDetailSheet extends StatelessWidget {
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    turbe.address!,
+                    place.address!,
                     style: context.textTheme.bodySmall?.copyWith(
                       color: context.colors.textSecondary,
                     ),
@@ -611,7 +637,7 @@ class _TurbeDetailSheet extends StatelessWidget {
   Future<void> _openInMaps(BuildContext context) async {
     final Uri uri = Uri.parse(
       'https://www.google.com/maps/dir/?api=1'
-      '&destination=${turbe.latitude},${turbe.longitude}',
+      '&destination=${place.latitude},${place.longitude}',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -634,6 +660,7 @@ class _PlacesListTab extends ConsumerStatefulWidget {
 class _PlacesListTabState extends ConsumerState<_PlacesListTab>
     with AutomaticKeepAliveClientMixin {
   List<NearbyPlace>? _places;
+  Position? _currentPosition;
   bool _isLoading = true;
   String? _error;
 
@@ -711,6 +738,7 @@ class _PlacesListTabState extends ConsumerState<_PlacesListTab>
 
       if (mounted) {
         setState(() {
+          _currentPosition = position;
           _places = places;
           _isLoading = false;
         });
@@ -731,7 +759,58 @@ class _PlacesListTabState extends ConsumerState<_PlacesListTab>
 
     if (_isLoading) return _buildLoading(context);
     if (_error != null) return _buildError(context);
-    return _buildList(context);
+    
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          Container(
+            color: context.colors.surface,
+            child: TabBar(
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: UnderlineTabIndicator(
+                borderSide: BorderSide(
+                  width: 2.5,
+                  color: context.colors.accent,
+                ),
+              ),
+              labelColor: context.colors.accent,
+              unselectedLabelColor: context.colors.textSecondary,
+              labelStyle: context.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+              tabs: const [
+                Tab(icon: Icon(Icons.list_rounded, size: 18), text: 'Liste'),
+                Tab(icon: Icon(Icons.map_rounded, size: 18), text: 'Harita'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildList(context),
+                _places == null || _places!.isEmpty
+                    ? _buildEmptyMap(context)
+                    : _PlacesMapTab(
+                        places: _places!,
+                        initialCenter: _currentPosition != null
+                            ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
+                            : const LatLng(39.0, 35.0),
+                        initialZoom: 13.0,
+                      ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyMap(BuildContext context) {
+    return Center(
+      child: Text(_emptyMessage, style: context.textTheme.bodyMedium),
+    );
   }
 
   Widget _buildLoading(BuildContext context) {

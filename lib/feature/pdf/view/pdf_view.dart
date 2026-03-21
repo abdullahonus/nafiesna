@@ -6,6 +6,8 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_colors.dart';
 import '../../../product/init/theme/app_text_styles.dart';
+import '../../../product/state/auth/auth_provider.dart';
+import '../../../product/state/auth/model/user_role.dart';
 import '../../../product/widget/common/app_error_state.dart';
 import '../../../product/widget/common/app_loading_indicator.dart';
 import '../../../product/widget/common/watermark_overlay.dart';
@@ -17,6 +19,34 @@ class PdfView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = AppThemeColors.of(context);
+    final userRole = ref.watch(authProvider.select((s) => s.role));
+
+    if (userRole == UserRole.guest) {
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('Evrad ve Kaside'),
+          backgroundColor: c.surface,
+          elevation: 0,
+          centerTitle: true,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock_rounded, size: 64, color: c.textSecondary),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Bu özellik sadece kayıtlı kullanıcılar içindir.',
+                style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
