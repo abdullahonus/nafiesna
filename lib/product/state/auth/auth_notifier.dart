@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -71,7 +73,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> loginAsAuthorized(String email, String password) async {
-    state = state.copyWith(isLoading: true, clearError: true, clearUserId: true);
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      clearUserId: true,
+    );
     try {
       // 1. Firebase Auth ile giriş yap
       await _auth.signInWithEmailAndPassword(email: email, password: password);
@@ -81,8 +87,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final String deviceId = await _getDeviceId();
 
       // 3. Firestore'da kullanıcı kaydını kontrol et
-      final DocumentSnapshot userDoc =
-          await _firestore.collection('users').doc(uid).get();
+      final DocumentSnapshot userDoc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get();
 
       if (userDoc.exists) {
         // Kayıt var — deviceId eşleşiyor mu?
@@ -109,13 +117,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoading: false,
           userId: uid,
         );
+        await _subscribeToNotifications();
         return;
       }
 
       // 4. İlk giriş — Cloud Function çağır (aktivasyon + şifre değişimi)
       try {
-        final HttpsCallable callable =
-            FirebaseFunctions.instance.httpsCallable('activateAccount');
+        final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable(
+          'activateAccount',
+        );
         await callable.call<dynamic>({'deviceId': deviceId});
       } catch (e) {
         // Cloud Function başarısız olursa geri al
@@ -136,6 +146,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         userId: uid,
       );
+      await _subscribeToNotifications();
     } on FirebaseAuthException catch (e) {
       String message = 'Giriş yapılamadı.';
       if (e.code == 'user-not-found') {
@@ -158,6 +169,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     state = state.copyWith(isLoading: true);
+    await _unsubscribeFromNotifications();
     await _auth.signOut();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(_authKey);
@@ -167,5 +179,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
       clearUserId: true,
       clearError: true,
     );
+  }
+
+  /// FCM topic'lerine abone ol (sadece authorized kullanıcılar).
+  Future<void> _subscribeToNotifications() async {
+    try {
+      final FirebaseMessaging messaging = FirebaseMessaging.instance;
+      await messaging.subscribeToTopic('live_stream');
+      await messaging.subscribeToTopic('chat_messages');
+      debugPrint('FCM: Bildirim topic\'larına abone olundu.');
+    } catch (e) {
+      debugPrint('FCM: Topic subscribe hatası — $e');
+    }
+  }
+
+  /// FCM topic aboneliklerini kaldır (logout).
+  Future<void> _unsubscribeFromNotifications() async {
+    try {
+      final FirebaseMessaging messaging = FirebaseMessaging.instance;
+      await messaging.unsubscribeFromTopic('live_stream');
+      await messaging.unsubscribeFromTopic('chat_messages');
+      debugPrint('FCM: Bildirim topic\'larından çıkıldı.');
+    } catch (e) {
+      debugPrint('FCM: Topic unsubscribe hatası — $e');
+    }
   }
 }

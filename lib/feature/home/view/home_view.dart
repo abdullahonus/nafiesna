@@ -59,14 +59,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 floating: true,
                 pinned: false,
                 centerTitle: true,
-                leading: null,
-                /* IconButton(
-                  icon: Icon(
-                    Icons.logout_rounded,
-                    color: context.colors.onBackground,
-                  ),
-                  onPressed: () => _showLogoutDialog(context, ref),
-                ), */
+                leading: ref.watch(authProvider).role == UserRole.guest
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.logout_rounded,
+                          color: context.colors.onBackground,
+                        ),
+                        onPressed: () => _showLogoutDialog(context, ref),
+                      )
+                    : null,
                 title: Text(
                   _resolveUsername(ref),
                   style: context.textTheme.titleMedium?.copyWith(
@@ -142,6 +143,32 @@ class _HomeViewState extends ConsumerState<HomeView> {
     }
     final UserRole role = ref.watch(authProvider.select((s) => s.role));
     return role == UserRole.guest ? 'Misafir' : 'Kullanıcı';
+  }
+
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Çıkış Yap'),
+        content: const Text(
+          'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ref.read(authProvider.notifier).logout();
+            },
+            style: TextButton.styleFrom(foregroundColor: context.colors.error),
+            child: const Text('Çıkış Yap'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildHadithSection(HomeState state) {
