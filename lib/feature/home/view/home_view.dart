@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -59,7 +60,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 floating: true,
                 pinned: false,
                 centerTitle: true,
-                leading: ref.watch(authProvider).role == UserRole.guest
+                leading: (ref.watch(authProvider).role == UserRole.guest || kDebugMode)
                     ? IconButton(
                         icon: Icon(
                           Icons.logout_rounded,

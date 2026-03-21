@@ -1,13 +1,14 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nafiesna/product/widget/common/username_badge.dart';
 
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_text_styles.dart';
-import '../../../product/widget/common/watermark_overlay.dart';
 import '../../../product/state/auth/auth_provider.dart';
 import '../../../product/state/auth/model/user_role.dart';
+import '../../../product/widget/common/watermark_overlay.dart';
 import '../widgets/islamic_info_page.dart';
 import '../widgets/missed_prayers_page.dart';
 import '../widgets/nearby_mosques_page.dart';
@@ -289,7 +290,8 @@ class ContentView extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  if (ref.watch(authProvider).role == UserRole.guest) ...[
+                  if (ref.watch(authProvider).role == UserRole.guest ||
+                      kDebugMode) ...[
                     const SizedBox(height: AppSpacing.xxl),
                     _buildLogoutButton(context, ref),
                   ],
