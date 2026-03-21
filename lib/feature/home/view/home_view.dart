@@ -13,6 +13,7 @@ import '../../../product/widget/common/app_loading_indicator.dart';
 import '../../../product/widget/common/permission_warnings.dart';
 import '../../../product/widget/common/sohbet_popup.dart';
 import '../../../product/widget/common/watermark_overlay.dart';
+import '../../chat/view/chat_view.dart';
 import '../../prayer_times/provider/prayer_times_provider.dart';
 import '../notifier/home_notifier.dart';
 import '../provider/home_provider.dart';
@@ -20,7 +21,6 @@ import '../widgets/hadith_card.dart';
 import '../widgets/hijri_calendar_card.dart';
 import '../widgets/live_stream_card.dart';
 import '../widgets/prayer_times_bar.dart';
-import '../../chat/view/chat_view.dart';
 
 @RoutePage()
 class HomeView extends ConsumerStatefulWidget {
@@ -59,13 +59,14 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 floating: true,
                 pinned: false,
                 centerTitle: true,
-                leading: IconButton(
+                leading: null,
+                /* IconButton(
                   icon: Icon(
                     Icons.logout_rounded,
                     color: context.colors.onBackground,
                   ),
                   onPressed: () => _showLogoutDialog(context, ref),
-                ),
+                ), */
                 title: Text(
                   _resolveUsername(ref),
                   style: context.textTheme.titleMedium?.copyWith(
@@ -97,14 +98,18 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     children: [
                       const NotificationWarningWidget(),
                       const SizedBox(height: AppSpacing.md),
-                      if (ref.watch(authProvider).role == UserRole.authorized) ...[
-                        _ChatRoomCard(onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const ChatView(),
+                      if (ref.watch(authProvider).role ==
+                          UserRole.authorized) ...[
+                        _ChatRoomCard(
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const ChatView(),
+                            ),
                           ),
-                        )),
+                        ),
                       ],
-                      if (ref.watch(authProvider).role == UserRole.authorized) ...[
+                      if (ref.watch(authProvider).role ==
+                          UserRole.authorized) ...[
                         const SizedBox(height: AppSpacing.md),
                         const LiveStreamCard(),
                       ],
@@ -137,32 +142,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
     }
     final UserRole role = ref.watch(authProvider.select((s) => s.role));
     return role == UserRole.guest ? 'Misafir' : 'Kullanıcı';
-  }
-
-  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Çıkış Yap'),
-        content: const Text(
-          'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(authProvider.notifier).logout();
-            },
-            style: TextButton.styleFrom(foregroundColor: context.colors.error),
-            child: const Text('Çıkış Yap'),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildHadithSection(HomeState state) {
@@ -293,10 +272,7 @@ class _ChatRoomCard extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: context.colors.accent,
-            ),
+            Icon(Icons.chevron_right_rounded, color: context.colors.accent),
           ],
         ),
       ),

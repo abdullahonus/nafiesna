@@ -5,7 +5,6 @@ import 'package:nafiesna/product/widget/common/username_badge.dart';
 
 import '../../../product/constants/app_spacing.dart';
 import '../../../product/init/theme/app_text_styles.dart';
-import '../../../product/state/auth/auth_provider.dart';
 import '../../../product/widget/common/watermark_overlay.dart';
 import '../widgets/islamic_info_page.dart';
 import '../widgets/missed_prayers_page.dart';
@@ -290,7 +289,7 @@ class ContentView extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.xxl),
                   // Çıkış Yap Butonu
-                  _buildLogoutButton(context, ref),
+                  /*  _buildLogoutButton(context, ref), */
                   const SizedBox(height: AppSpacing.xl),
                 ],
               ),
@@ -303,7 +302,7 @@ class ContentView extends ConsumerWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
+  /*  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -351,7 +350,7 @@ class ContentView extends ConsumerWidget {
         ],
       ),
     );
-  }
+  } */
 }
 
 class _MenuCard extends StatelessWidget {
