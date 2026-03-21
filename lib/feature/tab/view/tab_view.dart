@@ -48,6 +48,7 @@ class TabView extends ConsumerWidget {
               return Container(
                 margin: const EdgeInsets.only(top: 24),
                 child: FloatingActionButton(
+                  heroTag: 'tab_view_fab',
                   shape: const CircleBorder(),
                   backgroundColor: isActive ? c.primary : c.surface,
                   elevation: 4,

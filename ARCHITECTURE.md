@@ -2,11 +2,11 @@
 
 > **Bu doküman her geliştirme adımından önce okunmalıdır.**
 >
-> **Temel Kural:** Projede olmayan bir yapıyı oluşturma.  
-> Bir widget, servis, modül veya pattern ancak gerçekten ihtiyaç duyulduğunda eklenir.  
+> **Temel Kural:** Projede olmayan bir yapıyı oluşturma.
+> Bir widget, servis, modül veya pattern ancak gerçekten ihtiyaç duyulduğunda eklenir.
 > İhtiyaç duyulmadan "belki lazım olur" mantığıyla yapı oluşturulmaz.
 >
-> **Paket Versiyonları:** Sabit versiyon yazılmaz.  
+> **Paket Versiyonları:** Sabit versiyon yazılmaz.
 > `flutter pub add <paket>` komutu güncel stabil versiyonu otomatik ekler.
 
 ---
@@ -82,9 +82,9 @@ Auth sistemi aktif — Misafir girişi (yerel kayıt) ve Yetkili girişi (Fireba
 
 ## 2. Faz Durumu — Ne Var, Ne Planlandı
 
-> **AI için kritik bölüm.**  
-> Bir yapı "Aktif" değilse, o yapıya ait kod oluşturma.  
-> "Planlandı" olan yapılar için sadece bu tabloda kayıt tut; kod yazma.  
+> **AI için kritik bölüm.**
+> Bir yapı "Aktif" değilse, o yapıya ait kod oluşturma.
+> "Planlandı" olan yapılar için sadece bu tabloda kayıt tut; kod yazma.
 > "Aktif" olan yapı için istek geldiğinde mevcut desene uyu.
 
 ### Katman & Altyapı Durumu
@@ -146,14 +146,14 @@ Auth sistemi aktif — Misafir girişi (yerel kayıt) ve Yetkili girişi (Fireba
 | AppBottomSheet | ⬜ Planlandı | — |
 | AppSnackbar | ⬜ Planlandı | — |
 
-> Bir widget en az 2 farklı yerde kullanılacaksa global widget yap.  
+> Bir widget en az 2 farklı yerde kullanılacaksa global widget yap.
 > Kullanılmayacaksa satırı sil. İhtiyaç doğduğunda satır ekle.
 
 ---
 
 ## 3. Mimari Katmanlar
 
-> Bu bölüm mimari kararı belgeler.  
+> Bu bölüm mimari kararı belgeler.
 > Katman aktif (✅) olmadan o katmana ait kod oluşturma.
 
 ### MVP Katman Modeli (Aktif)
@@ -198,7 +198,7 @@ UI rebuild
 
 ## 4. Klasör Yapısı — Mevcut
 
-> Bu bölüm projenin **gerçek** klasör yapısını yansıtır.  
+> Bu bölüm projenin **gerçek** klasör yapısını yansıtır.
 > Klasör yoksa buraya yazma. Klasör oluşturulduğunda buraya ekle.
 
 ```
@@ -402,7 +402,7 @@ Future<void> configureDependencies() async => getIt.init();
 getIt.registerSingleton<AppRouter>(AppRouter());
 ```
 
-> `@injectable`, `@singleton` anotasyonları Domain/Data katmanı gelince kullanılacak.  
+> `@injectable`, `@singleton` anotasyonları Domain/Data katmanı gelince kullanılacak.
 > Şu an için sadece GetIt üzerinden manuel kayıt yapılıyor.
 
 ---
@@ -750,6 +750,10 @@ final isLoading = ref.watch(featureProvider.select((s) => s.isLoading));
 | 2026-03-21 | Yakın Camiler & Türbeler — TabBar UI | `NearbyMosquesPage` → `DefaultTabController` ile Camiler / Türbeler sekmeleri; `NearbyMosquesService.getNearbyTurbes()` eklendi (OSM `tomb=turbe`, `tomb=mausoleum`); `Mosque` → `NearbyPlace` ortak model; `PlaceType` enum |
 | 2026-03-21 | Türbeler — Harita & Türkiye Geneli | `flutter_map` + `latlong2` eklendi; `getTurkeyTurbes()` Türkiye bbox sorgusu (max 500); Türbeler sekmesi → `_TurbeView` (Liste\|Harita sub-TabBar); `_TurbeMapTab` OSM tiles + gold pin + dokunma modal; `_TurbeListTab` arama kutusu + sayı göstergesi |
 | 2026-03-21 | `UsernameBadge` global widget | `product/widget/common/username_badge.dart` oluşturuldu; email @ öncesi parse ederek tüm AppBar'larda gösterir; HomeView + ContentView + DreamView + PdfView AppBar'larına eklendi |
+| 2026-03-21 | Broadcast Chat — Sohbet Odası | `BroadcastChatService` (Firestore real-time stream, limitToLast 100); `ChatMessage` modeli; `ChatView` (StreamProvider, bubble UI, info bandı); `_ChatRoomCard` HomeView'a eklendi; sadece `sultan@nafiesna.com` yazabilir, herkes okuyabilir |
+| 2026-03-22 | Broadcast Chat Reaksiyonları | `ChatMessage` modeline `reactions` (Map) eklendi; `ChatReactionNotifier` (SharedPreferences) ile cihazda local spam engeli eklendi; `ChatView` altına `_ReactionChip` eklendi; güncellenmiş Firestore Security Rule (sadece reactions alanı güncellemesi) |
+| 2026-03-22 | Broadcast Chat Gelişmiş Özellikler | Anket (Poll) oluşturma ve oylama (`pollQuestion`, `pollOptions`, `pollVotes`), Mesaj düzenleme, Mesaj silme, Dinamik emoji tepkisi (os native klavye); Spam engeli (`ChatPollNotifier`); `BroadcastChatService`'e `votePoll`, `sendPoll`, `deleteMessage`, `editMessage` metodları eklendi. |
+| 2026-03-22 | WhatsApp Tipi Emoji Stili | `ChatView` içindeki tüm reaksiyon (+ düğmesi vs) sistemi kaldırılarak WhatsApp benzeri Long-PressBottomSheet (Tüm kullanıcılar için) menüsüne taşındı. Emojiler alt satır yerine, mesaj balonunun sol altına overlap (bitecek şekilde) pozisyonlandı (şeffaf background ile sıkı tasarım). |
 
 ---
 

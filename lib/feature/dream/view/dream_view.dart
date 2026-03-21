@@ -120,6 +120,7 @@ class DreamView extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'dream_fab',
         onPressed: () => _openEditor(context, ref),
         backgroundColor: context.colors.accent,
         child: Icon(

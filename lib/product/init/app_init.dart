@@ -12,6 +12,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../utility/injection/injection.dart';
 
+// Sohbet ekranının açık olup olmadığını tutan global flag.
+// ChatView initState/dispose tarafından set edilir.
+bool isChatScreenActive = false;
+
 const String kLiveStreamUrlKey = 'last_live_stream_url';
 
 @pragma('vm:entry-point')
@@ -35,6 +39,14 @@ const AndroidNotificationChannel _androidChannel = AndroidNotificationChannel(
   importance: Importance.max,
   playSound: true,
   sound: RawResourceAndroidNotificationSound('hu'),
+);
+
+// Sohbet odası bildirimleri — ayrı kanal
+const AndroidNotificationChannel _chatChannel = AndroidNotificationChannel(
+  'chat_channel_v1',
+  'Sohbet Odası',
+  description: 'NafieSna sohbet odası bildirimleri',
+  importance: Importance.high,
 );
 
 class AppInit {
@@ -97,6 +109,13 @@ class AppInit {
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(_androidChannel);
+
+    // Sohbet odası kanalı
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(_chatChannel);
   }
 
   static Future<void> _onNotificationTap(NotificationResponse response) async {
@@ -189,7 +208,17 @@ class AppInit {
     final RemoteNotification? notification = message.notification;
     if (notification == null) return;
 
+    // Sohbet bildirimi ise ve kullanıcı sohbet ekranındaysa gösterme
+    final bool isChatMsg = message.data['type'] == 'chat';
+    if (isChatMsg && isChatScreenActive) {
+      debugPrint('FCM: sohbet ekranı açık — bildirim bastırıldı');
+      return;
+    }
+
     final String? url = message.data['url'] as String?;
+
+    // Kanal seçimi
+    final bool useChatChannel = isChatMsg;
 
     await _localNotifications.show(
       notification.hashCode,
@@ -197,20 +226,24 @@ class AppInit {
       notification.body,
       NotificationDetails(
         android: AndroidNotificationDetails(
-          _androidChannel.id,
-          _androidChannel.name,
-          channelDescription: _androidChannel.description,
-          importance: Importance.max,
+          useChatChannel ? _chatChannel.id : _androidChannel.id,
+          useChatChannel ? _chatChannel.name : _androidChannel.name,
+          channelDescription: useChatChannel
+              ? _chatChannel.description
+              : _androidChannel.description,
+          importance: useChatChannel ? Importance.high : Importance.max,
           priority: Priority.max,
           icon: '@mipmap/ic_launcher',
-          playSound: true,
-          sound: const RawResourceAndroidNotificationSound('hu'),
+          playSound: !useChatChannel,
+          sound: useChatChannel
+              ? null
+              : const RawResourceAndroidNotificationSound('hu'),
         ),
-        iOS: const DarwinNotificationDetails(
+        iOS: DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
-          presentSound: true,
-          sound: 'hu.mp3',
+          presentSound: !useChatChannel,
+          sound: useChatChannel ? null : 'hu.mp3',
         ),
       ),
       payload: url,
@@ -244,7 +277,10 @@ class AppInit {
   ) async {
     if (Platform.isAndroid) {
       await messaging.subscribeToTopic('live_stream');
-      debugPrint('FCM: live_stream topic\'a abone olundu (Android)');
+      await messaging.subscribeToTopic('chat_messages');
+      debugPrint(
+        'FCM: live_stream + chat_messages topic\'a abone olundu (Android)',
+      );
       return;
     }
 
@@ -258,7 +294,10 @@ class AppInit {
         final String? apnsToken = await messaging.getAPNSToken();
         if (apnsToken != null && apnsToken.isNotEmpty) {
           await messaging.subscribeToTopic('live_stream');
-          debugPrint('FCM: live_stream topic\'a abone olundu (iOS)');
+          await messaging.subscribeToTopic('chat_messages');
+          debugPrint(
+            'FCM: live_stream + chat_messages topic\'a abone olundu (iOS)',
+          );
           return;
         }
         // Token null → henüz hazır değil, bekle

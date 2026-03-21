@@ -20,6 +20,7 @@ import '../widgets/hadith_card.dart';
 import '../widgets/hijri_calendar_card.dart';
 import '../widgets/live_stream_card.dart';
 import '../widgets/prayer_times_bar.dart';
+import '../../chat/view/chat_view.dart';
 
 @RoutePage()
 class HomeView extends ConsumerStatefulWidget {
@@ -95,8 +96,16 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const NotificationWarningWidget(),
-                      if (ref.watch(authProvider).role == UserRole.authorized)
+                      const SizedBox(height: AppSpacing.md),
+                      _ChatRoomCard(onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const ChatView(),
+                        ),
+                      )),
+                      if (ref.watch(authProvider).role == UserRole.authorized) ...[
+                        const SizedBox(height: AppSpacing.md),
                         const LiveStreamCard(),
+                      ],
                       const SizedBox(height: AppSpacing.md),
                       const PrayerTimesBar(),
                       const SizedBox(height: AppSpacing.md),
@@ -193,6 +202,102 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
           ),
       ],
+    );
+  }
+}
+
+// ── Sohbet Odası Kartı ────────────────────────────────────────────────────────
+
+class _ChatRoomCard extends StatelessWidget {
+  const _ChatRoomCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              context.colors.accent.withValues(alpha: 0.18),
+              context.colors.accent.withValues(alpha: 0.06),
+            ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          border: Border.all(
+            color: context.colors.accent.withValues(alpha: 0.35),
+            width: 0.8,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Canlı göstergesi + ikon
+            Stack(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: context.colors.accent.withValues(alpha: 0.15),
+                  ),
+                  child: Icon(
+                    Icons.chat_rounded,
+                    color: context.colors.accent,
+                    size: 26,
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: context.colors.success,
+                      border: Border.all(
+                        color: context.colors.background,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Sohbet Odası',
+                    style: context.textTheme.headlineSmall?.copyWith(
+                      color: context.colors.accent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Canlı mesajları görüntüleyin',
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: context.colors.accent.withValues(alpha: 0.75),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: context.colors.accent,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

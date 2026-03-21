@@ -123,20 +123,21 @@ class _TurbeViewState extends ConsumerState<_TurbeView>
       _error = null;
     });
     try {
-      final List<NearbyPlace> result =
-          await ref.read(_mosqueServiceProvider).getTurkeyTurbes();
+      final List<NearbyPlace> result = await ref
+          .read(_mosqueServiceProvider)
+          .getTurkeyTurbes();
       if (mounted) {
         setState(() {
-        _turbes = result;
-        _isLoading = false;
-      });
+          _turbes = result;
+          _isLoading = false;
+        });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
-        _error = 'Türbeler yüklenirken hata oluştu.';
-        _isLoading = false;
-      });
+          _error = 'Türbeler yüklenirken hata oluştu.';
+          _isLoading = false;
+        });
       }
     }
   }
@@ -168,11 +169,17 @@ class _TurbeViewState extends ConsumerState<_TurbeView>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline_rounded,
-                  color: context.colors.error, size: 56),
+              Icon(
+                Icons.error_outline_rounded,
+                color: context.colors.error,
+                size: 56,
+              ),
               const SizedBox(height: AppSpacing.lg),
-              Text(_error!, style: context.textTheme.bodyMedium,
-                  textAlign: TextAlign.center),
+              Text(
+                _error!,
+                style: context.textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: AppSpacing.xl),
               ElevatedButton.icon(
                 onPressed: _loadTurbes,
@@ -261,7 +268,8 @@ class _TurbeListTabState extends State<_TurbeListTab>
   List<NearbyPlace> get _filtered {
     if (_query.isEmpty) return widget.turbes;
     final String q = _query.toLowerCase();
-    return widget.turbes.where((t) => t.name.toLowerCase().contains(q))
+    return widget.turbes
+        .where((t) => t.name.toLowerCase().contains(q))
         .toList();
   }
 
@@ -275,7 +283,10 @@ class _TurbeListTabState extends State<_TurbeListTab>
         // Arama kutusu
         Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs,
+            AppSpacing.lg,
+            AppSpacing.md,
+            AppSpacing.lg,
+            AppSpacing.xs,
           ),
           child: TextField(
             controller: _searchCtrl,
@@ -286,12 +297,18 @@ class _TurbeListTabState extends State<_TurbeListTab>
               hintStyle: context.textTheme.bodyMedium?.copyWith(
                 color: context.colors.textHint,
               ),
-              prefixIcon: Icon(Icons.search_rounded,
-                  color: context.colors.accent, size: 20),
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                color: context.colors.accent,
+                size: 20,
+              ),
               suffixIcon: _query.isNotEmpty
                   ? IconButton(
-                      icon: Icon(Icons.close_rounded,
-                          color: context.colors.textSecondary, size: 18),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: context.colors.textSecondary,
+                        size: 18,
+                      ),
                       onPressed: () {
                         _searchCtrl.clear();
                         setState(() => _query = '');
@@ -325,7 +342,9 @@ class _TurbeListTabState extends State<_TurbeListTab>
         // Sonuç sayısı
         Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.xs,
+          ),
           child: Row(
             children: [
               Text(
@@ -345,10 +364,13 @@ class _TurbeListTabState extends State<_TurbeListTab>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.account_balance_outlined,
-                          color: context.colors.textSecondary
-                              .withValues(alpha: 0.35),
-                          size: 56),
+                      Icon(
+                        Icons.account_balance_outlined,
+                        color: context.colors.textSecondary.withValues(
+                          alpha: 0.35,
+                        ),
+                        size: 56,
+                      ),
                       const SizedBox(height: AppSpacing.md),
                       Text(
                         _query.isEmpty
@@ -365,14 +387,15 @@ class _TurbeListTabState extends State<_TurbeListTab>
                   onRefresh: () async => widget.onRefresh(),
                   child: ListView.separated(
                     padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.lg, AppSpacing.xs,
-                      AppSpacing.lg, AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.xs,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
                     ),
                     itemCount: filtered.length,
                     separatorBuilder: (_, __) =>
                         const SizedBox(height: AppSpacing.sm),
-                    itemBuilder: (_, int i) =>
-                        _PlaceCard(place: filtered[i]),
+                    itemBuilder: (_, int i) => _PlaceCard(place: filtered[i]),
                   ),
                 ),
         ),
@@ -490,9 +513,7 @@ class _TurbeDetailSheet extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.colors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(
-          color: context.colors.accent.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: context.colors.accent.withValues(alpha: 0.3)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -544,8 +565,11 @@ class _TurbeDetailSheet extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
-                Icon(Icons.location_on_outlined,
-                    size: 14, color: context.colors.textSecondary),
+                Icon(
+                  Icons.location_on_outlined,
+                  size: 14,
+                  color: context.colors.textSecondary,
+                ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
@@ -643,30 +667,31 @@ class _PlacesListTabState extends ConsumerState<_PlacesListTab>
     });
 
     try {
-      final LocationService locationService =
-          ref.read(_locationServiceProvider);
+      final LocationService locationService = ref.read(
+        _locationServiceProvider,
+      );
 
-      final bool serviceEnabled =
-          await locationService.isLocationServiceEnabled();
+      final bool serviceEnabled = await locationService
+          .isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
           setState(() {
-          _error = 'Konum servisi kapalı. Lütfen açın.';
-          _isLoading = false;
-        });
+            _error = 'Konum servisi kapalı. Lütfen açın.';
+            _isLoading = false;
+          });
         }
         return;
       }
 
-      final LocationPermission permission =
-          await locationService.checkAndRequestPermission();
+      final LocationPermission permission = await locationService
+          .checkAndRequestPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         if (mounted) {
           setState(() {
-          _error = 'Konum izni gerekli. Lütfen izin verin.';
-          _isLoading = false;
-        });
+            _error = 'Konum izni gerekli. Lütfen izin verin.';
+            _isLoading = false;
+          });
         }
         return;
       }
@@ -686,16 +711,16 @@ class _PlacesListTabState extends ConsumerState<_PlacesListTab>
 
       if (mounted) {
         setState(() {
-        _places = places;
-        _isLoading = false;
-      });
+          _places = places;
+          _isLoading = false;
+        });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
-        _error = _errorMessage;
-        _isLoading = false;
-      });
+          _error = _errorMessage;
+          _isLoading = false;
+        });
       }
     }
   }
@@ -729,11 +754,17 @@ class _PlacesListTabState extends ConsumerState<_PlacesListTab>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.location_off_rounded,
-                color: context.colors.error, size: 56),
+            Icon(
+              Icons.location_off_rounded,
+              color: context.colors.error,
+              size: 56,
+            ),
             const SizedBox(height: AppSpacing.lg),
-            Text(_error!, style: context.textTheme.bodyMedium,
-                textAlign: TextAlign.center),
+            Text(
+              _error!,
+              style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: AppSpacing.xl),
             ElevatedButton.icon(
               onPressed: _load,
@@ -768,10 +799,15 @@ class _PlacesListTabState extends ConsumerState<_PlacesListTab>
             const SizedBox(height: AppSpacing.md),
             TextButton.icon(
               onPressed: _load,
-              icon: Icon(Icons.refresh_rounded,
-                  size: 16, color: context.colors.accent),
-              label: Text('Yenile',
-                  style: TextStyle(color: context.colors.accent)),
+              icon: Icon(
+                Icons.refresh_rounded,
+                size: 16,
+                color: context.colors.accent,
+              ),
+              label: Text(
+                'Yenile',
+                style: TextStyle(color: context.colors.accent),
+              ),
             ),
           ],
         ),
@@ -783,7 +819,10 @@ class _PlacesListTabState extends ConsumerState<_PlacesListTab>
       onRefresh: _load,
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.lg,
+          AppSpacing.lg,
         ),
         itemCount: _places!.length,
         separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
@@ -803,10 +842,12 @@ class _PlaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color iconColor =
-        _isMosque ? context.colors.primary : context.colors.accent;
-    final IconData placeIcon =
-        _isMosque ? Icons.mosque_rounded : Icons.account_balance_rounded;
+    final Color iconColor = _isMosque
+        ? context.colors.primary
+        : context.colors.accent;
+    final IconData placeIcon = _isMosque
+        ? Icons.mosque_rounded
+        : Icons.account_balance_rounded;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -840,8 +881,11 @@ class _PlaceCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Row(
                   children: [
-                    Icon(Icons.directions_walk_rounded,
-                        color: context.colors.accent, size: 14),
+                    Icon(
+                      Icons.directions_walk_rounded,
+                      color: context.colors.accent,
+                      size: 14,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       place.formattedDistance,
@@ -879,8 +923,11 @@ class _PlaceCard extends StatelessWidget {
                   color: context.colors.primary.withValues(alpha: 0.35),
                 ),
               ),
-              child: Icon(Icons.directions_rounded,
-                  color: context.colors.primary, size: 18),
+              child: Icon(
+                Icons.directions_rounded,
+                color: context.colors.primary,
+                size: 18,
+              ),
             ),
           ),
         ],
